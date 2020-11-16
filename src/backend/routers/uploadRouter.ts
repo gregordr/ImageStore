@@ -1,6 +1,6 @@
 import express from 'express'
 const router = express.Router();
-const uploadFile = require('../middleware/upload')
+import { uploadFile } from '../middleware/upload'
 
 router.post('/', async (req: any, res: any) => {
     try {

@@ -1,7 +1,7 @@
 import express from 'express';
-const router = express.Router();
+import { getAlbums, addAlbum } from '../database/albumDatabase';
 
-import { getAlbums, addAlbum } from '../database/albumDatabase'
+export const router = express.Router();
 
 router.put('/new/:name', async (req, res) => {
     const name = req.params.name;
@@ -28,5 +28,3 @@ delete album - also delete all entries
 delete photo from album - don't delete photo itself
 add photo to album - validate album and photo both exist - make media database? or check in filesystem if file exists?
 */
-
-module.exports = router;
