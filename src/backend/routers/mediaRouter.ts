@@ -1,6 +1,7 @@
 import express from 'express'
-const router = express.Router();
 import fs from 'fs'
+
+export const router = express.Router();
 
 router.get('/all', async (req, res) => {
     fs.readdir('media/', function (err, files) {
@@ -11,7 +12,7 @@ router.get('/all', async (req, res) => {
             });
         }
 
-        let fileInfos: unknown[] = [];
+        const fileInfos: unknown[] = [];
 
         files.forEach((file: unknown) => {
             fileInfos.push({
@@ -24,5 +25,3 @@ router.get('/all', async (req, res) => {
 });
 
 router.use('/', express.static('media'));
-
-module.exports = router;

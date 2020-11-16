@@ -1,6 +1,7 @@
 import express from 'express'
-const router = express.Router();
 import { uploadFile } from '../middleware/upload'
+
+export const router = express.Router();
 
 router.post('/', async (req: any, res: any) => {
     try {
@@ -20,5 +21,3 @@ router.post('/', async (req: any, res: any) => {
         });
     }
 });
-
-module.exports = router;

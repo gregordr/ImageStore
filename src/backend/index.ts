@@ -7,10 +7,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 import dotenv from 'dotenv'
 dotenv.config();
 
-const uploadRouter = require('./routers/uploadRouter');
+import { router as uploadRouter } from './routers/uploadRouter';
 app.use('/upload', uploadRouter);
 
-const mediaRouter = require('./routers/mediaRouter');
+import { router as mediaRouter } from './routers/mediaRouter';
 app.use('/media', mediaRouter);
 
 import { router as albumRouter } from './routers/albumRouter';
