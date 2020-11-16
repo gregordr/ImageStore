@@ -13,7 +13,7 @@ app.use('/upload', uploadRouter);
 const mediaRouter = require('./routers/mediaRouter');
 app.use('/media', mediaRouter);
 
-const albumRouter = require('./routers/albumRouter');
+import { router as albumRouter } from './routers/albumRouter';
 app.use('/album', albumRouter);
 
 const port = process.env.PORT || 4000;
