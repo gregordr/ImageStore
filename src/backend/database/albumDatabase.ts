@@ -9,12 +9,12 @@ const ALBUM_PHOTO = requireTable('ALBUM_PHOTO', '(Album varchar, Photo varchar')
 const client = new Client(conString);
 const clientConnection = client.connect();
 
-export async function getAlbums(searchTerm: string) {
+export async function getAlbums(searchTerm: string): Promise<string | unknown> {
     await clientConnection;
-    return (await client.query(`SELECT * FROM $1::text;`, [await ALBUMS])).rows;
+    return (await client.query(`SELECT * FROM ${await ALBUMS};`)).rows;
 }
 
-export async function addAlbum(name: string) {
+export async function addAlbum(name: string): Promise<string | unknown> {
     await clientConnection;
-    return client.query(`INSERT INTO $1::text VALUES ($2::text);`, [await ALBUMS, name]);
+    return client.query(`INSERT INTO ${await ALBUMS} VALUES ($2::text);`, [name]);
 }
