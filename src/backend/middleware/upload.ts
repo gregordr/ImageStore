@@ -1,4 +1,3 @@
-import util from "util";
 import multer from "multer";
 const maxSize = 2 * 1024 * 1024;
 
@@ -11,9 +10,7 @@ const storage = multer.diskStorage({
     },
 });
 
-const _uploadFile = multer({
+export const upload = multer({
     storage: storage,
     limits: { fileSize: maxSize },
 }).single("file");
-
-export let uploadFile = util.promisify(_uploadFile);

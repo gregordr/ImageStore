@@ -7,9 +7,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 import dotenv from 'dotenv'
 dotenv.config();
 
-import { router as uploadRouter } from './routers/uploadRouter';
-app.use('/upload', uploadRouter);
-
 import { router as mediaRouter } from './routers/mediaRouter';
 app.use('/media', mediaRouter);
 

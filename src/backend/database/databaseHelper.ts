@@ -1,4 +1,3 @@
-import { type } from 'os';
 import { Pool, PoolClient } from 'pg';
 const connectionString = process.env.PGSTRING;
 const pool = new Pool({ connectionString, });
