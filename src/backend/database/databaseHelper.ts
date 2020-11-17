@@ -10,7 +10,7 @@ export class DatabaseError extends Error {
     }
 }
 
-export async function transaction(query: (arg0: PoolClient) => Promise<unknown>): Promise<unknown> {
+export async function transaction<T>(query: (arg0: PoolClient) => Promise<T>): Promise<T> {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -30,7 +30,7 @@ export async function transaction(query: (arg0: PoolClient) => Promise<unknown>)
     }
 }
 
-export async function requireTable(name: string, schema: string): Promise<unknown> {
+export async function requireTable(name: string, schema: string): Promise<string> {
     return transaction(async (client) => {
         //await client.query(`DROP TABLE ${name} CASCADE;`);
         const res = await client.query(`SELECT to_regclass('${name}');`)
