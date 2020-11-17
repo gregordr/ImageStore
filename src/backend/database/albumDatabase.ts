@@ -1,11 +1,7 @@
 import { DatabaseError, requireTable, transaction } from './databaseHelper'
 
-import { Pool } from 'pg';
-const connectionString = process.env.PGSTRING;
-const pool = new Pool({ connectionString, });
-
-const ALBUMS = requireTable('ALBUMS', '(Album varchar)');
-const ALBUM_PHOTO = requireTable('ALBUM_PHOTO', '(Album OID, Photo OID)');
+const ALBUMS = requireTable('ALBUMS', '(Album varchar, UNIQUE(oid)) WITH OIDS').catch((err) => { console.log(err) });
+const ALBUM_PHOTO = (async () => requireTable('ALBUM_PHOTO', `(Album OID, Photo OID, PRIMARY KEY(Album, Photo), CONSTRAINT Album_Exists FOREIGN KEY(Album) REFERENCES ${await ALBUMS}(OID) ON DELETE CASCADE) WITH OIDS`).catch((err) => { console.log(err) }))();
 
 export async function getAlbums(searchTerm: string): Promise<unknown> {
     return transaction(async (client) => {
@@ -20,21 +16,24 @@ export async function addAlbum(name: string): Promise<unknown> {
     });
 }
 
+export async function deleteAlbum(name: string): Promise<unknown> {
+    return transaction(async (client) => {
+        return (await client.query(`DELETE FROM ${await ALBUMS} WHERE oid = $1::OID;`, [name])).rowCount.toString();
+    });
+}
+
 export async function addPhotoToAlbum(albumID: string, photoID: string): Promise<unknown> {
     return await transaction(async (client) => {
-        const albumCondition = (await client.query(`SELECT COUNT(OID) FROM ${await ALBUMS} WHERE OID = $1::OID;`, [albumID])).rowCount == 1;
-        const photocondition = true
-
-        const check = await client.query(`SELECT OID FROM ${await ALBUM_PHOTO} WHERE Album = $1::OID AND Photo = $2::OID;`, [albumID, photoID]);
-
-        if (check.rowCount != 0)
-            return check.rows[0].oid.toString();
-
-        if (photocondition && albumCondition) {
+        try {
             return (await client.query(`INSERT INTO ${await ALBUM_PHOTO} VALUES ($1::OID, $2::OID);`, [albumID, photoID])).oid.toString();
-        } else {
-            throw new DatabaseError(`This ${photocondition ? 'album' : 'photo'} does not exist`);
+        } catch (err) {
+            throw new DatabaseError('Album or photo either do not exist, or the photo is already in the album');
         }
+    })
+}
 
+export async function removePhotoFromAlbum(albumID: string, photoID: string): Promise<unknown> {
+    return await transaction(async (client) => {
+        return (await client.query(`DELETE FROM ${await ALBUM_PHOTO} WHERE Album = $1::OID and Photo = $2::OID;`, [albumID, photoID])).rowCount.toString();
     })
 }
