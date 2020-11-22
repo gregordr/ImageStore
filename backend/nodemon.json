@@ -4,5 +4,5 @@
     ],
     "ext": "ts",
     "ignore": [],
-    "exec": "npx ts-node --files ./src/backend/index.ts"
+    "exec": "npx ts-node --files ./src/index.ts"
 }

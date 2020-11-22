@@ -4,6 +4,7 @@ const album = 'album'
 
 const albums = requireTable('albums', '(${album} varchar, UNIQUE(oid)) WITH OIDS').catch((err) => { console.log(err) });
 const album_photo = (async () => requireTable('album_photo', `(${album} OID, Photo OID, PRIMARY KEY(${album}, Photo), CONSTRAINT album_Exists FOREIGN KEY(${album}) REFERENCES ${await albums}(OID) ON DELETE CASCADE) WITH OIDS`).catch((err) => { console.log(err) }))();
+//TODO: 2nd foreign key, photo
 
 export async function getAlbums(searchTerm: string): Promise<unknown[]> {
     return transaction(async (client) => {

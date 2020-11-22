@@ -1,7 +1,8 @@
 import { DatabaseError, requireTable, transaction } from './databaseHelper'
 
-const photo = 'photo'
-const media = requireTable('media', `(${photo} varchar, UNIQUE(oid)) WITH OIDS`).catch((err) => { console.log(err) });
+export const photo = 'photo'
+export const media = requireTable('media', `(${photo} varchar, UNIQUE(oid)) WITH OIDS`).catch((err) => { console.log(err) });
+//Todo: photos instead of media?
 
 export async function getMedia(searchTerm: string): Promise<unknown[]> {
     return transaction(async (client) => {
