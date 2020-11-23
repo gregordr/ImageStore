@@ -6,14 +6,19 @@ function Photo(props: { id: string, x: number, y: number, click: any, selected: 
     const padding = props.selected ? 25 : 0
     const [vis, setVis] = useState(0)
     const opacity = props.selected ? 255 : vis
-    return <div onMouseEnter={() => setVis(0.4)} onMouseLeave={() => setVis(0)} style={{ margin: 5, height: props.y, width: props.x, "align-items": "center", "justify-content": "center", display: "flex", background: "#ffffff22", position: "relative" }}>
-        <input checked={props.selected} type="checkbox" id="vehicle1" onClick={props.click} style={{ transition: "0.08s linear", position: "absolute", left: 15, top: 15, height: 20, width: 20, opacity: opacity }} />
-        <a href={url} ><img style={{ transition: "0.05s linear" }}
-            src={url}
-            alt="new"
-            height={props.y - padding}
-            width={props.x - padding}
-        /></a></div>;
+    const divStyle = { margin: 5, height: props.y, width: props.x, "align-items": "center", "justify-content": "center", display: "flex", background: "#ffffff22", position: "relative" }
+    const boxStyle = { transition: "0.07s linear", position: "absolute", left: 15, top: 15, height: 20, width: 20, opacity: opacity }
+
+    return <div onMouseEnter={() => setVis(0.4)} onMouseLeave={() => setVis(0)} style={divStyle}>
+        <input checked={props.selected} type="checkbox" id="vehicle1" onClick={props.click} style={boxStyle} />
+        <a href={url} >
+            <img style={{ transition: "0.05s linear" }}
+                src={url}
+                height={props.y - padding}
+                width={props.x - padding}
+            />
+        </a>
+    </div>;
 }
 
 export default function PhotoPage(props: {}) {
