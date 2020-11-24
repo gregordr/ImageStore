@@ -1,0 +1,23 @@
+.Main-Container {
+  display: grid;
+  height: 100vh;
+  grid-template-columns: 1fr;
+  grid-template-rows: 65px 1fr;
+  gap: 0px 0px;
+  grid-template-areas:
+    "TopBar"
+    "Main-Content";
+}
+.LeftBar {
+  grid-area: LeftBar;
+  background-color: white;
+  height: auto;
+}
+.Main-Content {
+  grid-area: Main-Content;
+  align-content: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: auto;
+  transition: all 1s ease-in-out;
+}

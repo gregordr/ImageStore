@@ -1,0 +1,29 @@
+.root {
+  display: grid;
+  grid-template-columns: 0.7fr 1fr 0.7fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-template-areas: "left center right";
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+}
+
+.imageHolder {
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+  display: grid;
+  background-color: black;
+}
+
+.leftIm {
+  grid-area: left;
+  color: white;
+}
+.center {
+  grid-area: center;
+}
+.rightIm {
+  grid-area: right;
+}
