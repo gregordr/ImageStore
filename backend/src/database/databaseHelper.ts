@@ -9,15 +9,24 @@ export class DatabaseError extends Error {
     }
 }
 
-export async function transaction<T>(query: (arg0: PoolClient) => Promise<T>): Promise<T> {
+function sleep(ms: number) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
+
+export async function transaction<T>(query: (arg0: PoolClient) => Promise<T>, useTransaction = true): Promise<T> {
     const client = await pool.connect();
     try {
-        await client.query('BEGIN');
+        if (useTransaction)
+            await client.query('BEGIN');
         const val = await query(client);
-        await client.query('COMMIT');
+        if (useTransaction)
+            await client.query('COMMIT');
         return await val;
     } catch (err) {
-        client.query('ROLLBACK')
+        if (useTransaction)
+            client.query('ROLLBACK')
         if (err instanceof DatabaseError)
             throw err;
         else {

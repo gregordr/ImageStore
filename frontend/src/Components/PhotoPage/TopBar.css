@@ -1,27 +1,27 @@
 .TopBar {
-  grid-area: TopBar;
-  background: #ffffff;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr;
-  gap: 0px 0px;
-  grid-template-areas: "middle right";
-  width: 100vw;
+    grid-area: TopBar;
+    background: #ffffff;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-template-areas: "middle right";
+    width: 100vw;
 }
 
 .rightHolder {
-  grid-area: right;
+    grid-area: right;
 }
 
 .right {
-  transition: all 1s linear;
-  padding: 7px;
-  display: block;
-  float: right;
-  margin-right: -15px;
-  padding-right: 0px;
+    transition: all 1s linear;
+    padding: 7px;
+    display: block;
+    float: right;
+    margin-right: -15px;
+    padding-right: 0px;
 }
 
 .IconButton {
-  padding-left: 15px;
+    padding-left: 15px;
 }

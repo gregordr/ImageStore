@@ -14,8 +14,10 @@
     "@types/react": "^16.14.1",
     "@types/react-dom": "^16.9.10",
     "@types/react-router-dom": "^5.1.6",
+    "axios": "^0.21.0",
     "material-design-icons": "^3.0.1",
     "material-ui-search-bar": "^1.0.0",
+    "qs": "^6.9.4",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0",
@@ -47,5 +49,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/qs": "^6.9.5"
   }
 }

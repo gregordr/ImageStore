@@ -1,0 +1,5 @@
+.TopLeftBar {
+    align-self: flex-start;
+    justify-self: left;
+    padding: 10px;
+}

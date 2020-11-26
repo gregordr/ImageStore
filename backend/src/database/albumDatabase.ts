@@ -8,7 +8,7 @@ const album_photo = (async () => requireTable('album_photo', `(${album} OID, Pho
 
 export async function getAlbums(searchTerm: string): Promise<unknown[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT (OID, Album) FROM ${await albums} WHERE Album like $1::text;`, [searchTerm]);
+        const result = await client.query(`SELECT OID as id, Album as name FROM ${await albums} WHERE Album like $1::text;`, [searchTerm]);
         return result.rows;
     });
 }
@@ -25,14 +25,18 @@ export async function deleteAlbum(name: string): Promise<string> {
     });
 }
 
-export async function addPhotoToAlbum(albumID: string, photoID: string): Promise<string> {
+export async function addPhotosToAlbums(albumIDs: string[], photoIDs: string[]): Promise<void> {
     return await transaction(async (client) => {
-        try {
-            return (await client.query(`INSERT INTO ${await album_photo} VALUES ($1::OID, $2::OID);`, [albumID, photoID])).oid.toString();
-        } catch (err) {
-            throw new DatabaseError('Album or photo either do not exist, or the photo is already in the album');
+        await Promise.all(albumIDs.map(async (albumID: string) => await Promise.all(photoIDs.map(async (photoID: string) => {
+            try {
+                return (await client.query(`INSERT INTO ${await album_photo} VALUES ($1::OID, $2::OID);`, [albumID, photoID])).oid.toString();
+            } catch (err) {
+                // throw new DatabaseError('Album or photo either do not exist, or the photo is already in the album');
+                console.log(err)
+            }
         }
-    })
+        ))))
+    }, false)
 }
 
 export async function removePhotoFromAlbum(albumID: string, photoID: string): Promise<string> {

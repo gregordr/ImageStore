@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import "./TopBar.css";
-import IconButton from '@material-ui/core/IconButton';
-import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Settings, Search, CheckBox } from '@material-ui/icons';
+import IconButton from "@material-ui/core/IconButton";
+import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Settings, Search, CheckBox } from "@material-ui/icons";
 import SearchBar from "material-ui-search-bar";
-import { createStyles, makeStyles, Theme } from '@material-ui/core';
+import { createStyles, makeStyles, Theme } from "@material-ui/core";
 
 function RightSelectDiv(props: { buttonFunctions: any }) {
     return (
@@ -14,14 +14,14 @@ function RightSelectDiv(props: { buttonFunctions: any }) {
             <IconButton className="IconButton" color="primary" aria-label="cloud_download">
                 <CloudDownload />
             </IconButton>
-            <IconButton className="IconButton" color="primary" aria-label="library_add">
+            <IconButton className="IconButton" color="primary" aria-label="library_add" onClick={props.buttonFunctions.addToAlbum}>
                 <LibraryAdd />
             </IconButton>
             <IconButton className="IconButton" color="primary" aria-label="delete" onClick={props.buttonFunctions.delete}>
                 <Delete />
             </IconButton>
         </div>
-    )
+    );
 }
 function RightNonSelectDiv(props: { buttonFunctions: any }) {
     return (
@@ -33,7 +33,7 @@ function RightNonSelectDiv(props: { buttonFunctions: any }) {
                 <Settings />
             </IconButton>
         </div>
-    )
+    );
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) =>
             background: "#ffffff",
             display: "grid",
             "grid-template-columns": "1fr 1fr",
-            [theme.breakpoints.down('sm')]: {
+            [theme.breakpoints.down("sm")]: {
                 "grid-template-columns": "0fr 1fr",
             },
             "grid-template-rows": "1fr",
@@ -54,15 +54,15 @@ const useStyles = makeStyles((theme: Theme) =>
         middle: {
             display: "block",
             width: "40vw",
-            [theme.breakpoints.down('sm')]: {
-                display: 'none',
+            [theme.breakpoints.down("sm")]: {
+                display: "none",
             },
             "grid-area": "middle",
             "padding-top": "8px",
         },
         searchMobile: {
             [theme.breakpoints.up("md")]: {
-                display: 'none',
+                display: "none",
             },
             transition: "all 1s linear",
             padding: "7px",
@@ -81,7 +81,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         selectMobile: {
             [theme.breakpoints.up("md")]: {
-                display: 'none',
+                display: "none",
             },
             transition: "all 1s linear",
             padding: "7px",
@@ -89,37 +89,34 @@ const useStyles = makeStyles((theme: Theme) =>
             float: "right",
             "margin-right": "-15px",
             "padding-right": "0px",
-        }
+        },
     })
 );
 
-
 export default function TopBar(props: any) {
-    const classes = useStyles()
+    const classes = useStyles();
 
     return (
         <div className={classes.TopBar}>
             <div className={classes.middle}>
-                <SearchBar
-                    value={""}
-                    onChange={() => { }}
-                    onRequestSearch={() => { }}
-                /></div>
+                <SearchBar value={""} onChange={() => {}} onRequestSearch={() => {}} />
+            </div>
             <div className="rightHolder">
                 {props.anySelected() ? <RightSelectDiv buttonFunctions={props.buttonFunctions} /> : <RightNonSelectDiv buttonFunctions={props.buttonFunctions} />}
 
-                {!props.anySelected() ?
+                {!props.anySelected() ? (
                     <div className={classes.selectMobile}>
                         <IconButton className="IconButton" color="primary" aria-label="select" onClick={props.buttonFunctions.select}>
                             <CheckBox />
                         </IconButton>
-                    </div> : null}
+                    </div>
+                ) : null}
                 <div className={classes.searchMobile}>
                     <IconButton className="IconButton" color="primary" aria-label="search" onClick={props.buttonFunctions.settings}>
                         <Search />
                     </IconButton>
                 </div>
             </div>
-        </div >
+        </div>
     );
-} 
+}

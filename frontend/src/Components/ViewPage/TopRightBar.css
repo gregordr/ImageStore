@@ -1,0 +1,5 @@
+.TopRightBar {
+    align-self: flex-start;
+    justify-self: right;
+    padding: 10px;
+}
