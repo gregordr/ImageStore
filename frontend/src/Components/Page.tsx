@@ -9,7 +9,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import PhotoPage from "./PhotoPage/PhotoPage";
 import { Photo, PhotoAlbum } from "@material-ui/icons";
-import { Switch, Route, useHistory } from "react-router-dom";
+import { Switch, Route, useHistory, useLocation } from "react-router-dom";
 import AlbumPage from "./AlbumPage/AlbumPage";
 
 const drawerWidth = 240;
@@ -67,9 +67,8 @@ export default function ResponsiveDrawer({ window }: any) {
         setMobileOpen(!mobileOpen);
     };
 
-    const [current, setCurrent] = useState(""); //Do not use this, look at url instead!
-
     const history = useHistory();
+    const location = useLocation();
 
     const drawer = (
         <div>
@@ -78,13 +77,13 @@ export default function ResponsiveDrawer({ window }: any) {
             </div>
             <Divider />
             <List>
-                <ListItem button selected={current === "/"} onClick={() => history.push("/")}>
+                <ListItem button selected={location.pathname === "/"} onClick={() => history.push("/")}>
                     <ListItemIcon>
                         <Photo />
                     </ListItemIcon>
                     <ListItemText primary="Photos" />
                 </ListItem>
-                <ListItem button selected={current === "albums"} onClick={() => history.push("/albums")}>
+                <ListItem button selected={location.pathname === "/albums"} onClick={() => history.push("/albums")}>
                     <ListItemIcon>
                         <PhotoAlbum />
                     </ListItemIcon>

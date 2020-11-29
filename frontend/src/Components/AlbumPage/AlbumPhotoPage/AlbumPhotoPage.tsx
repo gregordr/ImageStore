@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any }) {
+export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; refresh: () => Promise<void> }) {
     const classes = useStyles();
     const hiddenFileInput: RefObject<HTMLInputElement> = React.useRef(null);
 
@@ -140,6 +140,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const deletePhoto = async (pid: any) => {
         try {
             await axios.post("/media/delete/" + pid);
+            await props.refresh();
         } catch (error: any) {
             if (error.response) {
                 window.alert(error.response.data);
@@ -151,6 +152,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const removePhoto = async (pid: any) => {
         try {
             await axios.post(`/albums/remove/${id}/${pid}`);
+            await props.refresh();
         } catch (error: any) {
             if (error.response) {
                 window.alert(error.response.data);

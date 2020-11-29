@@ -3,13 +3,20 @@ import { media, photo } from './mediaDatabase';
 
 const album = 'album'
 
-const albums = requireTable('albums', `(${album} varchar, UNIQUE(oid), count integer DEFAULT 0, picture varchar) WITH OIDS`).catch((err) => { console.log(err) });
-const album_photo = (async () => requireTable('album_photo', `(${album} OID, Photo OID, PRIMARY KEY(${album}, Photo), CONSTRAINT album_Exists FOREIGN KEY(${album}) REFERENCES ${await albums}(OID) ON DELETE CASCADE) WITH OIDS`).catch((err) => { console.log(err) }))();
+const albums = requireTable('albums', `(${album} varchar, UNIQUE(oid), picture varchar) WITH OIDS`).catch((err) => { console.log(err) });
+const album_photo = (async () => requireTable('album_photo', `(${album} OID, Photo OID, PRIMARY KEY(${album}, Photo), 
+CONSTRAINT album_Exists FOREIGN KEY(${album}) REFERENCES ${await albums}(OID) ON DELETE CASCADE,
+CONSTRAINT photo_Exists FOREIGN KEY(Photo) REFERENCES ${await media}(OID) ON DELETE CASCADE
+) WITH OIDS`).catch((err) => { console.log(err) }))();
 //TODO: 2nd foreign key, photo
 
 export async function getAlbums(searchTerm: string): Promise<unknown[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT oid AS id, ${album} AS name, count, picture AS cover FROM ${await albums} WHERE ${album} like $1::text;`, [searchTerm]);
+        const result = await client.query(`SELECT oid AS id, ${album} AS name, picture AS cover, (
+            SELECT COUNT(*)
+            FROM ${await album_photo}
+            WHERE ${await albums}.oid = ${await album_photo}.${album}
+        )::integer AS imageCount FROM ${await albums} WHERE ${album} like $1::text;`, [searchTerm]);
         return result.rows;
     });
 }

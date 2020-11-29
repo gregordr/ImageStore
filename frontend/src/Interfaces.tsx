@@ -1,7 +1,7 @@
 export interface AlbumT {
     id: string;
     name: string;
-    count: number;
+    imagecount: number;
     cover: string;
 }
 

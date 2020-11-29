@@ -64,7 +64,7 @@ function Album(props: { album: AlbumT; click: () => void }) {
                 )}
                 <GridListTileBar
                     title={props.album.name}
-                    subtitle={<span>{props.album.count} elements</span>}
+                    subtitle={<span>{props.album.imagecount} elements</span>}
                     actionIcon={
                         <div
                             onClick={(e) => {
@@ -169,7 +169,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         <div>
             <Switch>
                 <Route path="/albums/open">
-                    <AlbumPhotoPage drawerElement={props.drawerElement} handleDrawerToggle={props.handleDrawerToggle} />
+                    <AlbumPhotoPage refresh={fetchAlbums} drawerElement={props.drawerElement} handleDrawerToggle={props.handleDrawerToggle} />
                 </Route>
                 <Route path="/albums/">
                     <div className={classes.root}>
