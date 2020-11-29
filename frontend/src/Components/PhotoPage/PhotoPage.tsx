@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { RefObject, useEffect, useState } from "react";
 import "./PhotoPage.css";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
@@ -7,8 +7,9 @@ import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
 import axios from "axios";
-import AddToAlbum from "../AlbumPage/AddToAlbum";
+import AddToAlbum from "./AddToAlbum";
 import qs from "qs";
+import { PhotoT, AlbumT } from "../../Interfaces";
 
 function Photo(props: any) {
     const url = "http://localhost:4000/media/" + props.id;
@@ -97,12 +98,12 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function PhotoPage(props: any) {
+export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any }) {
     const classes = useStyles();
-    const hiddenFileInput = React.useRef(null);
+    const hiddenFileInput: RefObject<HTMLInputElement> = React.useRef(null);
 
-    const [photos, setPhotos] = useState<any[]>([]);
-    const [albums, setAlbums] = useState<any[]>([]);
+    const [photos, setPhotos] = useState<PhotoT[]>([]);
+    const [albums, setAlbums] = useState<AlbumT[]>([]);
     const [selected, setSelected] = useState<string[]>([]);
     const [selectable, setSelectable] = useState(false);
     const [open, setOpen] = useState(false);
@@ -144,10 +145,10 @@ export default function PhotoPage(props: any) {
         return selected.length !== 0 || selectable;
     };
 
-    const cb = async (albums: any) => {
+    const cb = async (albumIds: any) => {
         const requestBody = {
             photos: selected,
-            albums: albums,
+            albums: albumIds,
         };
 
         await axios.post("/albums/addPhotos", qs.stringify(requestBody));

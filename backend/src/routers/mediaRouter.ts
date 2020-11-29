@@ -1,5 +1,5 @@
 import express from 'express'
-import { promises } from "fs";
+import { promises as fsPromises } from "fs";
 import { upload } from '../middleware/upload'
 import multer from "multer";
 import { addMedia, removeMedia, getMedia } from '../database/mediaDatabase'
@@ -26,9 +26,13 @@ router.post('/add', async (req, res) => {
             res.status(500).send("No file uploaded")
             return
         }
-        const files: any = req.files
-        const oids: string[] = []
-        await Promise.all(files.map(async (f: any) => {
+
+        if (!Array.isArray(req.files)) {
+            throw new Error();
+        }
+
+        const oids: number[] = []
+        await Promise.all(req.files.map(async (f) => {
             const dims = sizeOf("media/" + f.filename)
 
             if (!dims.height || !dims.width) {
@@ -41,7 +45,7 @@ router.post('/add', async (req, res) => {
                     dims.width = tmp;
                 }
                 const oid = await addMedia(f.originalname, dims.height, dims.width)
-                await promises.rename("media/" + f.filename, "media/" + oid);
+                await fsPromises.rename("media/" + f.filename, "media/" + oid);
                 oids.push(oid)
             }
         }))
@@ -53,7 +57,7 @@ router.post('/delete/:name', async (req, res) => {
     try {
         const name = await removeMedia(req.params.name);
         try {
-            await promises.unlink('media/' + name)
+            await fsPromises.unlink('media/' + name)
         } catch (err) {
             console.log(err)
         }

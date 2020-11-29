@@ -23,7 +23,7 @@ const theme = createMuiTheme({
 export default function ViewPage(props: any) {
     const history = useHistory();
     const [id, setId] = useState(window.location.pathname.split("/")[2]);
-    const [dire, setDir] = useState(0);
+    const [dir, setDir] = useState(0);
     const [opacityRight, setOpacityRight] = useState(0);
     const [opacityLeft, setOpacityLeft] = useState(0);
 
@@ -78,7 +78,7 @@ export default function ViewPage(props: any) {
     };
 
     const transitions = useTransition(url, (p) => p, {
-        from: { opacity: 0, transform: `translate3d(${dire}%,0,0)` },
+        from: { opacity: 0, transform: `translate3d(${dir}%,0,0)` },
         enter: { opacity: 1, transform: "translate3d(0%,0,0)" },
         leave: { opacity: 0, transform: "translate3d(-50%,0,0)" },
     });
@@ -109,61 +109,57 @@ export default function ViewPage(props: any) {
 
     return (
         <ThemeProvider theme={theme}>
-            <div>
-                {transitions.map(({ item, props, key }) => {
-                    return (
-                        <div key={key} className="imageHolder">
-                            <animated.div style={{ ...props, alignSelf: "center", justifySelf: "center" }}>
-                                <img className="display" alt={id} style={{ width: x, height: y }} src={item} />
-                            </animated.div>
-                        </div>
-                    );
-                })}
+            {transitions.map(({ item, props, key }) => (
+                <div key={key} className="imageHolder">
+                    <animated.div style={{ ...props, alignSelf: "center", justifySelf: "center" }}>
+                        <img className="display" alt={id} style={{ width: x, height: y }} src={item} />
+                    </animated.div>
+                </div>
+            ))}
 
-                <div className="root">
-                    <div className="leftIm" onMouseEnter={mouseLeft} onClick={go(-1)}>
-                        <TopLeftBar />
-                        <IconButton
-                            style={{
-                                transition: "0.01s linear",
-                                opacity: opacityLeft,
-                                backgroundColor: "#222222",
-                                alignSelf: "center",
-                                justifySelf: "left",
-                                position: "absolute",
-                                marginLeft: "20px",
-                                height: "64px",
-                                width: "64px",
-                            }}
-                            className="IconButton"
-                            color="primary"
-                            aria-label="left"
-                        >
-                            <ChevronLeft style={{ height: "64px", width: "64px" }} />
-                        </IconButton>
-                    </div>
-                    <div className="center" onClick={() => history.goBack()} onMouseEnter={mouseCenter}></div>
-                    <div className="rightIm" onMouseEnter={mouseRight} onClick={go(1)}>
-                        <TopRightBar id={id} addToAlbum={props.buttonFunctions.addToAlbum} delete={deleteImage} />
-                        <IconButton
-                            style={{
-                                transition: "0.01s linear",
-                                opacity: opacityRight,
-                                backgroundColor: "#222222",
-                                alignSelf: "center",
-                                justifySelf: "right",
-                                position: "absolute",
-                                marginRight: "20px",
-                                height: "64px",
-                                width: "64px",
-                            }}
-                            className="IconButton"
-                            color="primary"
-                            aria-label="left"
-                        >
-                            <ChevronRight style={{ height: "64px", width: "64px" }} />
-                        </IconButton>
-                    </div>
+            <div className="root">
+                <div className="leftIm" onMouseEnter={mouseLeft} onClick={go(-1)}>
+                    <TopLeftBar />
+                    <IconButton
+                        style={{
+                            transition: "0.01s linear",
+                            opacity: opacityLeft,
+                            backgroundColor: "#222222",
+                            alignSelf: "center",
+                            justifySelf: "left",
+                            position: "absolute",
+                            marginLeft: "20px",
+                            height: "64px",
+                            width: "64px",
+                        }}
+                        className="IconButton"
+                        color="primary"
+                        aria-label="left"
+                    >
+                        <ChevronLeft style={{ height: "64px", width: "64px" }} />
+                    </IconButton>
+                </div>
+                <div className="center" onClick={() => history.goBack()} onMouseEnter={mouseCenter}></div>
+                <div className="rightIm" onMouseEnter={mouseRight} onClick={go(1)}>
+                    <TopRightBar id={id} addToAlbum={props.buttonFunctions.addToAlbum} delete={deleteImage} />
+                    <IconButton
+                        style={{
+                            transition: "0.01s linear",
+                            opacity: opacityRight,
+                            backgroundColor: "#222222",
+                            alignSelf: "center",
+                            justifySelf: "right",
+                            position: "absolute",
+                            marginRight: "20px",
+                            height: "64px",
+                            width: "64px",
+                        }}
+                        className="IconButton"
+                        color="primary"
+                        aria-label="left"
+                    >
+                        <ChevronRight style={{ height: "64px", width: "64px" }} />
+                    </IconButton>
                 </div>
             </div>
         </ThemeProvider>

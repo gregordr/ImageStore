@@ -1,3 +1,4 @@
+import { time, timeEnd } from 'console';
 import express from 'express';
 import { getAlbums, addAlbum, addPhotosToAlbums, removePhotoFromAlbum, deleteAlbum } from '../database/albumDatabase';
 
@@ -39,7 +40,7 @@ router.get('/search/:term', async (req, res) => {
 
 router.post('/addPhotos/', async (req, res) => {
     try {
-        res.status(200).send(await addPhotosToAlbums(req.body.albums, req.body.photos));
+        res.status(200).send(await addPhotosToAlbums(req.body.photos, req.body.albums));
     } catch (err) {
         res.status(500).send(err.toString());
     }

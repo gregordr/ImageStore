@@ -1,4 +1,3 @@
-import { promises } from "fs";
 import { DatabaseError, requireTable, transaction } from './databaseHelper'
 
 export const photo = 'photo'
@@ -12,21 +11,20 @@ export async function getMedia(searchTerm: string): Promise<unknown[]> {
     });
 }
 
-export async function addMedia(name: string, h: number, w: number): Promise<string> {
+export async function addMedia(name: string, heigth: number, width: number): Promise<number> {
     return transaction(async (client) => {
-        const res = await client.query(`INSERT INTO ${await media} VALUES ($1::text, $2::integer, $3::integer);`, [name, h, w])
-        const oid = res.oid.toString();
-        return oid;
+        const res = await client.query(`INSERT INTO ${await media} VALUES ($1::text, $2::integer, $3::integer);`, [name, heigth, width])
+        return res.oid;
     });
 }
 
-export async function removeMedia(oid: string): Promise<string> {
+export async function removeMedia(oid: string): Promise<number> {
     return transaction(async (client) => {
         const result = await client.query(`SELECT OID FROM ${await media} WHERE oid = $1::oid;`, [oid]);
         if (result.rowCount == 0)
             throw new DatabaseError('This file does not exist');
 
         await client.query(`DELETE FROM ${await media} WHERE oid = $1::oid;`, [oid]);
-        return result.rows[0].oid.toString()
+        return result.rows[0].oid
     });
 }

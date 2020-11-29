@@ -1,9 +1,9 @@
 import express from 'express'
 const app = express();
 import bodyParser from 'body-parser'
-const cors = require('cors')
+import cors from 'cors'
 
-var corsOptions = {
+const corsOptions = {
     origin: 'http://localhost:3000',
 }
 
