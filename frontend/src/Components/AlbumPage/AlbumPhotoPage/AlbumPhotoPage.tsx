@@ -5,12 +5,12 @@ import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
-import ViewPage from "../ViewPage/ViewPage";
+import ViewPage from "../../ViewPage/ViewPage";
 import axios from "axios";
-import AddToAlbum from "./AddToAlbum";
+import AddToAlbum from "../../PhotoPage/AddToAlbum";
 import qs from "qs";
-import { PhotoT, AlbumT } from "../../Interfaces";
-import AbstractPhotoPage from "../Shared/PhotoPage";
+import { PhotoT, AlbumT } from "../../../Interfaces";
+import AbstractPhotoPage from "../../Shared/PhotoPage";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -58,9 +58,12 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any }) {
+export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any }) {
     const classes = useStyles();
     const hiddenFileInput: RefObject<HTMLInputElement> = React.useRef(null);
+
+    const history = useHistory();
+    const [id, setId] = useState(window.location.pathname.split("/").slice(-1)[0]);
 
     const [photos, setPhotos] = useState<PhotoT[]>([]);
     const [albums, setAlbums] = useState<AlbumT[]>([]);
@@ -69,7 +72,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [open, setOpen] = useState(false);
 
     const fetchPhotos = async () => {
-        const resp = await axios.get("media/all");
+        const resp = await axios.get(`albums/${id}/all`);
         if (resp.status === 200) {
             setPhotos(resp.data);
         } else {
@@ -91,8 +94,6 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         fetchAlbums();
     }, []);
 
-    const history = useHistory();
-
     const imageClickHandler = (id: string) => () => {
         if (anySelected()) {
             clickHandler(id)();
@@ -111,7 +112,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         }
     };
 
-    const anySelected = () => {
+    const anySelected = (): boolean => {
         return selected.length !== 0 || selectable;
     };
 
@@ -147,12 +148,35 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         }
     };
 
+    const removePhoto = async (pid: any) => {
+        try {
+            await axios.post(`/albums/remove/${id}/${pid}`);
+        } catch (error: any) {
+            if (error.response) {
+                window.alert(error.response.data);
+            }
+            console.log(error);
+        }
+    };
+
     const topBarButtonFunctions = {
         delete: async () => {
             await Promise.all(
                 photos.map(async (p) => {
                     if (selected.includes(p.id)) {
                         return await deletePhoto(p.id);
+                    }
+                })
+            );
+
+            topBarButtonFunctions.unselect();
+            await fetchPhotos();
+        },
+        remove: async () => {
+            await Promise.all(
+                photos.map(async (p) => {
+                    if (selected.includes(p.id)) {
+                        return await removePhoto(p.id);
                     }
                 })
             );
@@ -224,7 +248,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
-                            <AbstractPhotoPage photos={photos} clickHandler={clickHandler} selected={selected} anySelected={anySelected} imageClickHandler={imageClickHandler} />
+                            Album:
+                            <AbstractPhotoPage imageClickHandler={imageClickHandler} photos={photos} clickHandler={clickHandler} selected={selected} anySelected={anySelected} />
                         </main>
                     </div>
                 </Route>

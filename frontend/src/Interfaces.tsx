@@ -7,6 +7,6 @@ export interface AlbumT {
 
 export interface PhotoT {
     id: string;
-    heigth: number;
+    height: number;
     width: number;
 }

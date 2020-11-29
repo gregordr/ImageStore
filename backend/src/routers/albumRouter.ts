@@ -1,6 +1,5 @@
-import { time, timeEnd } from 'console';
 import express from 'express';
-import { getAlbums, addAlbum, addPhotosToAlbums, removePhotoFromAlbum, deleteAlbum } from '../database/albumDatabase';
+import { getAlbums, addAlbum, addPhotosToAlbums, removePhotoFromAlbum, deleteAlbum, getMediaInAlbum } from '../database/albumDatabase';
 
 export const router = express.Router();
 
@@ -25,6 +24,15 @@ router.post('/delete/:name', async (req, res) => {
 router.get('/all', async (req, res) => {
     try {
         res.status(200).send(await getAlbums("%"));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
+
+router.get('/:name/all', async (req, res) => {
+    try {
+        res.status(200).send(await getMediaInAlbum(req.params.name, "%"));
     } catch (err) {
         res.status(500).send(err.toString());
     }

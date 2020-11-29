@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./TopBar.css";
 import IconButton from "@material-ui/core/IconButton";
-import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Settings, Search, CheckBox } from "@material-ui/icons";
+import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Settings, Search, CheckBox, RemoveCircleOutline } from "@material-ui/icons";
 import SearchBar from "material-ui-search-bar";
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
 
@@ -16,6 +16,9 @@ function RightSelectDiv(props: { buttonFunctions: any }) {
             </IconButton>
             <IconButton className="IconButton" color="primary" aria-label="library_add" onClick={props.buttonFunctions.addToAlbum}>
                 <LibraryAdd />
+            </IconButton>
+            <IconButton className="IconButton" color="primary" aria-label="remove" onClick={props.buttonFunctions.remove}>
+                <RemoveCircleOutline />
             </IconButton>
             <IconButton className="IconButton" color="primary" aria-label="delete" onClick={props.buttonFunctions.delete}>
                 <Delete />

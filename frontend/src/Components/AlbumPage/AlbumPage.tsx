@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./PhotoPage.css";
+import "./AlbumPhotoPage/PhotoPage.css";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, GridListTile, GridListTileBar, GridList } from "@material-ui/core";
@@ -12,6 +12,7 @@ import qs from "qs";
 import { AlbumT } from "../../Interfaces";
 import CreateAlbum from "./CreateAlbum";
 import { PhotoAlbumTwoTone, Info, PhotoAlbum } from "@material-ui/icons";
+import AlbumPhotoPage from "./AlbumPhotoPage/AlbumPhotoPage";
 
 function Album(props: { album: AlbumT; click: () => void }) {
     const useStyles = makeStyles((theme: Theme) =>
@@ -166,34 +167,34 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     return (
         <div>
-            {/* <Switch>
-                <Route path="/view">
-                    <ViewPage photos={photos} buttonFunctions={viewButtonFunctions}></ViewPage>
+            <Switch>
+                <Route path="/albums/open">
+                    <AlbumPhotoPage drawerElement={props.drawerElement} handleDrawerToggle={props.handleDrawerToggle} />
                 </Route>
-                <Route path="/"> */}
-            <div className={classes.root}>
-                <CssBaseline />
+                <Route path="/albums/">
+                    <div className={classes.root}>
+                        <CssBaseline />
 
-                <AppBar position="fixed" className={classes.appBar}>
-                    <Toolbar>
-                        <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
-                            <MenuIcon />
-                        </IconButton>
-                        <TopBar buttonFunctions={topBarButtonFunctions} />
-                    </Toolbar>
-                </AppBar>
+                        <AppBar position="fixed" className={classes.appBar}>
+                            <Toolbar>
+                                <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
+                                    <MenuIcon />
+                                </IconButton>
+                                <TopBar buttonFunctions={topBarButtonFunctions} />
+                            </Toolbar>
+                        </AppBar>
 
-                {props.drawerElement}
+                        {props.drawerElement}
 
-                <main className={classes.content}>
-                    <div className={classes.toolbar} />
-                    <div className="Main-Content" style={{ overflow: "hidden" }}>
-                        {albums.map((p) => makeAlbum(p))}
+                        <main className={classes.content}>
+                            <div className={classes.toolbar} />
+                            <div className="Main-Content" style={{ overflow: "hidden" }}>
+                                {albums.map((p) => makeAlbum(p))}
+                            </div>
+                        </main>
                     </div>
-                </main>
-            </div>
-            {/* </Route>
-            </Switch> */}
+                </Route>
+            </Switch>
             <CreateAlbum albums={albums} open={open} setOpen={setOpen} cb={createAlbumCallback} />
         </div>
     );

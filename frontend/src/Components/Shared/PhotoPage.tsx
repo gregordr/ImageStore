@@ -1,14 +1,7 @@
-import React, { RefObject, useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./PhotoPage.css";
 import { makeStyles } from "@material-ui/core/styles";
-import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme } from "@material-ui/core";
-import TopBar from "./TopBar";
-import { Route, Switch, useHistory } from "react-router-dom";
-import ViewPage from "../ViewPage/ViewPage";
-import axios from "axios";
-import qs from "qs";
-import { PhotoT, AlbumT } from "../../Interfaces";
+import { PhotoT } from "../../Interfaces";
 
 function Photo(props: any) {
     const url = "http://localhost:4000/media/" + props.id;
@@ -35,51 +28,29 @@ function Photo(props: any) {
     return (
         <div className={classes.photoDiv} onMouseEnter={() => setVis(0.4)} onMouseLeave={() => setVis(0)}>
             <input className={classes.photoBox} readOnly={true} checked={props.selected} type="checkbox" onClick={props.click} />
-            <div onClick={props.click}>
+            <div onClick={props.imageClick}>
                 <img alt={props.id} style={{ transition: "0.05s linear" }} src={url} height={props.y - padding} width={props.x - padding} />
             </div>
         </div>
     );
 }
 
-const drawerWidth = 240;
-
-export default function PhotoPage(props: { photos: PhotoT[] }) {
+export default function AbstractPhotoPage(props: { photos: PhotoT[]; clickHandler: (id: string) => () => void; imageClickHandler: (id: string) => () => void; selected: string[]; anySelected: any }) {
     const photos = props.photos;
-    const [selected, setSelected] = useState<string[]>([]);
-    const [selectable, setSelectable] = useState(false);
-    const history = useHistory();
-
-    const clickHandler = (id: string) => () => {
-        if (anySelected()) {
-            let copy = selected.slice();
-            if (copy.includes(id)) copy = copy.filter((v) => v !== id);
-            else copy.push(id);
-            setSelected(copy);
-            if (copy.length === 0) {
-                setSelectable(false);
-            }
-        } else {
-            history.push(`/view/${id}`);
-        }
-    };
-
-    const anySelected = () => {
-        return selected.length !== 0 || selectable;
-    };
 
     const height = 300.0;
 
-    const makePhoto = (photo: any) => (
+    const makePhoto = (photo: PhotoT) => (
         <Photo
             key={photo.id}
             id={photo.id}
             x={(photo.width * height) / photo.height}
             y={height}
-            click={clickHandler(photo.id)}
-            selected={selected.includes(photo.id)}
+            click={props.clickHandler(photo.id)}
+            imageClick={props.imageClickHandler(photo.id)}
+            selected={props.selected.includes(photo.id)}
             outZoom={0.9}
-            anySelected={anySelected}
+            anySelected={props.anySelected}
         />
     );
 

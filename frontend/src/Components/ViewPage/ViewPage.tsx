@@ -22,7 +22,7 @@ const theme = createMuiTheme({
 
 export default function ViewPage(props: any) {
     const history = useHistory();
-    const [id, setId] = useState(window.location.pathname.split("/")[2]);
+    const [id, setId] = useState(window.location.pathname.split("/").slice(-1)[0]);
     const [dir, setDir] = useState(0);
     const [opacityRight, setOpacityRight] = useState(0);
     const [opacityLeft, setOpacityLeft] = useState(0);
