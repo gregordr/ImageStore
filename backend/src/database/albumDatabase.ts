@@ -3,7 +3,10 @@ import { media, photo } from './mediaDatabase';
 
 const album = 'album'
 
-const albums = requireTable('albums', `(${album} varchar, UNIQUE(oid), picture varchar) WITH OIDS`).catch((err) => { console.log(err) });
+const albums = (async () => requireTable('albums', `(${album} varchar, UNIQUE(oid), picture OID,
+CONSTRAINT photo_Exists FOREIGN KEY(picture) REFERENCES ${await media}(OID) ON DELETE SET NULL
+) WITH OIDS`).catch((err) => { console.log(err) }))();
+//add foreign key photo
 const album_photo = (async () => requireTable('album_photo', `(${album} OID, Photo OID, PRIMARY KEY(${album}, Photo), 
 CONSTRAINT album_Exists FOREIGN KEY(${album}) REFERENCES ${await albums}(OID) ON DELETE CASCADE,
 CONSTRAINT photo_Exists FOREIGN KEY(Photo) REFERENCES ${await media}(OID) ON DELETE CASCADE
@@ -63,5 +66,11 @@ export async function addPhotosToAlbums(photoIDs: string[], albumIDs: string[]):
 export async function removePhotoFromAlbum(albumID: string, photoID: string): Promise<string> {
     return await transaction(async (client) => {
         return (await client.query(`DELETE FROM ${await album_photo} WHERE Album = $1::OID and Photo = $2::OID;`, [albumID, photoID])).rowCount.toString();
+    })
+}
+
+export async function setCover(albumID: string, photoID: string) {
+    return await transaction(async (client) => {
+        return (await client.query(`UPDATE ${await albums} SET picture=$2::OID WHERE OID = $1::OID;`, [albumID, photoID])).rowCount.toString();
     })
 }

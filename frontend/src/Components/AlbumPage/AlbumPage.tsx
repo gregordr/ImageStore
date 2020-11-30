@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from "react";
-import "./AlbumPhotoPage/PhotoPage.css";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, GridListTile, GridListTileBar, GridList } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
-import ViewPage from "../ViewPage/ViewPage";
 import axios from "axios";
-import AddToAlbum from "../PhotoPage/AddToAlbum";
-import qs from "qs";
 import { AlbumT } from "../../Interfaces";
 import CreateAlbum from "./CreateAlbum";
-import { PhotoAlbumTwoTone, Info, PhotoAlbum } from "@material-ui/icons";
+import { Info, PhotoAlbum } from "@material-ui/icons";
 import AlbumPhotoPage from "./AlbumPhotoPage/AlbumPhotoPage";
 
 function Album(props: { album: AlbumT; click: () => void }) {
@@ -188,9 +184,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
-                            <div className="Main-Content" style={{ overflow: "hidden" }}>
-                                {albums.map((p) => makeAlbum(p))}
-                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap" }}>{albums.map((p) => makeAlbum(p))}</div>
                         </main>
                     </div>
                 </Route>

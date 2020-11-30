@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAlbums, addAlbum, addPhotosToAlbums, removePhotoFromAlbum, deleteAlbum, getMediaInAlbum } from '../database/albumDatabase';
+import { getAlbums, addAlbum, addPhotosToAlbums, removePhotoFromAlbum, deleteAlbum, getMediaInAlbum, setCover } from '../database/albumDatabase';
 
 export const router = express.Router();
 
@@ -57,6 +57,14 @@ router.post('/addPhotos/', async (req, res) => {
 router.post('/remove/:albumID/:photoID', async (req, res) => {
     try {
         res.status(200).send(await removePhotoFromAlbum(req.params.albumID, req.params.photoID));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
+router.post('/setCover/:albumID/:photoID', async (req, res) => {
+    try {
+        res.status(200).send(await setCover(req.params.albumID, req.params.photoID));
     } catch (err) {
         res.status(500).send(err.toString());
     }

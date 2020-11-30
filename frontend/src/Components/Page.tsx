@@ -9,7 +9,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import PhotoPage from "./PhotoPage/PhotoPage";
 import { Photo, PhotoAlbum } from "@material-ui/icons";
-import { Switch, Route, useHistory, useLocation } from "react-router-dom";
+import { Switch, Route, useHistory, useLocation, NavLink } from "react-router-dom";
 import AlbumPage from "./AlbumPage/AlbumPage";
 
 const drawerWidth = 240;
@@ -83,7 +83,7 @@ export default function ResponsiveDrawer({ window }: any) {
                     </ListItemIcon>
                     <ListItemText primary="Photos" />
                 </ListItem>
-                <ListItem button selected={location.pathname === "/albums"} onClick={() => history.push("/albums")}>
+                <ListItem button selected={location.pathname.startsWith("/albums")} onClick={() => history.push("/albums")}>
                     <ListItemIcon>
                         <PhotoAlbum />
                     </ListItemIcon>

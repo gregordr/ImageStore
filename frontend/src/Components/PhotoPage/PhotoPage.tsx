@@ -1,5 +1,4 @@
 import React, { RefObject, useEffect, useState } from "react";
-import "./PhotoPage.css";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme } from "@material-ui/core";
@@ -10,7 +9,7 @@ import axios from "axios";
 import AddToAlbum from "./AddToAlbum";
 import qs from "qs";
 import { PhotoT, AlbumT } from "../../Interfaces";
-import AbstractPhotoPage from "../Shared/PhotoPage";
+import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -176,7 +175,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             //Nav to settings page
         },
         select: () => {
-            setSelectable(true);
+            setSelectable(!selectable);
         },
         addToAlbum: () => {
             setOpen(true);
@@ -216,7 +215,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar anySelected={anySelected} buttonFunctions={topBarButtonFunctions} />
+                                <TopBar anySelected={anySelected} buttonFunctions={topBarButtonFunctions} numSelected={() => selected.length} />
                             </Toolbar>
                         </AppBar>
 

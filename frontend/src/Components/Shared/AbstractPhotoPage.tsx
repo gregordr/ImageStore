@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./PhotoPage.css";
 import { makeStyles } from "@material-ui/core/styles";
 import { PhotoT } from "../../Interfaces";
 
@@ -54,5 +53,14 @@ export default function AbstractPhotoPage(props: { photos: PhotoT[]; clickHandle
         />
     );
 
-    return <div className="Main-Content">{photos.map((p) => makePhoto(p))}</div>;
+    return (
+        <div
+            style={{
+                display: "flex",
+                flexWrap: "wrap",
+            }}
+        >
+            {photos.map((p) => makePhoto(p))}
+        </div>
+    );
 }

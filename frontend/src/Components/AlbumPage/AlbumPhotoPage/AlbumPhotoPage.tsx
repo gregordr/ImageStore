@@ -1,8 +1,7 @@
 import React, { RefObject, useEffect, useState } from "react";
-import "./PhotoPage.css";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../../ViewPage/ViewPage";
@@ -10,7 +9,8 @@ import axios from "axios";
 import AddToAlbum from "../../PhotoPage/AddToAlbum";
 import qs from "qs";
 import { PhotoT, AlbumT } from "../../../Interfaces";
-import AbstractPhotoPage from "../../Shared/PhotoPage";
+import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
+import { setCover } from "../../../API";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -59,6 +59,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; refresh: () => Promise<void> }) {
+    //#region Hooks
     const classes = useStyles();
     const hiddenFileInput: RefObject<HTMLInputElement> = React.useRef(null);
 
@@ -93,6 +94,61 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         fetchPhotos();
         fetchAlbums();
     }, []);
+    //#endregion hooks
+
+    //#region API
+
+    const cb = async (albumIds: any) => {
+        const requestBody = {
+            photos: selected,
+            albums: albumIds,
+        };
+
+        await axios.post("/albums/addPhotos", qs.stringify(requestBody));
+        topBarButtonFunctions.unselect();
+    };
+
+    const deletePhoto = async (pid: any) => {
+        try {
+            await axios.post("/media/delete/" + pid);
+        } catch (error: any) {
+            if (error.response) {
+                window.alert(error.response.data);
+            }
+            console.log(error);
+        }
+    };
+
+    const removePhoto = async (pid: any) => {
+        try {
+            await axios.post(`/albums/remove/${id}/${pid}`);
+        } catch (error: any) {
+            if (error.response) {
+                window.alert(error.response.data);
+            }
+            console.log(error);
+        }
+    };
+
+    const upload = async (event: any) => {
+        const fileUploaded: any = [...event.target.files];
+        try {
+            const formData = new FormData();
+            fileUploaded.map((f: any) => {
+                formData.append("file", f);
+            });
+            const res = await axios.post("/media/add", formData);
+            console.log(res);
+            await fetchPhotos();
+        } catch (error: any) {
+            if (error.response) {
+                window.alert(error.response.data);
+            }
+        }
+    };
+    //#endregion API
+
+    //#region handlers
 
     const imageClickHandler = (id: string) => () => {
         if (anySelected()) {
@@ -116,16 +172,6 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         return selected.length !== 0 || selectable;
     };
 
-    const cb = async (albumIds: any) => {
-        const requestBody = {
-            photos: selected,
-            albums: albumIds,
-        };
-
-        await axios.post("/albums/addPhotos", qs.stringify(requestBody));
-        topBarButtonFunctions.unselect();
-    };
-
     const viewButtonFunctions = {
         delete: async (id: string) => {
             await deletePhoto(id);
@@ -135,33 +181,17 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             setSelected([id]);
             setOpen(true);
         },
-    };
-
-    const deletePhoto = async (pid: any) => {
-        try {
-            await axios.post("/media/delete/" + pid);
-            await props.refresh();
-        } catch (error: any) {
-            if (error.response) {
-                window.alert(error.response.data);
-            }
-            console.log(error);
-        }
-    };
-
-    const removePhoto = async (pid: any) => {
-        try {
-            await axios.post(`/albums/remove/${id}/${pid}`);
-            await props.refresh();
-        } catch (error: any) {
-            if (error.response) {
-                window.alert(error.response.data);
-            }
-            console.log(error);
-        }
+        setCover: async (photoID: string) => {
+            await setCover(id, photoID);
+        },
     };
 
     const topBarButtonFunctions = {
+        setCover: async () => {
+            await setCover(id, selected[0]);
+            topBarButtonFunctions.unselect();
+            await props.refresh();
+        },
         delete: async () => {
             await Promise.all(
                 photos.map(async (p) => {
@@ -173,6 +203,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
             topBarButtonFunctions.unselect();
             await fetchPhotos();
+            await props.refresh();
         },
         remove: async () => {
             await Promise.all(
@@ -185,6 +216,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
             topBarButtonFunctions.unselect();
             await fetchPhotos();
+            await props.refresh();
         },
         unselect: () => {
             setSelected([]);
@@ -202,29 +234,14 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             //Nav to settings page
         },
         select: () => {
-            setSelectable(true);
+            setSelectable(!selectable);
         },
         addToAlbum: () => {
             setOpen(true);
         },
     };
 
-    const upload = async (event: any) => {
-        const fileUploaded: any = [...event.target.files];
-        try {
-            const formData = new FormData();
-            fileUploaded.map((f: any) => {
-                formData.append("file", f);
-            });
-            const res = await axios.post("/media/add", formData);
-            console.log(res);
-            await fetchPhotos();
-        } catch (error: any) {
-            if (error.response) {
-                window.alert(error.response.data);
-            }
-        }
-    };
+    //#endregion handlers
 
     return (
         <div>
@@ -242,7 +259,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar anySelected={anySelected} buttonFunctions={topBarButtonFunctions} />
+                                <TopBar numSelected={() => selected.length} buttonFunctions={topBarButtonFunctions} />
                             </Toolbar>
                         </AppBar>
 
@@ -250,8 +267,12 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
-                            Album:
-                            <AbstractPhotoPage imageClickHandler={imageClickHandler} photos={photos} clickHandler={clickHandler} selected={selected} anySelected={anySelected} />
+                            <Typography style={{ float: "left" }} variant="h4" gutterBottom>
+                                {(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}
+                            </Typography>
+                            <div style={{ clear: "left" }}>
+                                <AbstractPhotoPage imageClickHandler={imageClickHandler} photos={photos} clickHandler={clickHandler} selected={selected} anySelected={anySelected} />
+                            </div>
                         </main>
                     </div>
                 </Route>
