@@ -6,7 +6,7 @@ export const media = requireTable('media', `(${photo} varchar, UNIQUE(oid), h in
 
 export async function getMedia(searchTerm: string): Promise<unknown[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT OID as id, ${photo} as name, h as height, w as width FROM ${await media} WHERE ${photo} like $1::text;`, [searchTerm]);
+        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width FROM ${await media} WHERE ${photo} like $1::text;`, [searchTerm]);
         return result.rows;
     });
 }

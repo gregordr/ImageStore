@@ -29,42 +29,16 @@ export default function ViewPage(props: any) {
 
     const url = "http://localhost:4000/media/" + id;
 
-    const photo = props.photos.find((v: any) => v.id === parseInt(id));
-
-    if (photo) {
-        const maxH = window.innerHeight * 1;
-        const maxW = window.innerWidth * 1;
-
-        const propW = maxH / maxW;
-        const propI = photo.height / photo.width;
-
-        if (maxH >= photo.height && maxW >= photo.width) {
-            var y = photo.height;
-            var x = photo.width;
-        } else {
-            if (propW < propI) {
-                y = maxH;
-                x = (photo.width * maxH) / photo.height;
-            } else {
-                x = maxW;
-                y = (photo.height * maxW) / photo.width;
-            }
-        }
-    } else {
-        x = 1;
-        y = 1;
-    }
-
     const canGo = (dir: number) => {
         const photos = props.photos;
-        let ind = photos.findIndex((v: any) => v.id === parseInt(id));
+        let ind = photos.findIndex((v: any) => v.id === id);
         ind += dir;
         return ind >= 0 && ind < photos.length;
     };
 
     const go = (dir: number) => () => {
         const photos = props.photos;
-        let ind = photos.findIndex((v: any) => v.id === parseInt(id));
+        let ind = photos.findIndex((v: any) => v.id === id);
         if (!canGo(dir * 2)) {
             if (dir < 0) setOpacityLeft(0);
             else setOpacityRight(0);
@@ -72,7 +46,8 @@ export default function ViewPage(props: any) {
         if (canGo(dir)) {
             setDir(50 * dir);
             ind += dir;
-            history.replace(`/view/${photos[ind].id}`);
+            const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
+            history.replace(`${afterWithout}${photos[ind].id}`);
             setId(photos[ind].id);
         }
     };
@@ -99,12 +74,15 @@ export default function ViewPage(props: any) {
         setOpacityRight(0);
     };
 
-    const deleteImage = async (id: string) => {
-        if (canGo(-1)) go(-1)();
-        else if (canGo(1)) go(1)();
-        else history.goBack();
+    const modifiedButtonFunctions = {
+        ...props.buttonFunctions,
+        delete: async (id: string) => {
+            if (canGo(-1)) go(-1)();
+            else if (canGo(1)) go(1)();
+            else history.goBack();
 
-        await props.buttonFunctions.delete(id);
+            await props.buttonFunctions.delete(id);
+        },
     };
 
     return (
@@ -112,7 +90,7 @@ export default function ViewPage(props: any) {
             {transitions.map(({ item, props, key }) => (
                 <div key={key} className="imageHolder">
                     <animated.div style={{ ...props, alignSelf: "center", justifySelf: "center" }}>
-                        <img className="display" alt={id} style={{ width: x, height: y }} src={item} />
+                        <img className="display" alt={id} style={{ objectFit: "scale-down", height: "100vh", width: "100vw" }} src={item} />
                     </animated.div>
                 </div>
             ))}
@@ -141,7 +119,7 @@ export default function ViewPage(props: any) {
                 </div>
                 <div className="center" onClick={() => history.goBack()} onMouseEnter={mouseCenter}></div>
                 <div className="rightIm" onMouseEnter={mouseRight} onClick={go(1)}>
-                    <TopRightBar id={id} addToAlbum={props.buttonFunctions.addToAlbum} delete={deleteImage} />
+                    <TopRightBar id={id} buttonFunctions={modifiedButtonFunctions} />
                     <IconButton
                         style={{
                             transition: "0.01s linear",

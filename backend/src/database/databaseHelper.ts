@@ -34,7 +34,7 @@ export async function transaction<T>(query: (arg0: PoolClient) => Promise<T>, us
 
 export async function requireTable(name: string, schema: string): Promise<string> {
     return transaction(async (client) => {
-        // await client.query(`DROP TABLE ${name} CASCADE;`);
+        //await client.query(`DROP TABLE ${name} CASCADE;`);
         const res = await client.query(`SELECT to_regclass('${name}');`)
         if (res.rows[0].to_regclass == null) {
             await client.query(`CREATE TABLE ${name} ${schema};`);

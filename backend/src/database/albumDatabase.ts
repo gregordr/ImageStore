@@ -39,7 +39,7 @@ export async function deleteAlbum(name: string): Promise<string> {
 
 export async function getMediaInAlbum(album: string, searchTerm: string): Promise<unknown[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT OID as id, ${photo} as name, h as height, w as width FROM ${await media} WHERE ${photo} like $1::text AND OID IN
+        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width FROM ${await media} WHERE ${photo} like $1::text AND OID IN
         (
             SELECT photo
             FROM ${await album_photo}
@@ -69,8 +69,14 @@ export async function removePhotoFromAlbum(albumID: string, photoID: string): Pr
     })
 }
 
-export async function setCover(albumID: string, photoID: string) {
+export async function setCover(albumID: string, photoID: string | null) {
     return await transaction(async (client) => {
         return (await client.query(`UPDATE ${await albums} SET picture=$2::OID WHERE OID = $1::OID;`, [albumID, photoID])).rowCount.toString();
+    })
+}
+
+export async function rename(albumID: string, newName: string) {
+    return await transaction(async (client) => {
+        return (await client.query(`UPDATE ${await albums} SET album=$2::text WHERE OID = $1::OID;`, [albumID, newName])).rowCount.toString();
     })
 }

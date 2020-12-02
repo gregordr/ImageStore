@@ -1,5 +1,5 @@
 import { createStyles, IconButton, makeStyles, Theme } from "@material-ui/core";
-import { ArrowBack, Delete, LibraryAdd } from "@material-ui/icons";
+import { ArrowBack, CloudDownload, Delete, LibraryAdd } from "@material-ui/icons";
 import React from "react";
 import "./TopRightBar.css";
 
@@ -9,10 +9,21 @@ export default function TopRightBar(props: any) {
             <IconButton
                 className="IconButton"
                 color="primary"
+                aria-label="download"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    props.buttonFunctions.download(props.id);
+                }}
+            >
+                <CloudDownload />
+            </IconButton>
+            <IconButton
+                className="IconButton"
+                color="primary"
                 aria-label="library_add"
                 onClick={(e) => {
                     e.stopPropagation();
-                    props.addToAlbum(props.id);
+                    props.buttonFunctions.addToAlbum(props.id);
                 }}
             >
                 <LibraryAdd />
@@ -23,7 +34,7 @@ export default function TopRightBar(props: any) {
                 aria-label="delete"
                 onClick={(e) => {
                     e.stopPropagation();
-                    props.delete(props.id);
+                    props.buttonFunctions.delete(props.id);
                 }}
             >
                 <Delete />

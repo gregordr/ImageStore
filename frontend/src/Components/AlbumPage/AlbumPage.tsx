@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, GridListTile, GridListTileBar, GridList } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, GridListTile, GridListTileBar, GridList, createMuiTheme, ThemeProvider } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import axios from "axios";
@@ -9,8 +9,19 @@ import { AlbumT } from "../../Interfaces";
 import CreateAlbum from "./CreateAlbum";
 import { Info, PhotoAlbum } from "@material-ui/icons";
 import AlbumPhotoPage from "./AlbumPhotoPage/AlbumPhotoPage";
+import AlbumInfo from "./AlbumInfo";
 
-function Album(props: { album: AlbumT; click: () => void }) {
+const theme = createMuiTheme({
+    palette: {
+        primary: {
+            main: "#cccccc",
+            dark: "#cccccc",
+            light: "#cccccc",
+        },
+    },
+});
+
+function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Promise<void> }) {
     const useStyles = makeStyles((theme: Theme) =>
         createStyles({
             root: {
@@ -43,6 +54,7 @@ function Album(props: { album: AlbumT; click: () => void }) {
 
     const classes = useStyles();
     const history = useHistory();
+    const [openInfo, setOpenInfo] = useState(false);
 
     const onImageClick = () => {
         history.push(`/albums/open/${props.album.id}`);
@@ -68,13 +80,16 @@ function Album(props: { album: AlbumT; click: () => void }) {
                                 onInfoClick();
                             }}
                         >
-                            <IconButton aria-label={`info about ${props.album.name}`} className={classes.icon}>
-                                <Info />
-                            </IconButton>
+                            <ThemeProvider theme={theme}>
+                                <IconButton aria-label={`info about ${props.album.name}`} color="primary" onClick={() => setOpenInfo(true)} className={classes.icon}>
+                                    <Info />
+                                </IconButton>
+                            </ThemeProvider>
                         </div>
                     }
                 />
             </GridListTile>
+            <AlbumInfo album={props.album} open={openInfo} setOpen={setOpenInfo} fetchAlbums={props.fetchAlbums}></AlbumInfo>
         </GridList>
     );
 }
@@ -129,7 +144,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
     const classes = useStyles();
 
     const [albums, setAlbums] = useState<AlbumT[]>([]);
-    const [open, setOpen] = useState(false);
+    const [openCreateAlbum, setOpenCreateAlbum] = useState(false);
 
     const fetchAlbums = async () => {
         const resp = await axios.get("albums/all");
@@ -148,7 +163,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     const topBarButtonFunctions = {
         add: async () => {
-            setOpen(true);
+            setOpenCreateAlbum(true);
         },
     };
 
@@ -159,7 +174,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     const openAlbum = (album: AlbumT) => () => {};
 
-    const makeAlbum = (album: AlbumT) => <Album key={album.id} album={album} click={openAlbum(album)} />;
+    const makeAlbum = (album: AlbumT) => <Album key={album.id} album={album} click={openAlbum(album)} fetchAlbums={fetchAlbums} />;
 
     return (
         <div>
@@ -189,7 +204,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                     </div>
                 </Route>
             </Switch>
-            <CreateAlbum albums={albums} open={open} setOpen={setOpen} cb={createAlbumCallback} />
+            <CreateAlbum albums={albums} open={openCreateAlbum} setOpen={setOpenCreateAlbum} cb={createAlbumCallback} />
         </div>
     );
 }

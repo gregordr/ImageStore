@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect, useState } from "react";
+import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
@@ -6,11 +6,11 @@ import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../../ViewPage/ViewPage";
 import axios from "axios";
-import AddToAlbum from "../../PhotoPage/AddToAlbum";
+import AddToAlbum from "../../Shared/AddToAlbum";
 import qs from "qs";
 import { PhotoT, AlbumT } from "../../../Interfaces";
 import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
-import { setCover } from "../../../API";
+import { download, setCover } from "../../../API";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -64,7 +64,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const hiddenFileInput: RefObject<HTMLInputElement> = React.useRef(null);
 
     const history = useHistory();
-    const [id, setId] = useState(window.location.pathname.split("/").slice(-1)[0]);
+    const id = window.location.pathname.split("/")[3];
 
     const [photos, setPhotos] = useState<PhotoT[]>([]);
     const [albums, setAlbums] = useState<AlbumT[]>([]);
@@ -105,6 +105,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         };
 
         await axios.post("/albums/addPhotos", qs.stringify(requestBody));
+        await props.refresh();
         topBarButtonFunctions.unselect();
     };
 
@@ -130,17 +131,24 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         }
     };
 
-    const upload = async (event: any) => {
-        const fileUploaded: any = [...event.target.files];
+    const upload = async (event: ChangeEvent<HTMLInputElement>) => {
         try {
+            if (!event.target.files) return;
             const formData = new FormData();
-            fileUploaded.map((f: any) => {
+            [...event.target.files].forEach((f) => {
                 formData.append("file", f);
             });
             const res = await axios.post("/media/add", formData);
-            console.log(res);
+
+            const requestBody = {
+                photos: res.data,
+                albums: [id],
+            };
+
+            await axios.post("/albums/addPhotos", qs.stringify(requestBody));
             await fetchPhotos();
-        } catch (error: any) {
+            await props.refresh();
+        } catch (error) {
             if (error.response) {
                 window.alert(error.response.data);
             }
@@ -150,11 +158,11 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     //#region handlers
 
-    const imageClickHandler = (id: string) => () => {
+    const imageClickHandler = (photoId: string) => () => {
         if (anySelected()) {
-            clickHandler(id)();
+            clickHandler(photoId)();
         } else {
-            history.push(`/view/${id}`);
+            history.push(`/albums/open/${id}/view/${photoId}`);
         }
     };
 
@@ -176,6 +184,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         delete: async (id: string) => {
             await deletePhoto(id);
             await fetchPhotos();
+            await props.refresh();
         },
         addToAlbum: (id: string) => {
             setSelected([id]);
@@ -183,6 +192,10 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         },
         setCover: async (photoID: string) => {
             await setCover(id, photoID);
+            await props.refresh();
+        },
+        download: async (id: string) => {
+            await download(photos.filter((photo) => id === photo.id));
         },
     };
 
@@ -223,11 +236,10 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             setSelectable(false);
         },
         upload: () => {
-            if (hiddenFileInput === null) {
+            if (!hiddenFileInput || !hiddenFileInput.current) {
                 console.log("hiddenFileInput is null");
             } else {
-                const refas: any = hiddenFileInput.current!;
-                refas.click();
+                hiddenFileInput.current.click();
             }
         },
         settings: () => {
@@ -239,6 +251,10 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         addToAlbum: () => {
             setOpen(true);
         },
+        download: async () => {
+            await download(photos.filter((photo) => selected.includes(photo.id)));
+            topBarButtonFunctions.unselect();
+        },
     };
 
     //#endregion handlers
@@ -246,7 +262,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     return (
         <div>
             <Switch>
-                <Route path="/view">
+                <Route path="/albums/open/:albumID/view">
                     <ViewPage photos={photos} buttonFunctions={viewButtonFunctions}></ViewPage>
                 </Route>
                 <Route path="/">

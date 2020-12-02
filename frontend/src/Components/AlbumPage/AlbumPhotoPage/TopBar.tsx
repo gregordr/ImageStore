@@ -53,7 +53,7 @@ export default function TopBar(props: any) {
                     </IconButton>
                 )}
                 {props.numSelected() !== 0 && (
-                    <IconButton className="IconButton" color="primary" aria-label="cloud_download">
+                    <IconButton className="IconButton" color="primary" aria-label="cloud_download" onClick={props.buttonFunctions.download}>
                         <CloudDownload />
                     </IconButton>
                 )}

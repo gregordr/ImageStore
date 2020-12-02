@@ -4,37 +4,7 @@ import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Settings, Searc
 import SearchBar from "material-ui-search-bar";
 import { createStyles, makeStyles, Theme } from "@material-ui/core";
 import TopBarStyle from "../Shared/TopBarStyle";
-
-function RightSelectDiv(props: { buttonFunctions: any }) {
-    return (
-        <div className="right">
-            <IconButton className="IconButton" color="primary" aria-label="cancel" onClick={props.buttonFunctions.unselect}>
-                <Cancel />
-            </IconButton>
-            <IconButton className="IconButton" color="primary" aria-label="cloud_download">
-                <CloudDownload />
-            </IconButton>
-            <IconButton className="IconButton" color="primary" aria-label="library_add" onClick={props.buttonFunctions.addToAlbum}>
-                <LibraryAdd />
-            </IconButton>
-            <IconButton className="IconButton" color="primary" aria-label="delete" onClick={props.buttonFunctions.delete}>
-                <Delete />
-            </IconButton>
-        </div>
-    );
-}
-function RightNonSelectDiv(props: { buttonFunctions: any }) {
-    return (
-        <div className="right">
-            <IconButton className="IconButton" color="primary" aria-label="upload" onClick={props.buttonFunctions.upload}>
-                <CloudUpload />
-            </IconButton>
-            <IconButton className="IconButton" color="primary" aria-label="settings" onClick={props.buttonFunctions.settings}>
-                <Settings />
-            </IconButton>
-        </div>
-    );
-}
+import Axios from "axios";
 
 export default function TopBar(props: any) {
     const classes = TopBarStyle();
@@ -72,7 +42,7 @@ export default function TopBar(props: any) {
                     </IconButton>
                 )}
                 {props.numSelected() !== 0 && (
-                    <IconButton className="IconButton" color="primary" aria-label="cloud_download">
+                    <IconButton className="IconButton" color="primary" aria-label="cloud_download" onClick={props.buttonFunctions.download}>
                         <CloudDownload />
                     </IconButton>
                 )}

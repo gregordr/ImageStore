@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect, useState } from "react";
+import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme } from "@material-ui/core";
@@ -6,10 +6,11 @@ import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
 import axios from "axios";
-import AddToAlbum from "./AddToAlbum";
+import AddToAlbum from "../Shared/AddToAlbum";
 import qs from "qs";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
+import { download } from "../../API";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -133,6 +134,9 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setSelected([id]);
             setOpen(true);
         },
+        download: async (id: string) => {
+            await download(photos.filter((photo) => id === photo.id));
+        },
     };
 
     const deletePhoto = async (pid: any) => {
@@ -164,11 +168,10 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setSelectable(false);
         },
         upload: () => {
-            if (hiddenFileInput === null) {
+            if (!hiddenFileInput || !hiddenFileInput.current) {
                 console.log("hiddenFileInput is null");
             } else {
-                const refas: any = hiddenFileInput.current!;
-                refas.click();
+                hiddenFileInput.current.click();
             }
         },
         settings: () => {
@@ -180,19 +183,23 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         addToAlbum: () => {
             setOpen(true);
         },
+        download: async () => {
+            await download(photos.filter((photo) => selected.includes(photo.id)));
+            topBarButtonFunctions.unselect();
+        },
     };
 
-    const upload = async (event: any) => {
-        const fileUploaded: any = [...event.target.files];
+    const upload = async (event: ChangeEvent<HTMLInputElement>) => {
         try {
+            if (!event.target.files) return;
             const formData = new FormData();
-            fileUploaded.map((f: any) => {
+            [...event.target.files].forEach((f) => {
                 formData.append("file", f);
             });
             const res = await axios.post("/media/add", formData);
             console.log(res);
             await fetchPhotos();
-        } catch (error: any) {
+        } catch (error) {
             if (error.response) {
                 window.alert(error.response.data);
             }
