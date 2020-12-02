@@ -11,6 +11,7 @@ import qs from "qs";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
 import { download } from "../../API";
+import TopRightBar from "./TopRightBar";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -206,11 +207,15 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         }
     };
 
+    const topRightBar = (id: string, buttonFunctions: any) => {
+        return <TopRightBar id={id} buttonFunctions={buttonFunctions} />;
+    };
+
     return (
         <div>
             <Switch>
                 <Route path="/view">
-                    <ViewPage photos={photos} buttonFunctions={viewButtonFunctions}></ViewPage>
+                    <ViewPage photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
                 </Route>
                 <Route path="/">
                     <div className={classes.root}>

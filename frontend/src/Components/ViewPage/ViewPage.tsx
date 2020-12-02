@@ -5,7 +5,6 @@ import { useTransition, animated } from "react-spring";
 import TopLeftBar from "./TopLeftBar";
 import { createMuiTheme, IconButton, ThemeProvider } from "@material-ui/core";
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";
-import TopRightBar from "./TopRightBar";
 
 const theme = createMuiTheme({
     palette: {
@@ -77,11 +76,18 @@ export default function ViewPage(props: any) {
     const modifiedButtonFunctions = {
         ...props.buttonFunctions,
         delete: async (id: string) => {
+            await props.buttonFunctions.delete(id);
+
             if (canGo(-1)) go(-1)();
             else if (canGo(1)) go(1)();
             else history.goBack();
+        },
+        remove: async (id: string) => {
+            await props.buttonFunctions.remove(id);
 
-            await props.buttonFunctions.delete(id);
+            if (canGo(-1)) go(-1)();
+            else if (canGo(1)) go(1)();
+            else history.goBack();
         },
     };
 
@@ -119,7 +125,7 @@ export default function ViewPage(props: any) {
                 </div>
                 <div className="center" onClick={() => history.goBack()} onMouseEnter={mouseCenter}></div>
                 <div className="rightIm" onMouseEnter={mouseRight} onClick={go(1)}>
-                    <TopRightBar id={id} buttonFunctions={modifiedButtonFunctions} />
+                    {props.topRightBar(id, modifiedButtonFunctions)}
                     <IconButton
                         style={{
                             transition: "0.01s linear",

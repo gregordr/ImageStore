@@ -42,11 +42,6 @@ export default function TopBar(props: any) {
                         <CloudUpload />
                     </IconButton>
                 )}
-                {props.numSelected() === 0 && (
-                    <IconButton className="IconButton" color="primary" aria-label="settings" onClick={props.buttonFunctions.settings}>
-                        <Settings />
-                    </IconButton>
-                )}
                 {props.numSelected() !== 0 && (
                     <IconButton className="IconButton" color="primary" aria-label="cancel" onClick={props.buttonFunctions.unselect}>
                         <Cancel />

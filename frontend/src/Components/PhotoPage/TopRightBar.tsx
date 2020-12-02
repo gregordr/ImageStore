@@ -1,11 +1,17 @@
 import { createStyles, IconButton, makeStyles, Theme } from "@material-ui/core";
 import { ArrowBack, CloudDownload, Delete, LibraryAdd } from "@material-ui/icons";
 import React from "react";
-import "./TopRightBar.css";
 
 export default function TopRightBar(props: any) {
     return (
-        <div className="TopRightBar">
+        <div
+            className="TopRightBar"
+            style={{
+                alignSelf: "flex-start",
+                justifySelf: "right",
+                padding: 10,
+            }}
+        >
             <IconButton
                 className="IconButton"
                 color="primary"

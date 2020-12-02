@@ -11,6 +11,7 @@ import qs from "qs";
 import { PhotoT, AlbumT } from "../../../Interfaces";
 import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
 import { download, setCover } from "../../../API";
+import TopRightBar from "./TopRightBar";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -186,6 +187,11 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             await fetchPhotos();
             await props.refresh();
         },
+        remove: async (id: string) => {
+            await removePhoto(id);
+            await fetchPhotos();
+            await props.refresh();
+        },
         addToAlbum: (id: string) => {
             setSelected([id]);
             setOpen(true);
@@ -259,11 +265,15 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     //#endregion handlers
 
+    const topRightBar = (id: string, buttonFunctions: any) => {
+        return <TopRightBar id={id} buttonFunctions={buttonFunctions} />;
+    };
+
     return (
         <div>
             <Switch>
                 <Route path="/albums/open/:albumID/view">
-                    <ViewPage photos={photos} buttonFunctions={viewButtonFunctions}></ViewPage>
+                    <ViewPage photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
                 </Route>
                 <Route path="/">
                     <div className={classes.root}>
