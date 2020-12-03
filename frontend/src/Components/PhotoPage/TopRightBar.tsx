@@ -1,5 +1,5 @@
 import { createStyles, IconButton, makeStyles, Theme } from "@material-ui/core";
-import { ArrowBack, CloudDownload, Delete, LibraryAdd } from "@material-ui/icons";
+import { ArrowBack, CloudDownload, Delete, Info, LibraryAdd } from "@material-ui/icons";
 import React from "react";
 
 export default function TopRightBar(props: any) {
@@ -12,6 +12,17 @@ export default function TopRightBar(props: any) {
                 padding: 10,
             }}
         >
+            <IconButton
+                className="IconButton"
+                color="primary"
+                aria-label="info"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    props.buttonFunctions.info();
+                }}
+            >
+                <Info />
+            </IconButton>
             <IconButton
                 className="IconButton"
                 color="primary"

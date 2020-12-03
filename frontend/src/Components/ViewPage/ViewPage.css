@@ -8,6 +8,16 @@
     width: 100vw;
     position: absolute;
 }
+.rootTop {
+    display: grid;
+    grid-template-columns: 0.7fr 1fr 0.7fr;
+    grid-template-rows: 1fr;
+    gap: 0px 0px;
+    grid-template-areas: "left center right";
+    /* height: 100vh; */
+    width: 100vw;
+    position: absolute;
+}
 
 .imageHolder {
     height: 100vh;

@@ -10,8 +10,9 @@ export class DatabaseError extends Error {
 }
 
 export async function transaction<T>(query: (arg0: PoolClient) => Promise<T>, useTransaction = true): Promise<T> {
-    const client = await pool.connect();
+    let client = null;
     try {
+        client = await pool.connect();
         if (useTransaction)
             await client.query('BEGIN');
         const val = await query(client);
@@ -19,16 +20,18 @@ export async function transaction<T>(query: (arg0: PoolClient) => Promise<T>, us
             await client.query('COMMIT');
         return val;
     } catch (err) {
-        if (useTransaction)
+        if (useTransaction && client)
             await client.query('ROLLBACK')
         if (err instanceof DatabaseError)
             throw err;
         else {
+            console.log("transaction failed")
             console.log(err);
             throw new DatabaseError('Unexpected error happened and logged');
         }
     } finally {
-        client.release();
+        if (client)
+            client.release();
     }
 }
 

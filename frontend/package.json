@@ -15,6 +15,7 @@
     "@types/react-dom": "^16.9.10",
     "@types/react-router-dom": "^5.1.6",
     "axios": "^0.21.0",
+    "clsx": "^1.1.1",
     "material-design-icons": "^3.0.1",
     "material-ui-search-bar": "^1.0.0",
     "qs": "^6.9.4",
@@ -23,6 +24,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.0",
     "react-spring": "^8.0.27",
+    "react-swipeable": "^6.0.0",
     "typescript": "^4.1.2",
     "web-vitals": "^0.2.4"
   },

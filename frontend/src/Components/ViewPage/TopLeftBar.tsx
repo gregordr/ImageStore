@@ -13,6 +13,7 @@ export default function TopLeftBar(props: any) {
                 alignSelf: "flex-start",
                 justifySelf: "left",
                 padding: 10,
+                marginRight: -25,
             }}
         >
             <IconButton

@@ -44,9 +44,13 @@ router.post('/add', async (req, res) => {
                     dims.height = dims.width;
                     dims.width = tmp;
                 }
-                const oid = await addMedia(f.originalname, dims.height, dims.width)
-                await fsPromises.rename("media/" + f.filename, "media/" + oid);
-                oids.push(oid)
+                try {
+                    const oid = await addMedia(f.originalname, dims.height, dims.width)
+                    await fsPromises.rename("media/" + f.filename, "media/" + oid);
+                    oids.push(oid)
+                } catch {
+                    //Idk how to handle this best actually, maybe let's just send back the stuff we did insert
+                }
             }
         }))
         res.status(200).send(oids)
