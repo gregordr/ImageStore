@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, GridListTile, GridListTileBar, GridList, createMuiTheme, ThemeProvider } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, GridListTile, GridListTileBar, GridList, createMuiTheme, ThemeProvider, Typography } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import axios from "axios";
@@ -146,8 +146,11 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
     const [albums, setAlbums] = useState<AlbumT[]>([]);
     const [openCreateAlbum, setOpenCreateAlbum] = useState(false);
 
+    const [searchTerm, setSearchTerm] = useState("");
+    const url = searchTerm === "" ? "albums/all" : "albums/search/" + searchTerm;
+
     const fetchAlbums = async () => {
-        const resp = await axios.get("albums/all");
+        const resp = await axios.get(url);
         if (resp.status === 200) {
             setAlbums(resp.data);
         } else {
@@ -159,11 +162,14 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     useEffect(() => {
         fetchAlbums();
-    }, []);
+    }, [url]);
 
     const topBarButtonFunctions = {
         add: async () => {
             setOpenCreateAlbum(true);
+        },
+        search: (s: string) => async () => {
+            setSearchTerm(s);
         },
     };
 
@@ -199,6 +205,9 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
+                            <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
+                                Search results for {searchTerm}:
+                            </Typography>
                             <div style={{ display: "flex", flexWrap: "wrap" }}>{albums.map((p) => makeAlbum(p))}</div>
                         </main>
                     </div>

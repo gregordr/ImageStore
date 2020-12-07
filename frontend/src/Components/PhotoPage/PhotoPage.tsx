@@ -1,7 +1,7 @@
 import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
@@ -69,8 +69,11 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [selectable, setSelectable] = useState(false);
     const [open, setOpen] = useState(false);
 
+    const [searchTerm, setSearchTerm] = useState("");
+    const url = searchTerm === "" ? "media/all" : "media/search/" + searchTerm;
+
     const fetchPhotos = async () => {
-        const resp = await axios.get("media/all");
+        const resp = await axios.get(url);
         if (resp.status === 200) {
             setPhotos(resp.data);
         } else {
@@ -90,7 +93,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     useEffect(() => {
         fetchPhotos();
         fetchAlbums();
-    }, []);
+    }, [url]);
 
     const history = useHistory();
 
@@ -188,6 +191,9 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             await download(photos.filter((photo) => selected.includes(photo.id)));
             topBarButtonFunctions.unselect();
         },
+        search: (s: string) => async () => {
+            setSearchTerm(s);
+        },
     };
 
     const upload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -235,6 +241,9 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
+                            <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
+                                Search results for {searchTerm}:
+                            </Typography>
                             <AbstractPhotoPage photos={photos} clickHandler={clickHandler} selected={selected} anySelected={anySelected} imageClickHandler={imageClickHandler} />
                         </main>
                     </div>

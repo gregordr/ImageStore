@@ -73,8 +73,12 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const [selectable, setSelectable] = useState(false);
     const [open, setOpen] = useState(false);
 
+    const [searchTerm, setSearchTerm] = useState("");
+    const url = searchTerm === "" ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`;
+
     const fetchPhotos = async () => {
-        const resp = await axios.get(`albums/${id}/all`);
+        const resp = await axios.get(url);
+
         if (resp.status === 200) {
             setPhotos(resp.data);
         } else {
@@ -94,7 +98,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     useEffect(() => {
         fetchPhotos();
         fetchAlbums();
-    }, []);
+    }, [url]);
     //#endregion hooks
 
     //#region API
@@ -261,6 +265,9 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             await download(photos.filter((photo) => selected.includes(photo.id)));
             topBarButtonFunctions.unselect();
         },
+        search: (s: string) => async () => {
+            setSearchTerm(s);
+        },
     };
 
     //#endregion handlers
@@ -297,6 +304,9 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                                 {(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}
                             </Typography>
                             <div style={{ clear: "left" }}>
+                                <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
+                                    Search results for {searchTerm}:
+                                </Typography>
                                 <AbstractPhotoPage imageClickHandler={imageClickHandler} photos={photos} clickHandler={clickHandler} selected={selected} anySelected={anySelected} />
                             </div>
                         </main>

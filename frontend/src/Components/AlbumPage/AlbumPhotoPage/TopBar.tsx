@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import IconButton from "@material-ui/core/IconButton";
 import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Settings, Search, CheckBox, RemoveCircleOutline, Pages, ArrowBack } from "@material-ui/icons";
 import SearchBar from "material-ui-search-bar";
@@ -8,6 +8,7 @@ import TopBarStyle from "../../Shared/TopBarStyle";
 export default function TopBar(props: any) {
     const classes = TopBarStyle();
     const history = useHistory();
+    const [searchBarText, setSearchBarText] = useState("");
 
     return (
         <div className={classes.TopBar}>
@@ -19,7 +20,7 @@ export default function TopBar(props: any) {
                 )}
             </div>
             <div className={classes.middle}>
-                <SearchBar className={classes.notMobile} value="" onChange={() => {}} onRequestSearch={() => {}} />
+                <SearchBar className={classes.notMobile} value={searchBarText} onChange={(s) => setSearchBarText(s)} onRequestSearch={props.buttonFunctions.search(searchBarText)} />
             </div>
             <div className={classes.right}>
                 {props.numSelected() === 0 && (

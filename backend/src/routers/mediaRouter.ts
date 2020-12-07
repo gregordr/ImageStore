@@ -15,6 +15,14 @@ router.get('/all', async (req, res) => {
     }
 });
 
+router.get('/search/:term', async (req, res) => {
+    try {
+        res.status(200).send(await getMedia(`%${req.params.term}%`));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
 router.post('/add', async (req, res) => {
     upload(req, res, async (err: multer.MulterError | "router") => {
         if (err) {
