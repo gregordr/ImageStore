@@ -50,12 +50,10 @@ const Photo = React.memo(function Photo(props: any) {
 });
 
 export default function AbstractPhotoPage(props: { photos: PhotoT[]; clickHandler: (id: string) => void; imageClickHandler: (id: string) => void; selected: string[]; anySelected: any }) {
-    const { selected } = props;
     const photos = props.photos;
 
     const height = 300.0;
 
-    const s = useMemo(() => new Set(selected), [selected]);
     const makePhoto = (photo: PhotoT) => (
         <Photo
             key={photo.id}
@@ -64,8 +62,8 @@ export default function AbstractPhotoPage(props: { photos: PhotoT[]; clickHandle
             y={height}
             click={props.clickHandler}
             imageClick={props.imageClickHandler}
-            selected={s.has(photo.id)}
-            anySelected={s.size !== 0}
+            selected={props.selected.includes(photo.id)}
+            anySelected={props.anySelected}
             outZoom={0.9}
         />
     );
