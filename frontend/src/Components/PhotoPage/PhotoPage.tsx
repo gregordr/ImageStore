@@ -1,4 +1,4 @@
-import React, { ChangeEvent, RefObject, useEffect, useState, useCallback } from "react";
+import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
@@ -99,26 +99,28 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     }, [url]);
 
     const history = useHistory();
-    const anySelected = selected.length !== 0 || selectable;
-    const clickHandler = useCallback((id: string) => {
-        setSelected((oldSelected) => {
-            if (oldSelected.includes(id)) return oldSelected.filter((v) => v !== id);
-            else return [...oldSelected, id];
-        });
-    }, []);
-    const imageClickHandler = useCallback(
-        (id: string) =>
-            setSelected((oldSelected) => {
-                if (!selectable && oldSelected.length === 0) {
-                    history.push(`/view/${id}`);
-                    return oldSelected;
-                }
 
-                if (oldSelected.includes(id)) return oldSelected.filter((v) => v !== id);
-                else return [...oldSelected, id];
-            }),
-        [selectable, history]
-    );
+    const imageClickHandler = (id: string) => () => {
+        if (anySelected()) {
+            clickHandler(id)();
+        } else {
+            history.push(`/view/${id}`);
+        }
+    };
+
+    const clickHandler = (id: string) => () => {
+        let copy = selected.slice();
+        if (copy.includes(id)) copy = copy.filter((v) => v !== id);
+        else copy.push(id);
+        setSelected(copy);
+        if (copy.length === 0) {
+            setSelectable(false);
+        }
+    };
+
+    const anySelected = () => {
+        return selected.length !== 0 || selectable;
+    };
 
     const cb = async (albumIds: any) => {
         const requestBody = {
@@ -183,7 +185,6 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             //Nav to settings page
         },
         select: () => {
-            console.log(selectable);
             setSelectable(!selectable);
         },
         addToAlbum: () => {
