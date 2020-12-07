@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from 'pg';
 const connectionString = process.env.PGSTRING;
-const pool = new Pool({ connectionString, });
+const pool = new Pool({ connectionString, max: 5 });
 
 export class DatabaseError extends Error {
     constructor(args: string) {

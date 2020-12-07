@@ -55,7 +55,6 @@ export async function addPhotosToAlbums(photoIDs: string[], albumIDs: string[]):
             try {
                 return (await client.query(`INSERT INTO ${await album_photo} VALUES ($1::OID, $2::OID);`, [albumID, photoID])).oid.toString();
             } catch (err) {
-                //console.log(err)
                 return new DatabaseError('Album or photo either do not exist, or the photo is already in the album');
             }
         }

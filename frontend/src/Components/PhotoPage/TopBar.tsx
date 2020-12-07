@@ -13,7 +13,6 @@ export default function TopBar(props: any) {
 
     return (
         <div className={classes.TopBar}>
-            <div className={classes.left}></div>
             <div className={classes.middle}>
                 <SearchBar className={classes.notMobile} value={searchBarText} onChange={(s) => setSearchBarText(s)} onRequestSearch={props.buttonFunctions.search(searchBarText)} />
                 <LinearProgress

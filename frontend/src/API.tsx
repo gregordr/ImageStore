@@ -1,4 +1,3 @@
-import { PhotoSharp, ViewArraySharp } from "@material-ui/icons";
 import axios from "axios";
 import qs from "qs";
 import { PhotoT } from "./Interfaces";
