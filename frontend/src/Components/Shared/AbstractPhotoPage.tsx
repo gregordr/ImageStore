@@ -14,7 +14,7 @@ const useStyles = makeStyles({
     photoBox: { transition: "0.07s all  linear", position: "absolute", left: 15, top: 15, height: 20, width: 20 },
 });
 
-const Photo = React.memo(function Photo(props: any) {
+function Photo(props: any) {
     const url = "http://localhost:4000/media/" + props.id;
     const padding = props.selected ? 0.9 : 1.0;
     const [vis, setVis] = useState(0);
@@ -31,15 +31,15 @@ const Photo = React.memo(function Photo(props: any) {
             onMouseEnter={() => setVis(0.4)}
             onMouseLeave={() => setVis(0)}
         >
-            <div onClick={() => props.imageClick()}>
+            <div onClick={props.imageClick}>
                 <img alt={props.id} style={{ transition: "0.05s linear", transform: `scale(${padding})` }} src={url} height={props.y} width={props.x} />
             </div>
-            {(vis || props.anySelected()) && <input className={classes.photoBox} style={{ opacity: opacity }} readOnly={true} checked={props.selected} type="checkbox" onClick={() => props.click()} />}
+            {(vis || props.anySelected()) && <input className={classes.photoBox} style={{ opacity: opacity }} readOnly={true} checked={props.selected} type="checkbox" onClick={props.click} />}
         </div>
     );
-});
+}
 
-export default function AbstractPhotoPage(props: { photos: PhotoT[]; clickHandler: (id: string) => void; imageClickHandler: (id: string) => void; selected: string[]; anySelected: any }) {
+export default function AbstractPhotoPage(props: { photos: PhotoT[]; clickHandler: (id: string) => () => void; imageClickHandler: (id: string) => () => void; selected: string[]; anySelected: any }) {
     const photos = props.photos;
 
     const height = 300.0;
