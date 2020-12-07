@@ -4,6 +4,7 @@ import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Settings, Searc
 import SearchBar from "material-ui-search-bar";
 import { useHistory } from "react-router-dom";
 import TopBarStyle from "../../Shared/TopBarStyle";
+import { LinearProgress } from "@material-ui/core";
 
 export default function TopBar(props: any) {
     const classes = TopBarStyle();
@@ -21,6 +22,14 @@ export default function TopBar(props: any) {
             </div>
             <div className={classes.middle}>
                 <SearchBar className={classes.notMobile} value={searchBarText} onChange={(s) => setSearchBarText(s)} onRequestSearch={props.buttonFunctions.search(searchBarText)} />
+                <LinearProgress
+                    style={{
+                        borderBottomLeftRadius: 100,
+                        borderBottomRightRadius: 100,
+                        marginTop: -2,
+                        display: props.show ? "block" : "none",
+                    }}
+                />
             </div>
             <div className={classes.right}>
                 {props.numSelected() === 0 && (

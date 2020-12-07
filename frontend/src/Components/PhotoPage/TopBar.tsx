@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import IconButton from "@material-ui/core/IconButton";
 import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Settings, Search, CheckBox } from "@material-ui/icons";
 import SearchBar from "material-ui-search-bar";
-import { createStyles, makeStyles, Theme } from "@material-ui/core";
+import { createStyles, LinearProgress, makeStyles, Theme } from "@material-ui/core";
 import TopBarStyle from "../Shared/TopBarStyle";
 import Axios from "axios";
 
@@ -16,6 +16,14 @@ export default function TopBar(props: any) {
             <div className={classes.left}></div>
             <div className={classes.middle}>
                 <SearchBar className={classes.notMobile} value={searchBarText} onChange={(s) => setSearchBarText(s)} onRequestSearch={props.buttonFunctions.search(searchBarText)} />
+                <LinearProgress
+                    style={{
+                        borderBottomLeftRadius: 100,
+                        borderBottomRightRadius: 100,
+                        marginTop: -2,
+                        display: props.show ? "block" : "none",
+                    }}
+                />
             </div>
             <div className={classes.right}>
                 {props.numSelected() === 0 && (

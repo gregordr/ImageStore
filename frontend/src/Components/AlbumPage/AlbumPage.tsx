@@ -145,14 +145,17 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     const [albums, setAlbums] = useState<AlbumT[]>([]);
     const [openCreateAlbum, setOpenCreateAlbum] = useState(false);
+    const [showLoadingBar, setShowLoadingBar] = useState(true);
 
     const [searchTerm, setSearchTerm] = useState("");
     const url = searchTerm === "" ? "albums/all" : "albums/search/" + searchTerm;
 
     const fetchAlbums = async () => {
+        setShowLoadingBar(true);
         const resp = await axios.get(url);
         if (resp.status === 200) {
             setAlbums(resp.data);
+            setShowLoadingBar(false);
         } else {
             window.alert(await resp.data);
         }
@@ -197,7 +200,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar buttonFunctions={topBarButtonFunctions} />
+                                <TopBar buttonFunctions={topBarButtonFunctions} show={showLoadingBar} />
                             </Toolbar>
                         </AppBar>
 

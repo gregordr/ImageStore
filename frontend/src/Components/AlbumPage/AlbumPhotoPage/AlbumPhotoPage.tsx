@@ -72,15 +72,17 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const [selected, setSelected] = useState<string[]>([]);
     const [selectable, setSelectable] = useState(false);
     const [open, setOpen] = useState(false);
+    const [showLoadingBar, setShowLoadingBar] = useState(true);
 
     const [searchTerm, setSearchTerm] = useState("");
     const url = searchTerm === "" ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`;
 
     const fetchPhotos = async () => {
+        setShowLoadingBar(true);
         const resp = await axios.get(url);
-
         if (resp.status === 200) {
             setPhotos(resp.data);
+            setShowLoadingBar(false);
         } else {
             window.alert(await resp.data);
         }
@@ -292,7 +294,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar numSelected={() => selected.length} buttonFunctions={topBarButtonFunctions} />
+                                <TopBar numSelected={() => selected.length} buttonFunctions={topBarButtonFunctions} show={showLoadingBar} />
                             </Toolbar>
                         </AppBar>
 

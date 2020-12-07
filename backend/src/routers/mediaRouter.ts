@@ -41,6 +41,11 @@ router.post('/add', async (req, res) => {
 
         const oids: number[] = []
         await Promise.all(req.files.map(async (f) => {
+            if (!f) {
+                res.status(500).send("Invalid file")
+                return
+            }
+
             const dims = sizeOf("media/" + f.filename)
 
             if (!dims.height || !dims.width) {

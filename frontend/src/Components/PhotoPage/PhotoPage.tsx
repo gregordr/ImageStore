@@ -68,14 +68,17 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [selected, setSelected] = useState<string[]>([]);
     const [selectable, setSelectable] = useState(false);
     const [open, setOpen] = useState(false);
+    const [showLoadingBar, setShowLoadingBar] = useState(true);
 
     const [searchTerm, setSearchTerm] = useState("");
     const url = searchTerm === "" ? "media/all" : "media/search/" + searchTerm;
 
     const fetchPhotos = async () => {
+        setShowLoadingBar(true);
         const resp = await axios.get(url);
         if (resp.status === 200) {
             setPhotos(resp.data);
+            setShowLoadingBar(false);
         } else {
             window.alert(await resp.data);
         }
@@ -233,7 +236,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar anySelected={anySelected} buttonFunctions={topBarButtonFunctions} numSelected={() => selected.length} />
+                                <TopBar anySelected={anySelected} buttonFunctions={topBarButtonFunctions} numSelected={() => selected.length} show={showLoadingBar} />
                             </Toolbar>
                         </AppBar>
 
