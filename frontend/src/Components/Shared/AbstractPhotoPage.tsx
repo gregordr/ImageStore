@@ -15,7 +15,6 @@ const useStyles = makeStyles({
 });
 
 const Photo = React.memo(function Photo(props: any) {
-    console.log("photo " + props.id);
     const url = "http://localhost:4000/media/" + props.id;
     const padding = props.selected ? 0.9 : 1.0;
     const [vis, setVis] = useState(false);

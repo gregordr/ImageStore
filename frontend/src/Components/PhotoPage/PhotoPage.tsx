@@ -183,6 +183,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             //Nav to settings page
         },
         select: () => {
+            console.log(selectable);
             setSelectable(!selectable);
         },
         addToAlbum: () => {
