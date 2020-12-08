@@ -1,19 +1,18 @@
-import React, { useCallback, useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo, useRef, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { PhotoT } from "../../Interfaces";
 import { VariableSizeList as List } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
 
 const useStyles = makeStyles({
     photoDiv: {
-        margin: 5,
+        padding: 10,
         "align-items": "center",
         "justify-content": "center",
         display: "flex",
-        background: "#aaaaaa33",
         position: "relative",
+        transition: "0.05s linear",
     },
-    photoBox: { transition: "0.07s all  linear", position: "absolute", left: 15, top: 15, height: 20, width: 20 },
+    photoBox: { transition: "0.05s linear", position: "absolute", left: 15, top: 15, height: 20, width: 20 },
 });
 
 function Photo(props: any) {
@@ -34,78 +33,86 @@ function Photo(props: any) {
             onMouseLeave={() => setVis(0)}
         >
             <div onClick={props.imageClick}>
-                <img alt={props.id} style={{ transition: "0.05s linear", transform: `scale(${padding})` }} src={url} height={props.y} width={props.x} />
+                <img alt={props.id} style={{ transition: "0.05s linear", transform: `scale(${padding})`, background: "#aaaaaa33" }} src={url} height={props.y - 5} width={props.x - 5} />
             </div>
-            {(vis || props.anySelected()) && <input className={classes.photoBox} style={{ opacity: opacity }} readOnly={true} checked={props.selected} type="checkbox" onClick={props.click} />}
+            {(vis || props.anySelected() || true) && <input className={classes.photoBox} style={{ opacity: opacity }} readOnly={true} checked={props.selected} type="checkbox" onClick={props.click} />}
         </div>
     );
 }
+const makePhoto = (photo: PhotoT, realH: number, props: any) => (
+    <Photo
+        key={photo.id}
+        id={photo.id}
+        x={(photo.width * realH) / photo.height}
+        y={realH}
+        click={props.clickHandler(photo.id)}
+        imageClick={props.imageClickHandler(photo.id)}
+        selected={props.selected.includes(photo.id)}
+        anySelected={props.anySelected}
+        outZoom={0.9}
+    />
+);
 
-export default function AbstractPhotoPage(props: { photos: PhotoT[]; clickHandler: (id: string) => () => void; imageClickHandler: (id: string) => () => void; selected: string[]; anySelected: any }) {
-    const makePhoto = (photo: PhotoT, realH: number) => (
-        <Photo
-            key={photo.id}
-            id={photo.id}
-            x={(photo.width * realH) / photo.height}
-            y={realH}
-            click={props.clickHandler(photo.id)}
-            imageClick={props.imageClickHandler(photo.id)}
-            selected={props.selected.includes(photo.id)}
-            anySelected={props.anySelected}
-            outZoom={0.9}
-        />
-    );
+const targetHeight = 300;
 
-    const targetHeight = 300;
-    const width = 900;
+const calculate = (photos: PhotoT[], width: number) => {
+    const rowH: number[] = [];
+    const rowPics: PhotoT[][] = [];
 
-    const calculate = (photos: PhotoT[]) => {
-        const rowH: number[] = [];
-        const rowPics: PhotoT[][] = [];
+    let ptr = 0;
 
-        let ptr = 0;
+    while (ptr !== photos.length) {
+        let curPics: PhotoT[] = [];
+        let curWidth = 0;
 
-        while (ptr !== photos.length) {
-            let curPics: PhotoT[] = [];
-            let curWidth = 0;
-
-            while (
-                ptr !== photos.length &&
-                (curWidth === 0 ||
-                    Math.abs(targetHeight - (targetHeight * width) / curWidth) > Math.abs(targetHeight - (targetHeight * width) / (curWidth + (photos[ptr].width / photos[ptr].height) * targetHeight)))
-            ) {
-                curPics.push(photos[ptr]);
-                curWidth += (photos[ptr].width / photos[ptr].height) * targetHeight + 10;
-                ptr++;
-            }
-
-            rowPics.push(curPics);
-            rowH.push((targetHeight * width) / curWidth);
+        while (
+            ptr !== photos.length &&
+            (curWidth === 0 ||
+                Math.abs(targetHeight - (targetHeight * width) / curWidth) > Math.abs(targetHeight - (targetHeight * width) / (curWidth + (photos[ptr].width / photos[ptr].height) * targetHeight)))
+        ) {
+            curPics.push(photos[ptr]);
+            curWidth += (photos[ptr].width / photos[ptr].height) * targetHeight;
+            ptr++;
         }
 
-        return { rowH, rowPics };
-    };
+        rowPics.push(curPics);
+        rowH.push((targetHeight * width) / curWidth);
+    }
 
-    const { rowH, rowPics } = useMemo(() => calculate(props.photos), [props.photos]);
+    return { rowH, rowPics };
+};
 
-    const getItemSize = (index: number) => rowH[index] + 10;
+const Row = (altprops: any) =>
+    altprops.data.linNum <= altprops.index ? (
+        <div style={{ ...altprops.style, display: "flex", transition: "0.05s linear" }}>
+            {altprops.data.rowPics[altprops.index].map((p: PhotoT) => makePhoto(p, altprops.data.rowH[altprops.index], altprops.data.props))}
+        </div>
+    ) : (
+        <div>{altprops.data.rowPics[altprops.index]}</div>
+    );
 
-    const Row = (props: any) => <div style={{ ...props.style, display: "flex" }}> {rowPics[props.index].map((p) => makePhoto(p, rowH[props.index]))} </div>;
-
-    console.log(rowH.length);
+export default function AbstractPhotoPage(props: {
+    photos: PhotoT[];
+    height: number;
+    width: number;
+    clickHandler: (id: string) => () => void;
+    imageClickHandler: (id: string) => () => void;
+    selected: string[];
+    anySelected: any;
+    heights: number[];
+    lines: any[];
+}) {
+    const listRef = useRef<List>(null);
+    useEffect(() => listRef.current?.resetAfterIndex(0), [props.width, props.photos]);
+    let { rowH, rowPics } = calculate(props.photos, props.width - 20);
+    rowH = [...props.heights, ...rowH];
+    rowPics = [...props.lines, ...rowPics];
+    const getItemSize = (index: number) => rowH[index];
     console.log(rowH);
-    console.log(rowPics);
+
     return (
-        <List height={800} itemCount={rowH.length} itemSize={getItemSize} width={width}>
+        <List height={props.height} ref={listRef} itemData={{ rowH, rowPics, props, linNum: props.lines.length }} itemCount={rowH.length} itemSize={getItemSize} width={props.width}>
             {Row}
         </List>
     );
-    // <div
-    //     style={{
-    //         display: "flex",
-    //         flexWrap: "wrap",
-    //     }}
-    // >
-    //     {photos.map((p) => makePhoto(p))}
-    // </div>
 }

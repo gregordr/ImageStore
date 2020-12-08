@@ -12,6 +12,7 @@ import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
 import { download } from "../../API";
 import TopRightBar from "./TopRightBar";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -54,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         content: {
             flexGrow: 1,
-            padding: theme.spacing(3),
+            paddingLeft: 12,
         },
     })
 );
@@ -220,6 +221,15 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         return <TopRightBar id={id} buttonFunctions={buttonFunctions} />;
     };
 
+    const lines = [
+        <div></div>,
+        <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
+            Search results for {searchTerm}:
+        </Typography>,
+    ];
+
+    const heights = [12, searchTerm === "" ? 0 : 28];
+
     return (
         <div>
             <Switch>
@@ -244,10 +254,25 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
-                            <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
-                                Search results for {searchTerm}:
-                            </Typography>
-                            <AbstractPhotoPage photos={photos} clickHandler={clickHandler} selected={selected} anySelected={anySelected} imageClickHandler={imageClickHandler} />
+                            <AutoSizer
+                                style={{
+                                    height: `calc(100vh - ${64 * 2}px)`,
+                                }}
+                            >
+                                {({ height, width }) => (
+                                    <AbstractPhotoPage
+                                        height={height}
+                                        width={width}
+                                        photos={photos}
+                                        clickHandler={clickHandler}
+                                        selected={selected}
+                                        anySelected={anySelected}
+                                        imageClickHandler={imageClickHandler}
+                                        lines={lines}
+                                        heights={heights}
+                                    />
+                                )}
+                            </AutoSizer>
                         </main>
                     </div>
                 </Route>

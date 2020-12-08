@@ -12,6 +12,7 @@ import { PhotoT, AlbumT } from "../../../Interfaces";
 import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
 import { download, setCover } from "../../../API";
 import TopRightBar from "./TopRightBar";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -54,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         content: {
             flexGrow: 1,
-            padding: theme.spacing(3),
+            paddingLeft: 12,
         },
     })
 );
@@ -278,6 +279,16 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         return <TopRightBar id={id} buttonFunctions={buttonFunctions} />;
     };
 
+    const lines = [
+        <div> </div>,
+        <Typography variant="h4">{(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}</Typography>,
+        <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
+            Search results for {searchTerm}:
+        </Typography>,
+    ];
+
+    const heights = [12, 42, searchTerm === "" ? 0 : 28];
+
     return (
         <div>
             <Switch>
@@ -302,15 +313,26 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
-                            <Typography style={{ float: "left" }} variant="h4" gutterBottom>
-                                {(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}
-                            </Typography>
-                            <div style={{ clear: "left" }}>
-                                <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
-                                    Search results for {searchTerm}:
-                                </Typography>
-                                <AbstractPhotoPage imageClickHandler={imageClickHandler} photos={photos} clickHandler={clickHandler} selected={selected} anySelected={anySelected} />
-                            </div>
+
+                            <AutoSizer
+                                style={{
+                                    height: `calc(100vh - ${64 * 2}px)`,
+                                }}
+                            >
+                                {({ height, width }) => (
+                                    <AbstractPhotoPage
+                                        height={height}
+                                        width={width}
+                                        imageClickHandler={imageClickHandler}
+                                        photos={photos}
+                                        clickHandler={clickHandler}
+                                        selected={selected}
+                                        anySelected={anySelected}
+                                        lines={lines}
+                                        heights={heights}
+                                    />
+                                )}
+                            </AutoSizer>
                         </main>
                     </div>
                 </Route>
