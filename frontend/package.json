@@ -14,6 +14,7 @@
     "@types/react": "^16.14.2",
     "@types/react-dom": "^16.9.10",
     "@types/react-router-dom": "^5.1.6",
+    "@types/react-virtualized-auto-sizer": "^1.0.0",
     "axios": "^0.21.0",
     "clsx": "^1.1.1",
     "material-design-icons": "^3.0.1",
@@ -25,6 +26,8 @@
     "react-scripts": "^4.0.1",
     "react-spring": "^8.0.27",
     "react-swipeable": "^6.0.1",
+    "react-virtualized-auto-sizer": "^1.0.2",
+    "react-window": "^1.8.6",
     "typescript": "^4.1.2",
     "web-vitals": "^0.2.4"
   },
@@ -53,6 +56,7 @@
     ]
   },
   "devDependencies": {
-    "@types/qs": "^6.9.5"
+    "@types/qs": "^6.9.5",
+    "@types/react-window": "^1.8.2"
   }
 }

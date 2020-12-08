@@ -1,6 +1,8 @@
 import React, { useCallback, useState, useMemo } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { PhotoT } from "../../Interfaces";
+import { VariableSizeList as List } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 const useStyles = makeStyles({
     photoDiv: {
@@ -40,16 +42,12 @@ function Photo(props: any) {
 }
 
 export default function AbstractPhotoPage(props: { photos: PhotoT[]; clickHandler: (id: string) => () => void; imageClickHandler: (id: string) => () => void; selected: string[]; anySelected: any }) {
-    const photos = props.photos;
-
-    const height = 300.0;
-
-    const makePhoto = (photo: PhotoT) => (
+    const makePhoto = (photo: PhotoT, realH: number) => (
         <Photo
             key={photo.id}
             id={photo.id}
-            x={(photo.width * height) / photo.height}
-            y={height}
+            x={(photo.width * realH) / photo.height}
+            y={realH}
             click={props.clickHandler(photo.id)}
             imageClick={props.imageClickHandler(photo.id)}
             selected={props.selected.includes(photo.id)}
@@ -58,14 +56,56 @@ export default function AbstractPhotoPage(props: { photos: PhotoT[]; clickHandle
         />
     );
 
+    const targetHeight = 300;
+    const width = 900;
+
+    const calculate = (photos: PhotoT[]) => {
+        const rowH: number[] = [];
+        const rowPics: PhotoT[][] = [];
+
+        let ptr = 0;
+
+        while (ptr !== photos.length) {
+            let curPics: PhotoT[] = [];
+            let curWidth = 0;
+
+            while (
+                ptr !== photos.length &&
+                (curWidth === 0 ||
+                    Math.abs(targetHeight - (targetHeight * width) / curWidth) > Math.abs(targetHeight - (targetHeight * width) / (curWidth + (photos[ptr].width / photos[ptr].height) * targetHeight)))
+            ) {
+                curPics.push(photos[ptr]);
+                curWidth += (photos[ptr].width / photos[ptr].height) * targetHeight + 10;
+                ptr++;
+            }
+
+            rowPics.push(curPics);
+            rowH.push((targetHeight * width) / curWidth);
+        }
+
+        return { rowH, rowPics };
+    };
+
+    const { rowH, rowPics } = useMemo(() => calculate(props.photos), [props.photos]);
+
+    const getItemSize = (index: number) => rowH[index] + 10;
+
+    const Row = (props: any) => <div style={{ ...props.style, display: "flex" }}> {rowPics[props.index].map((p) => makePhoto(p, rowH[props.index]))} </div>;
+
+    console.log(rowH.length);
+    console.log(rowH);
+    console.log(rowPics);
     return (
-        <div
-            style={{
-                display: "flex",
-                flexWrap: "wrap",
-            }}
-        >
-            {photos.map((p) => makePhoto(p))}
-        </div>
+        <List height={800} itemCount={rowH.length} itemSize={getItemSize} width={width}>
+            {Row}
+        </List>
     );
+    // <div
+    //     style={{
+    //         display: "flex",
+    //         flexWrap: "wrap",
+    //     }}
+    // >
+    //     {photos.map((p) => makePhoto(p))}
+    // </div>
 }
