@@ -108,10 +108,9 @@ export default function AbstractPhotoPage(props: {
     rowH = [...props.heights, ...rowH];
     rowPics = [...props.lines, ...rowPics];
     const getItemSize = (index: number) => rowH[index];
-    console.log(rowH);
 
     return (
-        <List height={props.height} ref={listRef} itemData={{ rowH, rowPics, props, linNum: props.lines.length }} itemCount={rowH.length} itemSize={getItemSize} width={props.width}>
+        <List height={props.height} ref={listRef} itemData={{ rowH, rowPics, props, linNum: props.lines.length }} itemCount={rowH.length} itemSize={getItemSize} width={props.width - 1}>
             {Row}
         </List>
     );
