@@ -77,13 +77,27 @@ export default function ResponsiveDrawer({ window }: any) {
             </div>
             <Divider />
             <List>
-                <ListItem button selected={location.pathname === "/"} onClick={() => history.push("/")}>
+                <ListItem
+                    button
+                    selected={location.pathname === "/"}
+                    onClick={() => {
+                        history.push("/");
+                        setMobileOpen(false);
+                    }}
+                >
                     <ListItemIcon>
                         <Photo />
                     </ListItemIcon>
                     <ListItemText primary="Photos" />
                 </ListItem>
-                <ListItem button selected={location.pathname.startsWith("/albums")} onClick={() => history.push("/albums")}>
+                <ListItem
+                    button
+                    selected={location.pathname.startsWith("/albums")}
+                    onClick={() => {
+                        history.push("/albums");
+                        setMobileOpen(false);
+                    }}
+                >
                     <ListItemIcon>
                         <PhotoAlbum />
                     </ListItemIcon>
