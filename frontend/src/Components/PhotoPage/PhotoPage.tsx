@@ -223,7 +223,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const lines = [
         <div></div>,
-        <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
+        <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block", paddingTop: 10, paddingLeft: 5 }}>
             Search results for {searchTerm}:
         </Typography>,
     ];

@@ -281,8 +281,10 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     const lines = [
         <div> </div>,
-        <Typography variant="h4">{(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}</Typography>,
-        <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
+        <Typography variant="h4" style={{ paddingTop: 10, paddingLeft: 5 }}>
+            {(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}
+        </Typography>,
+        <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block", paddingLeft: 5 }}>
             Search results for {searchTerm}:
         </Typography>,
     ];
