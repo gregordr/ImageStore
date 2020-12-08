@@ -2,6 +2,7 @@ import React, { useCallback, useState, useMemo, useRef, useEffect } from "react"
 import { makeStyles } from "@material-ui/core/styles";
 import { PhotoT } from "../../Interfaces";
 import { VariableSizeList as List } from "react-window";
+import { Scrollbars } from "react-custom-scrollbars";
 
 const useStyles = makeStyles({
     photoDiv: {
@@ -91,6 +92,27 @@ const Row = (altprops: any) =>
         <div>{altprops.data.rowPics[altprops.index]}</div>
     );
 
+const CustomScrollbars = ({ onScroll, forwardedRef, style, children }: any) => {
+    const refSetter = useCallback(
+        (scrollbarsRef) => {
+            if (scrollbarsRef) {
+                forwardedRef(scrollbarsRef.view);
+            } else {
+                forwardedRef(null);
+            }
+        },
+        [forwardedRef]
+    );
+
+    return (
+        <Scrollbars ref={refSetter} style={{ ...style, overflow: "hidden" }} onScroll={onScroll}>
+            {children}
+        </Scrollbars>
+    );
+};
+
+const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => <CustomScrollbars {...props} forwardedRef={ref} />);
+
 export default function AbstractPhotoPage(props: {
     photos: PhotoT[];
     height: number;
@@ -110,7 +132,16 @@ export default function AbstractPhotoPage(props: {
     const getItemSize = (index: number) => rowH[index];
 
     return (
-        <List height={props.height} ref={listRef} itemData={{ rowH, rowPics, props, linNum: props.lines.length }} itemCount={rowH.length} itemSize={getItemSize} width={props.width - 1}>
+        <List
+            overscanCount={10}
+            height={props.height}
+            ref={listRef}
+            itemData={{ rowH, rowPics, props, linNum: props.lines.length }}
+            itemCount={rowH.length}
+            itemSize={getItemSize}
+            width={props.width - 1}
+            outerElementType={CustomScrollbarsVirtualList}
+        >
             {Row}
         </List>
     );

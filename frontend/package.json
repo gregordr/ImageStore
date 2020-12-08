@@ -21,6 +21,7 @@
     "material-ui-search-bar": "^1.0.0",
     "qs": "^6.9.4",
     "react": "^17.0.1",
+    "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.1",
@@ -57,6 +58,7 @@
   },
   "devDependencies": {
     "@types/qs": "^6.9.5",
+    "@types/react-custom-scrollbars": "^4.0.7",
     "@types/react-window": "^1.8.2"
   }
 }
