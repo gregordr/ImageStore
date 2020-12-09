@@ -41,7 +41,10 @@ const useStyles = makeStyles((theme: Theme) =>
             },
         },
         // necessary for content to be below app bar
-        toolbar: theme.mixins.toolbar,
+        toolbar: {
+            ...theme.mixins.toolbar,
+            height: 64,
+        },
         drawerPaper: {
             width: drawerWidth,
         },
@@ -318,7 +321,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
                             <AutoSizer
                                 style={{
-                                    height: `calc(100vh - ${64 * 2}px)`,
+                                    height: `calc(100vh - ${129}px)`,
                                 }}
                             >
                                 {({ height, width }) => (

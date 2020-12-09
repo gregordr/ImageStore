@@ -34,7 +34,9 @@ function Photo(props: any) {
             onMouseLeave={() => setVis(0)}
         >
             <div onClick={props.imageClick}>
-                <img alt={props.id} style={{ transition: "0.05s linear", transform: `scale(${padding})`, background: "#aaaaaa33" }} src={url} height={props.y - 5} width={props.x - 5} />
+                <div style={{ backgroundColor: "#eeeeee", height: props.y - 5, width: props.x - 5 }}>
+                    <img alt={props.id} style={{ transition: "0.05s linear", transform: `scale(${padding})` }} src={url} height={props.y - 5} width={props.x - 5} />
+                </div>
             </div>
             {(vis || props.anySelected() || true) && <input className={classes.photoBox} style={{ opacity: opacity }} readOnly={true} checked={props.selected} type="checkbox" onClick={props.click} />}
         </div>
