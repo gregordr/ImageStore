@@ -10,6 +10,8 @@ import CreateAlbum from "./CreateAlbum";
 import { Info, PhotoAlbum } from "@material-ui/icons";
 import AlbumPhotoPage from "./AlbumPhotoPage/AlbumPhotoPage";
 import AlbumInfo from "./AlbumInfo";
+import AbstractAlbumPage from "../Shared/AbstractAlbumPage";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 const theme = createMuiTheme({
     palette: {
@@ -183,7 +185,13 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     const openAlbum = (album: AlbumT) => () => {};
 
-    const makeAlbum = (album: AlbumT) => <Album key={album.id} album={album} click={openAlbum(album)} fetchAlbums={fetchAlbums} />;
+    const heights = [20];
+
+    const lines = [
+        <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
+            Search results for {searchTerm}:
+        </Typography>,
+    ];
 
     return (
         <div>
@@ -208,10 +216,15 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
-                            <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
-                                Search results for {searchTerm}:
-                            </Typography>
-                            <div style={{ display: "flex", flexWrap: "wrap" }}>{albums.map((p) => makeAlbum(p))}</div>
+                            <AutoSizer
+                                style={{
+                                    height: `calc(100vh - ${64 * 2}px)`,
+                                }}
+                            >
+                                {({ height, width }) => (
+                                    <AbstractAlbumPage height={height} width={width} albums={albums} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} />
+                                )}
+                            </AutoSizer>
                         </main>
                     </div>
                 </Route>

@@ -77,7 +77,8 @@ const calculate = (photos: PhotoT[], width: number) => {
         }
 
         rowPics.push(curPics);
-        rowH.push((targetHeight * width) / curWidth);
+        if (ptr !== photos.length || width < curWidth) rowH.push((targetHeight * width) / curWidth);
+        else rowH.push(targetHeight);
     }
 
     return { rowH, rowPics };
@@ -126,10 +127,10 @@ export default function AbstractPhotoPage(props: {
 }) {
     const listRef = useRef<List>(null);
     useEffect(() => listRef.current?.resetAfterIndex(0), [props.width, props.photos]);
-    let { rowH, rowPics } = calculate(props.photos, props.width - 20);
+    let { rowH, rowPics } = calculate(props.photos, props.width - 12);
     rowH = [...props.heights, ...rowH];
     rowPics = [...props.lines, ...rowPics];
-    const getItemSize = (index: number) => rowH[index];
+    const getItemSize = (index: number) => (index !== rowH.length - 1 ? rowH[index] : rowH[index] + 20);
 
     return (
         <List
