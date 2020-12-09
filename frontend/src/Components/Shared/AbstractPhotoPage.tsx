@@ -35,7 +35,7 @@ function Photo(props: any) {
         >
             <div onClick={props.imageClick}>
                 <div style={{ backgroundColor: "#eeeeee", height: props.y - 5, width: props.x - 5 }}>
-                    <img alt={props.id} style={{ transition: "0.05s linear", transform: `scale(${padding})` }} src={url} height={props.y - 5} width={props.x - 5} />
+                    <div style={{ transition: "0.05s linear", transform: `scale(${padding})`, backgroundImage: `url(${url})`, height: props.y - 5, width: props.x - 5, backgroundSize: "100% 100%" }} />
                 </div>
             </div>
             {(vis || props.anySelected() || true) && <input className={classes.photoBox} style={{ opacity: opacity }} readOnly={true} checked={props.selected} type="checkbox" onClick={props.click} />}
