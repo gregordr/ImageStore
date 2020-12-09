@@ -126,7 +126,7 @@ export default function AbstractPhotoPage(props: {
     lines: any[];
 }) {
     const listRef = useRef<List>(null);
-    useEffect(() => listRef.current?.resetAfterIndex(0), [props.width, props.photos]);
+    useEffect(() => listRef.current?.resetAfterIndex(0), [props.width, props.photos, props.heights]);
     let { rowH, rowPics } = calculate(props.photos, props.width - 12);
     rowH = [...props.heights, ...rowH];
     rowPics = [...props.lines, ...rowPics];

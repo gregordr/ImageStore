@@ -13,89 +13,6 @@ import AlbumInfo from "./AlbumInfo";
 import AbstractAlbumPage from "../Shared/AbstractAlbumPage";
 import AutoSizer from "react-virtualized-auto-sizer";
 
-const theme = createMuiTheme({
-    palette: {
-        primary: {
-            main: "#cccccc",
-            dark: "#cccccc",
-            light: "#cccccc",
-        },
-    },
-});
-
-function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Promise<void> }) {
-    const useStyles = makeStyles((theme: Theme) =>
-        createStyles({
-            root: {
-                overflow: "hidden",
-                backgroundColor: theme.palette.background.paper,
-                margin: 10,
-                padding: 5,
-            },
-            gridList: {
-                width: 500,
-                height: 450,
-            },
-            icon: {
-                color: "rgba(255, 255, 255, 0.54)",
-            },
-            photoDiv: {
-                margin: 5,
-                // height: props.y,
-                // width: props.x,
-                // "align-items": "center",
-                // "justify-content": "center",
-                display: "flex",
-                flexFlow: "row wrap",
-                // background: "#aaaaaa33",
-                // position: "relative",
-            },
-            // photoBox: { transition: "0.07s all  linear", position: "absolute", left: 15, top: 15, height: 20, width: 20, opacity: opacity },
-        })
-    );
-
-    const classes = useStyles();
-    const history = useHistory();
-    const [openInfo, setOpenInfo] = useState(false);
-
-    const onImageClick = () => {
-        history.push(`/albums/open/${props.album.id}`);
-    };
-
-    const onInfoClick = () => {};
-
-    return (
-        <GridList className={classes.root}>
-            <GridListTile key={props.album.id} style={{ height: 200, width: 200 }} onClick={onImageClick}>
-                {props.album.cover === null ? (
-                    <PhotoAlbum style={{ height: 200, width: 200, color: "#666666" }} />
-                ) : (
-                    <img src={"http://localhost:4000/media/" + props.album.cover} alt={props.album.name} />
-                )}
-                <GridListTileBar
-                    title={props.album.name}
-                    subtitle={<span>{props.album.imagecount} elements</span>}
-                    actionIcon={
-                        <div
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onInfoClick();
-                            }}
-                        >
-                            <ThemeProvider theme={theme}>
-                                <IconButton aria-label={`info about ${props.album.name}`} color="primary" onClick={() => setOpenInfo(true)} className={classes.icon}>
-                                    <Info />
-                                </IconButton>
-                            </ThemeProvider>
-                        </div>
-                    }
-                />
-            </GridListTile>
-            <AlbumInfo album={props.album} open={openInfo} setOpen={setOpenInfo} fetchAlbums={props.fetchAlbums}></AlbumInfo>
-        </GridList>
-    );
-}
-
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -185,7 +102,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     const openAlbum = (album: AlbumT) => () => {};
 
-    const heights = [20];
+    const heights = [searchTerm === "" ? 0 : 20];
 
     const lines = [
         <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
