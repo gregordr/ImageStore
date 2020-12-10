@@ -126,12 +126,22 @@ export default function AbstractPhotoPage(props: {
     anySelected: any;
     heights: number[];
     lines: any[];
+    viewId: string;
+    setViewId: (id: string) => void;
 }) {
+    const [jumped, setJumped] = useState(false);
     const listRef = useRef<List>(null);
-    useEffect(() => listRef.current?.resetAfterIndex(0), [props.width, props.photos, props.heights]);
-    let { rowH, rowPics } = calculate(props.photos, props.width - 12);
-    rowH = [...props.heights, ...rowH];
-    rowPics = [...props.lines, ...rowPics];
+    useEffect(() => {
+        listRef.current?.resetAfterIndex(0);
+        const item = tmpRowPics.findIndex((photos: PhotoT[]) => {
+            return photos.filter((p) => p.id === props.viewId).length !== 0;
+        });
+        if (!jumped && item !== 1) listRef.current?.scrollToItem(item + props.lines.length, "smart");
+        setJumped(true);
+    }, [props.width, props.photos, props.heights]);
+    const { rowH: tmpRowH, rowPics: tmpRowPics } = calculate(props.photos, props.width - 12);
+    const rowH = [...props.heights, ...tmpRowH];
+    const rowPics = [...props.lines, ...tmpRowPics];
     const getItemSize = (index: number) => (index !== rowH.length - 1 ? rowH[index] : rowH[index] + 20);
 
     return (

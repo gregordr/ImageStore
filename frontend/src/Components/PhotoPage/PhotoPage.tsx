@@ -73,6 +73,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [selectable, setSelectable] = useState(false);
     const [open, setOpen] = useState(false);
     const [showLoadingBar, setShowLoadingBar] = useState(true);
+    const [viewId, setViewId] = useState("");
 
     const [searchTerm, setSearchTerm] = useState("");
     const url = searchTerm === "" ? "media/all" : "media/search/" + searchTerm;
@@ -237,7 +238,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         <div>
             <Switch>
                 <Route path="/view">
-                    <ViewPage photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
+                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
                 </Route>
                 <Route path="/">
                     <div className={classes.root}>
@@ -273,6 +274,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                                         imageClickHandler={imageClickHandler}
                                         lines={lines}
                                         heights={heights}
+                                        viewId={viewId}
+                                        setViewId={setViewId}
                                     />
                                 )}
                             </AutoSizer>

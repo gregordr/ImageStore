@@ -77,6 +77,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const [selectable, setSelectable] = useState(false);
     const [open, setOpen] = useState(false);
     const [showLoadingBar, setShowLoadingBar] = useState(true);
+    const [viewId, setViewId] = useState("");
 
     const [searchTerm, setSearchTerm] = useState("");
     const url = searchTerm === "" ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`;
@@ -298,7 +299,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         <div>
             <Switch>
                 <Route path="/albums/open/:albumID/view">
-                    <ViewPage photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
+                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
                 </Route>
                 <Route path="/">
                     <div className={classes.root}>
@@ -335,6 +336,8 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                                         anySelected={anySelected}
                                         lines={lines}
                                         heights={heights}
+                                        viewId={viewId}
+                                        setViewId={setViewId}
                                     />
                                 )}
                             </AutoSizer>

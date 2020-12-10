@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./ViewPage.css";
 import { useHistory } from "react-router-dom";
 import { useTransition, animated } from "react-spring";
@@ -98,6 +98,10 @@ export default function ViewPage(props: any) {
     const [opacityRight, setOpacityRight] = useState(0);
     const [opacityLeft, setOpacityLeft] = useState(0);
     const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        props.setViewId(id);
+    }, [id, props.setViewed]);
 
     const index = props.photos.findIndex((v: PhotoT) => v.id === id);
     const photo = props.photos[index];
