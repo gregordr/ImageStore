@@ -81,8 +81,6 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         } else {
             window.alert(await resp.data);
         }
-
-        console.log(resp.data);
     };
 
     useEffect(() => {
