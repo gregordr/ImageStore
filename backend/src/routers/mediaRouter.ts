@@ -4,6 +4,7 @@ import { upload } from '../middleware/upload'
 import multer from "multer";
 import { addMedia, removeMedia, getMedia } from '../database/mediaDatabase'
 import sizeOf from 'image-size';
+import sharp from 'sharp';
 
 export const router = express.Router();
 
@@ -60,7 +61,10 @@ router.post('/add', async (req, res) => {
                 try {
                     const oid = await addMedia(f.originalname, dims.height, dims.width)
                     await fsPromises.rename("media/" + f.filename, "media/" + oid);
+                    await sharp("media/" + oid).resize({ width: dims.width / dims.height * 300, height: 300 }).toFile("media/thumb_" + oid)
+
                     oids.push(oid)
+
                 } catch {
                     //Idk how to handle this best actually, maybe let's just send back the stuff we did insert
                 }

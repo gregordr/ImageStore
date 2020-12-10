@@ -17,7 +17,7 @@ const useStyles = makeStyles({
 });
 
 function Photo(props: any) {
-    const url = "http://localhost:4000/media/" + props.id;
+    const url = "http://localhost:4000/media/thumb_" + props.id;
     const padding = props.selected ? 0.9 : 1.0;
     const [vis, setVis] = useState(0);
     const opacity = props.anySelected() ? 255 : vis;
