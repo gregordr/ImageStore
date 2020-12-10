@@ -4,7 +4,6 @@ import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Settings, Searc
 import SearchBar from "material-ui-search-bar";
 import { createStyles, LinearProgress, makeStyles, Theme } from "@material-ui/core";
 import TopBarStyle from "../Shared/TopBarStyle";
-import Axios from "axios";
 
 export default function TopBar(props: any) {
     const classes = TopBarStyle();

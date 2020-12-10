@@ -2,6 +2,9 @@ import axios from "axios";
 import qs from "qs";
 import { PhotoT } from "./Interfaces";
 
+axios.defaults.baseURL = "http://localhost:4000";
+axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+
 export async function setCover(albumId: string, photoId: string) {
     await axios.post(`/albums/setCover/${albumId}/${photoId}`);
 }
