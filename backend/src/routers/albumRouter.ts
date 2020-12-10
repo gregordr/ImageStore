@@ -56,7 +56,7 @@ router.get('/search/:term', async (req, res) => {
 
 router.post('/addPhotos/', async (req, res) => {
     try {
-        res.status(200).send(await addPhotosToAlbums(req.body.photos, req.body.albums));
+        res.status(200).send(await (await addPhotosToAlbums(req.body.photos, req.body.albums)).toString());
     } catch (err) {
         res.status(500).send(err.toString());
     }

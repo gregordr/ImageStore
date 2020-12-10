@@ -49,16 +49,14 @@ export async function getMediaInAlbum(album: string, searchTerm: string): Promis
     });
 }
 
-export async function addPhotosToAlbums(photoIDs: string[], albumIDs: string[]): Promise<(string | DatabaseError)[][]> {
-    return await transaction<(string | DatabaseError)[][]>(async (client) => {
-        return Promise.all(albumIDs.map((albumID: string) => Promise.all(photoIDs.map(async (photoID: string) => {
-            try {
-                return (await client.query(`INSERT INTO ${await album_photo} VALUES ($1::OID, $2::OID);`, [albumID, photoID])).oid.toString();
-            } catch (err) {
-                return new DatabaseError('Album or photo either do not exist, or the photo is already in the album');
-            }
+export async function addPhotosToAlbums(photoIDs: string[], albumIDs: string[]): Promise<(number | DatabaseError)> {
+    return await transaction<(number | DatabaseError)>(async (client) => {
+        try {
+            return (await client.query(`WITH VALa (aa) AS (SELECT * FROM UNNEST ($1::OID[])), VALb(bb) AS(SELECT * FROM UNNEST ($2::OID[])) INSERT INTO ${await album_photo} SELECT * FROM valA CROSS JOIN valB ON CONFLICT DO NOTHING`, [albumIDs, photoIDs])).rowCount;
+        } catch (err) {
+            console.log(err)
+            return new DatabaseError('Album or photo either do not exist');
         }
-        ))));
     }, false)
 }
 
