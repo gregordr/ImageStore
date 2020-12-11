@@ -1,14 +1,14 @@
 import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Button } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
 import axios from "axios";
 import AddToAlbum from "../Shared/AddToAlbum";
 import qs from "qs";
-import { PhotoT, AlbumT } from "../../Interfaces";
+import { PhotoT, AlbumT, Snack } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
 import { download } from "../../API";
 import TopRightBar from "./TopRightBar";
@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any }) {
+export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; setSnack: (body: Snack) => void }) {
     const classes = useStyles();
     const hiddenFileInput: RefObject<HTMLInputElement> = React.useRef(null);
 
@@ -200,20 +200,42 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         },
     };
 
+    const toAlbum = (photos: string[]) => {
+        setSelected(photos)
+        topBarButtonFunctions.addToAlbum()
+    }
+
     const upload = async (event: ChangeEvent<HTMLInputElement>) => {
         try {
             if (!event.target.files) return;
             const formData = new FormData();
-            [...event.target.files].forEach((f) => {
-                formData.append("file", f);
-            });
+            for (const file of event.target.files) {
+                formData.append("file", file);
+            }
             const res = await axios.post("/media/add", formData);
             console.log(res);
+            const photos = res.data.map((x : number) => x.toString())
+            // TODO handle non-2xx
+            props.setSnack({
+                open: true,
+                severity: "success",
+                title: "",
+                body: `${event.target.files.length} element${event.target.files.length === 1 ? " was" : "s were"} uploaded`,
+                action: <Button color="inherit" size="small" onClick={() => toAlbum(photos)}>
+                            Add to album
+                        </Button>,
+                autoHideDuration: 3 * 1000
+            });
             await fetchPhotos();
         } catch (error) {
-            if (error.response) {
-                window.alert(error.response.data);
-            }
+            props.setSnack({
+                open: true,
+                severity: "error",
+                title: "Failed to upload element(s)",
+                body: error.response ? error.response.data : "",
+                action: null,
+                autoHideDuration: null
+            });
         }
     };
 
@@ -277,7 +299,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                     </div>
                 </Route>
             </Switch>
-            <AddToAlbum albums={albums} open={open} setOpen={setOpen} cb={cb}></AddToAlbum>
+            <AddToAlbum albums={albums} open={open} setOpen={setOpen} cb={cb}/>
         </div>
     );
 }
