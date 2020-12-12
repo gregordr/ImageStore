@@ -14,6 +14,8 @@ import { addPhotos, addPhotosToAlbums, deletePhotos, download } from "../../API"
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
+import { useSnackbar } from 'notistack';
+import SnackbarAction from "../Shared/SnackbarAction";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -86,6 +88,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
     const [searchTerm, setSearchTerm] = useState("");
     const url = searchTerm === "" ? "media/all" : "media/search/" + searchTerm;
 
@@ -218,26 +222,26 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             const res = await axios.post("/media/add", formData);
             console.log(res);
             const photos = res.data.map((x : number) => x.toString())
-            // TODO handle non-2xx
-            props.setSnack({
-                open: true,
-                severity: "success",
-                title: "",
-                body: `${event.target.files.length} element${event.target.files.length === 1 ? " was" : "s were"} uploaded`,
-                action: <Button color="inherit" size="small" onClick={() => toAlbum(photos)}>
-                            Add to album
-                        </Button>,
-                autoHideDuration: 3 * 1000
+
+            const message = `${event.target.files.length} element${event.target.files.length === 1 ? " was" : "s were"} uploaded`;
+            const action = SnackbarAction(closeSnackbar,
+                <Button color="inherit" size="small" onClick={() => toAlbum(photos)}>
+                    Add to album
+                </Button>
+            )
+            enqueueSnackbar(message, {
+                variant: "success",
+                autoHideDuration: 3000,
+                action
             });
             await fetchPhotos();
         } catch (error) {
-            props.setSnack({
-                open: true,
-                severity: "error",
-                title: "Failed to upload element(s)",
-                body: error.response ? error.response.data : "",
-                action: null,
-                autoHideDuration: null
+            const message = error.response ? error.response.data : "";
+            const action = SnackbarAction(closeSnackbar);
+            enqueueSnackbar(message, {
+                variant: "error",
+                autoHideDuration: null,
+                action
             });
         }
     };
