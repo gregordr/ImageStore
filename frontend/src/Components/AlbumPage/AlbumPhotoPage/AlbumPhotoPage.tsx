@@ -13,6 +13,7 @@ import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
 import { download, setCover } from "../../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
+import SearchBar from "material-ui-search-bar";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -24,6 +25,11 @@ const useStyles = makeStyles((theme: Theme) =>
             [theme.breakpoints.up("sm")]: {
                 width: drawerWidth,
                 flexShrink: 0,
+            },
+        },
+        onlyMobile: {
+            [theme.breakpoints.up("md")]: {
+                display: "none",
             },
         },
         appBar: {
@@ -79,6 +85,8 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const [showLoadingBar, setShowLoadingBar] = useState(true);
     const [viewId, setViewId] = useState("");
 
+    const [showSearchBar, setShowSearchBar] = useState(false);
+    const [searchBarText, setSearchBarText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const url = searchTerm === "" ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`;
 
@@ -275,6 +283,9 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         search: (s: string) => async () => {
             setSearchTerm(s);
         },
+        mobileSearch: () => {
+            setShowSearchBar(!showSearchBar);
+        },
     };
 
     //#endregion handlers
@@ -320,9 +331,22 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
 
+                            {showSearchBar && (
+                                <SearchBar
+                                    onCancelSearch={async () => {
+                                        setSearchBarText("");
+                                        topBarButtonFunctions.search("")();
+                                    }}
+                                    style={{ marginLeft: -12, borderRadius: 0 }}
+                                    className={classes.onlyMobile}
+                                    value={searchBarText}
+                                    onChange={(s) => setSearchBarText(s)}
+                                    onRequestSearch={topBarButtonFunctions.search(searchBarText)}
+                                />
+                            )}
                             <AutoSizer
                                 style={{
-                                    height: `calc(100vh - ${129}px)`,
+                                    height: `calc(100vh - ${129 + (showSearchBar ? 48 * 2 : 0)}px)`,
                                 }}
                             >
                                 {({ height, width }) => (

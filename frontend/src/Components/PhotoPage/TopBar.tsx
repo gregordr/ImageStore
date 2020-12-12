@@ -13,7 +13,16 @@ export default function TopBar(props: any) {
     return (
         <div className={classes.TopBar}>
             <div className={classes.middle}>
-                <SearchBar className={classes.notMobile} value={searchBarText} onChange={(s) => setSearchBarText(s)} onRequestSearch={props.buttonFunctions.search(searchBarText)} />
+                <SearchBar
+                    onCancelSearch={async () => {
+                        setSearchBarText("");
+                        props.buttonFunctions.search("")();
+                    }}
+                    className={classes.notMobile}
+                    value={searchBarText}
+                    onChange={(s) => setSearchBarText(s)}
+                    onRequestSearch={props.buttonFunctions.search(searchBarText)}
+                />
                 <LinearProgress
                     style={{
                         borderBottomLeftRadius: 100,
@@ -24,16 +33,16 @@ export default function TopBar(props: any) {
                 />
             </div>
             <div className={classes.right}>
-                {props.numSelected() === 0 && (
-                    <div style={{ float: "left" }}>
-                        <IconButton className={classes.onlyMobile} color="primary" aria-label="search" onClick={props.buttonFunctions.settings}>
-                            <Search />
-                        </IconButton>
+                <div style={{ float: "left" }}>
+                    <IconButton className={classes.onlyMobile} color="primary" aria-label="search" onClick={props.buttonFunctions.mobileSearch}>
+                        <Search />
+                    </IconButton>
+                    {props.numSelected() === 0 && (
                         <IconButton className={classes.onlyMobile} color="primary" aria-label="select" onClick={props.buttonFunctions.select}>
                             <CheckBox />
                         </IconButton>
-                    </div>
-                )}
+                    )}
+                </div>
                 {props.numSelected() === 0 && (
                     <IconButton className="IconButton" color="primary" aria-label="upload" onClick={props.buttonFunctions.upload}>
                         <CloudUpload />

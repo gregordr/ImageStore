@@ -60,7 +60,15 @@ function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Pro
                 {props.album.cover === null ? (
                     <PhotoAlbum style={{ height: props.dimension, width: props.dimension, color: "#666666" }} />
                 ) : (
-                    <div style={{ backgroundImage: `url(${"http://localhost:4000/media/thumb_" + props.album.cover})`, backgroundSize: "cover", height: props.dimension, width: props.dimension }} />
+                    <div
+                        style={{
+                            backgroundImage: `url(${"http://localhost:4000/media/thumb_" + props.album.cover})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            height: props.dimension,
+                            width: props.dimension,
+                        }}
+                    />
                 )}
                 <GridListTileBar
                     title={props.album.name}

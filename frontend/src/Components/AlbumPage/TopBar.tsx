@@ -12,7 +12,16 @@ export default function TopBar(props: any) {
     return (
         <div className={classes.TopBar}>
             <div className={classes.middle}>
-                <SearchBar className={classes.notMobile} value={searchBarText} onChange={(s) => setSearchBarText(s)} onRequestSearch={props.buttonFunctions.search(searchBarText)} />
+                <SearchBar
+                    onCancelSearch={async () => {
+                        setSearchBarText("");
+                        props.buttonFunctions.search("")();
+                    }}
+                    className={classes.notMobile}
+                    value={searchBarText}
+                    onChange={(s) => setSearchBarText(s)}
+                    onRequestSearch={props.buttonFunctions.search(searchBarText)}
+                />
                 <LinearProgress
                     style={{
                         borderBottomLeftRadius: 100,
@@ -23,7 +32,7 @@ export default function TopBar(props: any) {
                 />
             </div>
             <div className={classes.right}>
-                <IconButton className={classes.onlyMobile} color="primary" aria-label="search" onClick={props.buttonFunctions.settings}>
+                <IconButton className={classes.onlyMobile} color="primary" aria-label="search" onClick={props.buttonFunctions.mobileSearch}>
                     <Search />
                 </IconButton>
                 <IconButton className="IconButton" color="primary" aria-label="add" onClick={props.buttonFunctions.add}>
