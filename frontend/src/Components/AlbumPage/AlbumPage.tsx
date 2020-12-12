@@ -64,6 +64,9 @@ const useStyles = makeStyles((theme: Theme) =>
         content: {
             flexGrow: 1,
             paddingLeft: 12,
+            display: "flex",
+            flexDirection: "column",
+            height: "100vh",
         },
     })
 );
@@ -158,15 +161,13 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                                     onRequestSearch={topBarButtonFunctions.search(searchBarText)}
                                 />
                             )}
-                            <AutoSizer
-                                style={{
-                                    height: `calc(100vh - ${129 + (showSearchBar ? 48 * 2 : 0)}px)`,
-                                }}
-                            >
-                                {({ height, width }) => (
-                                    <AbstractAlbumPage height={height} width={width} albums={albums} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} />
-                                )}
-                            </AutoSizer>
+                            <div style={{ flexGrow: 1 }}>
+                                <AutoSizer>
+                                    {({ height, width }) => (
+                                        <AbstractAlbumPage height={height} width={width} albums={albums} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} />
+                                    )}
+                                </AutoSizer>
+                            </div>
                         </main>
                     </div>
                 </Route>

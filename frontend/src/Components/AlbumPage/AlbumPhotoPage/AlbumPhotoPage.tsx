@@ -65,6 +65,9 @@ const useStyles = makeStyles((theme: Theme) =>
         content: {
             flexGrow: 1,
             paddingLeft: 12,
+            display: "flex",
+            flexDirection: "column",
+            height: "100vh",
         },
     })
 );
@@ -330,41 +333,38 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
-
                             {showSearchBar && (
                                 <SearchBar
                                     onCancelSearch={async () => {
                                         setSearchBarText("");
                                         topBarButtonFunctions.search("")();
                                     }}
-                                    style={{ marginLeft: -12, borderRadius: 0 }}
+                                    style={{ marginLeft: -12, borderRadius: 0, alignSelf: "flex-top" }}
                                     className={classes.onlyMobile}
                                     value={searchBarText}
                                     onChange={(s) => setSearchBarText(s)}
                                     onRequestSearch={topBarButtonFunctions.search(searchBarText)}
                                 />
                             )}
-                            <AutoSizer
-                                style={{
-                                    height: `calc(100vh - ${129 + (showSearchBar ? 48 * 2 : 0)}px)`,
-                                }}
-                            >
-                                {({ height, width }) => (
-                                    <AbstractPhotoPage
-                                        height={height}
-                                        width={width}
-                                        imageClickHandler={imageClickHandler}
-                                        photos={photos}
-                                        clickHandler={clickHandler}
-                                        selected={selected}
-                                        anySelected={anySelected}
-                                        lines={lines}
-                                        heights={heights}
-                                        viewId={viewId}
-                                        setViewId={setViewId}
-                                    />
-                                )}
-                            </AutoSizer>
+                            <div style={{ flexGrow: 1 }}>
+                                <AutoSizer>
+                                    {({ height, width }) => (
+                                        <AbstractPhotoPage
+                                            height={height}
+                                            width={width}
+                                            photos={photos}
+                                            clickHandler={clickHandler}
+                                            selected={selected}
+                                            anySelected={anySelected}
+                                            imageClickHandler={imageClickHandler}
+                                            lines={lines}
+                                            heights={heights}
+                                            viewId={viewId}
+                                            setViewId={setViewId}
+                                        />
+                                    )}
+                                </AutoSizer>
+                            </div>
                         </main>
                     </div>
                 </Route>
