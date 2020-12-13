@@ -8,7 +8,7 @@ import ViewPage from "../ViewPage/ViewPage";
 import axios from "axios";
 import AddToAlbum from "../Shared/AddToAlbum";
 import qs from "qs";
-import { PhotoT, AlbumT, Snack } from "../../Interfaces";
+import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
 import { download } from "../../API";
 import TopRightBar from "./TopRightBar";
@@ -62,7 +62,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; setSnack: (body: Snack) => void }) {
+export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any }) {
     const classes = useStyles();
     const hiddenFileInput: RefObject<HTMLInputElement> = React.useRef(null);
 

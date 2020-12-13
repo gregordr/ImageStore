@@ -1,12 +1,10 @@
 import React, { useState } from "react";
-import { Divider, Drawer, Hidden, List, ListItem, ListItemIcon, ListItemText, Snackbar, IconButton, Slide} from "@material-ui/core";
+import { Divider, Drawer, Hidden, List, ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import PhotoPage from "./PhotoPage/PhotoPage";
-import { Photo, PhotoAlbum, Close } from "@material-ui/icons";
+import { Photo, PhotoAlbum } from "@material-ui/icons";
 import { Switch, Route, useHistory, useLocation } from "react-router-dom";
 import AlbumPage from "./AlbumPage/AlbumPage";
-import { Snack } from "../Interfaces";
-import { Alert, AlertTitle } from "@material-ui/lab";
 
 const drawerWidth = 240;
 
@@ -58,23 +56,9 @@ export default function ResponsiveDrawer({ window }: any) {
     const classes = useStyles();
     const theme = useTheme();
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [snack, setSnack] = useState<Snack>({ open: false, severity: "info", title: "", body: "", action: null, autoHideDuration: null });
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
-    };
-
-    const closeSnack = (event?: React.SyntheticEvent, reason?: string) => {
-        if (reason === "clickaway") return;
-
-        setSnack({
-            open: false,
-            severity: snack.severity,
-            title: snack.title,
-            body: snack.body,
-            action: snack.action,
-            autoHideDuration: snack.autoHideDuration
-        });
     };
 
     const history = useHistory();
@@ -154,34 +138,13 @@ export default function ResponsiveDrawer({ window }: any) {
     );
 
     return (
-        <>
-            <Switch>
-                <Route path="/albums">
-                    <AlbumPage drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
-                </Route>
-                <Route path="/">
-                    <PhotoPage drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} setSnack={setSnack} />
-                </Route>
-            </Switch>
-            <Snackbar open={snack.open} onClose={closeSnack} autoHideDuration={snack.autoHideDuration} TransitionComponent={Slide}>
-                <Alert variant="standard" onClose={closeSnack} severity={snack.severity}
-                    action={
-                        <>
-                            {snack.action}
-                            <IconButton
-                                size="small"
-                                color="inherit"
-                                onClick={closeSnack}
-                            >
-                                <Close fontSize="small" />
-                            </IconButton>
-                      </>
-                    }
-                >
-                    {snack.title ? <AlertTitle>{snack.title}</AlertTitle> : null}
-                    {snack.body}
-                </Alert>
-            </Snackbar>
-        </>
+        <Switch>
+            <Route path="/albums">
+                <AlbumPage drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
+            </Route>
+            <Route path="/">
+                <PhotoPage drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
+            </Route>
+        </Switch>
     );
 }
