@@ -165,7 +165,7 @@ export default function AbstractAlbumPage(props: {
     lines: any[];
 }) {
     const listRef = useRef<List>(null);
-    useEffect(() => listRef.current?.resetAfterIndex(0), [props.width, props.albums]);
+    useEffect(() => listRef.current?.resetAfterIndex(0), [props.width, props.albums, props.heights]);
     let { rowH, rowPics } = calculate(props.albums, props.width - 20);
     rowH = [...props.heights, ...rowH];
     rowPics = [...props.lines, ...rowPics];
