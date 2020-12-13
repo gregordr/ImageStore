@@ -156,11 +156,12 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     const upload = async (event: ChangeEvent<HTMLInputElement>) => {
         try {
-            if (!event.target.files) return;
+            if (!event.target.files || event.target.files.length === 0) return;
             const formData = new FormData();
             [...event.target.files].forEach((f) => {
                 formData.append("file", f);
             });
+            event.target.value = "";
             const res = await axios.post("/media/add", formData);
 
             const requestBody = {
