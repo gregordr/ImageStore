@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+    frontend:
+        build: frontend
+        ports:
+            - "3000:3000"
+    backend:
+        build: backend
+        ports:
+            - "4000:4000"
+        environment:
+            PGSTRING: postgres://postgres:example@db:5432/postgres
+
+    db:
+        image: postgres:11
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: example

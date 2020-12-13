@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+.gitignore
+README.md
+build/*
+media/*
+.vscode/*
+.eslint*
+.env
