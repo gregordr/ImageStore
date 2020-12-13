@@ -13,6 +13,7 @@ import AlbumInfo from "./AlbumInfo";
 import AbstractAlbumPage from "../Shared/AbstractAlbumPage";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
+import { createAlbum } from "../../API";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -111,7 +112,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     const createAlbumCallback = async (name: string) => {
-        await axios.post("/albums/new/" + name);
+        await createAlbum(name);
         await fetchAlbums();
     };
 

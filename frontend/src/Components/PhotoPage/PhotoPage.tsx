@@ -10,7 +10,7 @@ import AddToAlbum from "../Shared/AddToAlbum";
 import qs from "qs";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
-import { download } from "../../API";
+import { addPhotos, addPhotosToAlbums, deletePhotos, download } from "../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
@@ -139,12 +139,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     const cb = async (albumIds: any) => {
-        const requestBody = {
-            photos: selected,
-            albums: albumIds,
-        };
-
-        await axios.post("/albums/addPhotos", qs.stringify(requestBody));
+        await addPhotosToAlbums(selected, albumIds);
         topBarButtonFunctions.unselect();
     };
 
@@ -163,26 +158,12 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     const deletePhoto = async (pid: any) => {
-        try {
-            await axios.post("/media/delete/" + pid);
-        } catch (error: any) {
-            if (error.response) {
-                window.alert(error.response.data);
-            }
-            console.log(error);
-        }
+        await deletePhotos([pid]);
     };
 
     const topBarButtonFunctions = {
         delete: async () => {
-            await Promise.all(
-                photos.map(async (p) => {
-                    if (selected.includes(p.id)) {
-                        return await deletePhoto(p.id);
-                    }
-                })
-            );
-
+            await deletePhotos(selected);
             topBarButtonFunctions.unselect();
             await fetchPhotos();
         },
@@ -225,8 +206,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             [...event.target.files].forEach((f) => {
                 formData.append("file", f);
             });
-            const res = await axios.post("/media/add", formData);
-            console.log(res);
+            await addPhotos(formData);
             await fetchPhotos();
         } catch (error) {
             if (error.response) {

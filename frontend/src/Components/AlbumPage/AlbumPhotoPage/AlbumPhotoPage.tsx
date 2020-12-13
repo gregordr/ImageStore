@@ -10,7 +10,7 @@ import AddToAlbum from "../../Shared/AddToAlbum";
 import qs from "qs";
 import { PhotoT, AlbumT } from "../../../Interfaces";
 import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
-import { download, setCover } from "../../../API";
+import { addPhotos, addPhotosToAlbums, deletePhotos, download, removePhotosFromAlbum, setCover } from "../../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
@@ -121,37 +121,18 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     //#region API
 
-    const cb = async (albumIds: any) => {
-        const requestBody = {
-            photos: selected,
-            albums: albumIds,
-        };
-
-        await axios.post("/albums/addPhotos", qs.stringify(requestBody));
+    const cb = async (albumIds: string[]) => {
+        await addPhotosToAlbums(selected, albumIds);
         await props.refresh();
         topBarButtonFunctions.unselect();
     };
 
-    const deletePhoto = async (pid: any) => {
-        try {
-            await axios.post("/media/delete/" + pid);
-        } catch (error: any) {
-            if (error.response) {
-                window.alert(error.response.data);
-            }
-            console.log(error);
-        }
+    const deletePhoto = async (pid: string) => {
+        await deletePhotos([pid]);
     };
 
-    const removePhoto = async (pid: any) => {
-        try {
-            await axios.post(`/albums/remove/${id}/${pid}`);
-        } catch (error: any) {
-            if (error.response) {
-                window.alert(error.response.data);
-            }
-            console.log(error);
-        }
+    const removePhoto = async (pid: string) => {
+        await removePhotosFromAlbum([pid], id);
     };
 
     const upload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -162,14 +143,9 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                 formData.append("file", f);
             });
             event.target.value = "";
-            const res = await axios.post("/media/add", formData);
+            const data = await addPhotos(formData);
 
-            const requestBody = {
-                photos: res.data,
-                albums: [id],
-            };
-
-            await axios.post("/albums/addPhotos", qs.stringify(requestBody));
+            await addPhotosToAlbums(data, [id]);
             await fetchPhotos();
             await props.refresh();
         } catch (error) {
@@ -235,26 +211,14 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             await props.refresh();
         },
         delete: async () => {
-            await Promise.all(
-                photos.map(async (p) => {
-                    if (selected.includes(p.id)) {
-                        return await deletePhoto(p.id);
-                    }
-                })
-            );
+            await deletePhotos(selected);
 
             topBarButtonFunctions.unselect();
             await fetchPhotos();
             await props.refresh();
         },
         remove: async () => {
-            await Promise.all(
-                photos.map(async (p) => {
-                    if (selected.includes(p.id)) {
-                        return await removePhoto(p.id);
-                    }
-                })
-            );
+            await removePhotosFromAlbum(selected, id);
 
             topBarButtonFunctions.unselect();
             await fetchPhotos();
