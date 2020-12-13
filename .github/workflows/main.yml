@@ -29,7 +29,9 @@ jobs:
         uses: docker/build-push-action@v2.2.1
         with:
           file: ./frontend/Dockerfile
+          context: .
       - name: Build backend
         uses: docker/build-push-action@v2.2.1
         with:
           file: ./backend/Dockerfile
+          context: .
