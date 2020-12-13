@@ -3,10 +3,9 @@ import { makeStyles, Theme, createStyles } from "@material-ui/core";
 export default makeStyles((theme: Theme) =>
     createStyles({
         TopBar: {
-            "grid-area": "TopBar",
             background: "#ffffff",
-            width: "100vw",
             display: "flex",
+            flexGrow: 1,
         },
         left: {
             transition: "all 1s linear",

@@ -10,35 +10,38 @@ export default function TopBar(props: any) {
 
     const [searchBarText, setSearchBarText] = useState("");
     return (
-        <div className={classes.TopBar}>
-            <div className={classes.middle}>
-                <SearchBar
-                    onCancelSearch={async () => {
-                        setSearchBarText("");
-                        props.buttonFunctions.search("")();
-                    }}
-                    className={classes.notMobile}
-                    value={searchBarText}
-                    onChange={(s) => setSearchBarText(s)}
-                    onRequestSearch={props.buttonFunctions.search(searchBarText)}
-                />
-                <LinearProgress
-                    style={{
-                        borderBottomLeftRadius: 100,
-                        borderBottomRightRadius: 100,
-                        marginTop: -2,
-                        display: props.show ? "block" : "none",
-                    }}
-                />
+        <div style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+            <div className={classes.TopBar}>
+                <div className={classes.middle}>
+                    <SearchBar
+                        onCancelSearch={async () => {
+                            setSearchBarText("");
+                            props.buttonFunctions.search("")();
+                        }}
+                        className={classes.notMobile}
+                        value={searchBarText}
+                        onChange={(s) => setSearchBarText(s)}
+                        onRequestSearch={props.buttonFunctions.search(searchBarText)}
+                    />
+                </div>
+                <div className={classes.right}>
+                    <IconButton className={classes.onlyMobile} color="primary" aria-label="search" onClick={props.buttonFunctions.mobileSearch}>
+                        <Search />
+                    </IconButton>
+                    <IconButton className="IconButton" color="primary" aria-label="add" onClick={props.buttonFunctions.add}>
+                        <CreateNewFolder />
+                    </IconButton>
+                </div>
             </div>
-            <div className={classes.right}>
-                <IconButton className={classes.onlyMobile} color="primary" aria-label="search" onClick={props.buttonFunctions.mobileSearch}>
-                    <Search />
-                </IconButton>
-                <IconButton className="IconButton" color="primary" aria-label="add" onClick={props.buttonFunctions.add}>
-                    <CreateNewFolder />
-                </IconButton>
-            </div>
+            <LinearProgress
+                style={{
+                    marginTop: -2,
+                    display: props.show ? "block" : "none",
+                    flexGrow: 1,
+                    marginLeft: -24,
+                    marginRight: -24,
+                }}
+            />
         </div>
     );
 }
