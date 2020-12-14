@@ -25,7 +25,7 @@ export async function addPhotos(
             const action = SnackbarAction(
                 closeSnackbar,
                 toAlbum ? (
-                    <Button color="inherit" size="small" onClick={() => toAlbum(photos)}>
+                    <Button color="inherit" onClick={() => toAlbum(photos)}>
                         Add to album
                     </Button>
                 ) : null
