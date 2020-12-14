@@ -1,7 +1,7 @@
 import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Button } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
@@ -13,12 +13,7 @@ import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
 import { addPhotos, addPhotosToAlbums, deletePhotos, download } from "../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
-<<<<<<< HEAD
 import SearchBar from "material-ui-search-bar";
-=======
->>>>>>> 78dede4a5a33dd20058d30e9531baca0125489b2
-import { useSnackbar } from 'notistack';
-import SnackbarAction from "../Shared/SnackbarAction";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -91,9 +86,6 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
-    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-
-    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
     const [searchTerm, setSearchTerm] = useState("");
     const url = searchTerm === "" ? "media/all" : "media/search/" + searchTerm;
@@ -214,37 +206,13 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     }
 
     const upload = async (event: ChangeEvent<HTMLInputElement>) => {
-        try {
-            if (!event.target.files) return;
-            const formData = new FormData();
-            for (const file of event.target.files) {
-                formData.append("file", file);
-            }
-            const res = await axios.post("/media/add", formData);
-            console.log(res);
-            const photos = res.data.map((x : number) => x.toString())
-
-            const message = `${event.target.files.length} element${event.target.files.length === 1 ? " was" : "s were"} uploaded`;
-            const action = SnackbarAction(closeSnackbar,
-                <Button color="inherit" size="small" onClick={() => toAlbum(photos)}>
-                    Add to album
-                </Button>
-            )
-            enqueueSnackbar(message, {
-                variant: "success",
-                autoHideDuration: 3000,
-                action
-            });
-            await fetchPhotos();
-        } catch (error) {
-            const message = error.response && error.response.data ? error.response.data : error.toString();
-            const action = SnackbarAction(closeSnackbar);
-            enqueueSnackbar(message, {
-                variant: "error",
-                autoHideDuration: null,
-                action
-            });
+        if (!event.target.files) return;
+        const formData = new FormData();
+        for (const file of event.target.files) {
+            formData.append("file", file);
         }
+        await addPhotos(formData, toAlbum);
+        await fetchPhotos();
     };
 
     const topRightBar = (id: string, buttonFunctions: any) => {

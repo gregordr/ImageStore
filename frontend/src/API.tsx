@@ -1,13 +1,39 @@
 import axios from "axios";
 import qs from "qs";
 import { PhotoT } from "./Interfaces";
+import { useSnackbar } from 'notistack';
+import { Button } from "@material-ui/core";
+import SnackbarAction from "./Components/Shared/SnackbarAction";
 
 axios.defaults.baseURL = "http://localhost:4000";
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 
-export async function addPhotos(formData: FormData) {
-    const res = await axios.post("/media/add", formData);
-    return res.data;
+export async function addPhotos(formData: FormData, toAlbum?: (photos: string[]) => void) {
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+    try {
+        const res = await axios.post("/media/add", formData);
+        const photos = res.data.map((x : number) => x.toString())
+
+        const message = `${photos.length} element${photos.length === 1 ? " was" : "s were"} uploaded`;
+        const action = SnackbarAction(closeSnackbar, toAlbum ?
+            <Button color="inherit" size="small" onClick={() => toAlbum(photos)}>
+                Add to album
+            </Button> : null
+        )
+        enqueueSnackbar(message, {
+            variant: "success",
+            autoHideDuration: 3000,
+            action
+        });
+    } catch (error) {
+        const message = error.response && error.response.data ? error.response.data : error.toString();
+        const action = SnackbarAction(closeSnackbar);
+        enqueueSnackbar(message, {
+            variant: "error",
+            autoHideDuration: null,
+            action
+        });
+    }
 }
 
 export async function deletePhotos(photoIds: string[]) {
