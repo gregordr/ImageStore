@@ -1,7 +1,7 @@
 import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Button } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
@@ -14,6 +14,8 @@ import { addPhotos, addPhotosToAlbums, deletePhotos, download } from "../../API"
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
+import { useSnackbar } from "notistack";
+import SnackbarAction from "../Shared/SnackbarAction";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -83,6 +85,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [open, setOpen] = useState(false);
     const [showLoadingBar, setShowLoadingBar] = useState(true);
     const [viewId, setViewId] = useState("");
+
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
@@ -211,7 +215,32 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         for (const file of event.target.files) {
             formData.append("file", file);
         }
-        await addPhotos(formData, toAlbum);
+
+        try {
+            const data = await addPhotos(formData);
+            const photos = data.map((x : number) => x.toString())
+
+            const message = `${photos.length} element${photos.length === 1 ? " was" : "s were"} uploaded`;
+            const action = SnackbarAction(closeSnackbar, toAlbum ?
+                <Button color="inherit" size="small" onClick={() => toAlbum(photos)}>
+                    Add to album
+                </Button> : null
+            )
+            enqueueSnackbar(message, {
+                variant: "success",
+                autoHideDuration: 3000,
+                action
+            });
+        } catch (error) {
+            const message = error.response && error.response.data ? error.response.data : error.toString();
+            const action = SnackbarAction(closeSnackbar);
+            enqueueSnackbar(message, {
+                variant: "error",
+                autoHideDuration: null,
+                action
+            });
+        }
+
         await fetchPhotos();
     };
 
