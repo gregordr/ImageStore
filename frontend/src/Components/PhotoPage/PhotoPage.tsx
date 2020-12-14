@@ -1,7 +1,7 @@
 import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Button } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
@@ -14,6 +14,7 @@ import { addPhotos, addPhotosToAlbums, deletePhotos, download } from "../../API"
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
+import { useSnackbar } from "notistack";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -84,8 +85,11 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [showLoadingBar, setShowLoadingBar] = useState(true);
     const [viewId, setViewId] = useState("");
 
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
+
     const [searchTerm, setSearchTerm] = useState("");
     const url = searchTerm === "" ? "media/all" : "media/search/" + searchTerm;
 
@@ -199,22 +203,21 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         },
     };
 
-    const upload = async (event: ChangeEvent<HTMLInputElement>) => {
-        try {
-            if (!event.target.files) return;
-            const formData = new FormData();
-            [...event.target.files].forEach((f) => {
-                formData.append("file", f);
-            });
-            event.target.value = "";
-            await addPhotos(formData);
+    const toAlbum = (photos: string[]) => {
+        setSelected(photos);
+        topBarButtonFunctions.addToAlbum();
+    };
 
-            await fetchPhotos();
-        } catch (error) {
-            if (error.response) {
-                window.alert(error.response.data);
-            }
+    const upload = async (event: ChangeEvent<HTMLInputElement>) => {
+        if (!event.target.files) return;
+        const formData = new FormData();
+        for (const file of event.target.files) {
+            formData.append("file", file);
         }
+        event.target.value = "";
+
+        await addPhotos(formData, enqueueSnackbar, closeSnackbar, toAlbum);
+        await fetchPhotos();
     };
 
     const topRightBar = (id: string, buttonFunctions: any) => {
@@ -290,7 +293,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                     </div>
                 </Route>
             </Switch>
-            <AddToAlbum albums={albums} open={open} setOpen={setOpen} cb={cb}></AddToAlbum>
+            <AddToAlbum albums={albums} open={open} setOpen={setOpen} cb={cb} />
         </div>
     );
 }

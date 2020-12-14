@@ -1,13 +1,54 @@
+import { Button } from "@material-ui/core";
 import axios from "axios";
+import { OptionsObject } from "notistack";
 import qs from "qs";
+import React from "react";
+import SnackbarAction from "./Components/Shared/SnackbarAction";
 import { PhotoT } from "./Interfaces";
 
 axios.defaults.baseURL = "http://localhost:4000";
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 
-export async function addPhotos(formData: FormData) {
-    const res = await axios.post("/media/add", formData);
-    return res.data;
+export async function addPhotos(
+    formData: FormData,
+    enqueueSnackbar?: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number,
+    closeSnackbar?: (key?: string | number | undefined) => void,
+    toAlbum?: (photos: string[]) => void
+) {
+    try {
+        const res = await axios.post("/media/add", formData);
+        const photos = res.data;
+
+        if (enqueueSnackbar && closeSnackbar && toAlbum) {
+            const message = `${photos.length} element${photos.length === 1 ? " was" : "s were"} uploaded`;
+            const action = SnackbarAction(
+                closeSnackbar,
+                toAlbum ? (
+                    <Button color="inherit" size="small" onClick={() => toAlbum(photos)}>
+                        Add to album
+                    </Button>
+                ) : null
+            );
+            enqueueSnackbar(message, {
+                variant: "success",
+                autoHideDuration: 3000,
+                action,
+            });
+        }
+
+        return res.data;
+    } catch (error) {
+        if (enqueueSnackbar && closeSnackbar && toAlbum) {
+            const message = error.response && error.response.data ? error.response.data : error.toString();
+            const action = SnackbarAction(closeSnackbar);
+            enqueueSnackbar(message, {
+                variant: "error",
+                autoHideDuration: null,
+                action,
+            });
+        }
+        return [];
+    }
 }
 
 export async function deletePhotos(photoIds: string[]) {
