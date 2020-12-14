@@ -236,7 +236,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             });
             await fetchPhotos();
         } catch (error) {
-            const message = error.response ? error.response.data : "";
+            const message = error.response && error.response.data ? error.response.data : error.toString();
             const action = SnackbarAction(closeSnackbar);
             enqueueSnackbar(message, {
                 variant: "error",
