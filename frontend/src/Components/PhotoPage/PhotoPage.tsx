@@ -15,7 +15,6 @@ import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
 import { useSnackbar } from "notistack";
-import SnackbarAction from "../Shared/SnackbarAction";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -205,9 +204,9 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     const toAlbum = (photos: string[]) => {
-        setSelected(photos)
-        topBarButtonFunctions.addToAlbum()
-    }
+        setSelected(photos);
+        topBarButtonFunctions.addToAlbum();
+    };
 
     const upload = async (event: ChangeEvent<HTMLInputElement>) => {
         if (!event.target.files) return;
@@ -216,31 +215,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             formData.append("file", file);
         }
 
-        try {
-            const data = await addPhotos(formData);
-            const photos = data.map((x : number) => x.toString())
-
-            const message = `${photos.length} element${photos.length === 1 ? " was" : "s were"} uploaded`;
-            const action = SnackbarAction(closeSnackbar, toAlbum ?
-                <Button color="inherit" size="small" onClick={() => toAlbum(photos)}>
-                    Add to album
-                </Button> : null
-            )
-            enqueueSnackbar(message, {
-                variant: "success",
-                autoHideDuration: 3000,
-                action
-            });
-        } catch (error) {
-            const message = error.response && error.response.data ? error.response.data : error.toString();
-            const action = SnackbarAction(closeSnackbar);
-            enqueueSnackbar(message, {
-                variant: "error",
-                autoHideDuration: null,
-                action
-            });
-        }
-
+        await addPhotos(formData, enqueueSnackbar, closeSnackbar, toAlbum);
         await fetchPhotos();
     };
 
@@ -317,7 +292,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                     </div>
                 </Route>
             </Switch>
-            <AddToAlbum albums={albums} open={open} setOpen={setOpen} cb={cb}/>
+            <AddToAlbum albums={albums} open={open} setOpen={setOpen} cb={cb} />
         </div>
     );
 }
