@@ -13,7 +13,10 @@ import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
 import { addPhotos, addPhotosToAlbums, deletePhotos, download } from "../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
+<<<<<<< HEAD
 import SearchBar from "material-ui-search-bar";
+=======
+>>>>>>> 78dede4a5a33dd20058d30e9531baca0125489b2
 import { useSnackbar } from 'notistack';
 import SnackbarAction from "../Shared/SnackbarAction";
 
@@ -88,6 +91,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
     const [searchTerm, setSearchTerm] = useState("");
@@ -212,10 +217,6 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         try {
             if (!event.target.files) return;
             const formData = new FormData();
-            [...event.target.files].forEach((f) => {
-                formData.append("file", f);
-            });
-            await addPhotos(formData);
             for (const file of event.target.files) {
                 formData.append("file", file);
             }
