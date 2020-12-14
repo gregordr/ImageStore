@@ -1,5 +1,6 @@
 import { Button } from "@material-ui/core";
 import axios from "axios";
+import JSZip from "jszip";
 import { OptionsObject } from "notistack";
 import qs from "qs";
 import React from "react";
@@ -92,7 +93,26 @@ export async function removePhotosFromAlbum(photoIds: string[], albumId: string)
 
 export async function download(photos: PhotoT[]) {
     if (photos.length > 1) {
-        //What do I do?
+        const zip = new JSZip();
+
+        await Promise.all(
+            photos.map(async (photo) => {
+                const response = await axios({
+                    url: `/media/${photo.id}`,
+                    method: "GET",
+                    responseType: "blob", // important
+                });
+
+                zip.file(photo.name, response.data);
+            })
+        );
+
+        const content = await zip.generateAsync({ type: "blob" });
+        let url = window.URL.createObjectURL(new Blob([content]));
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = `photos.zip`;
+        a.click();
     } else if (photos.length === 1) {
         const photo = photos[0];
         axios({

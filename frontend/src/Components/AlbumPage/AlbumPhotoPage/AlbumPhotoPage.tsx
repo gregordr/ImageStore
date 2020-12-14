@@ -315,7 +315,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                                 <AutoSizer>
                                     {({ height, width }) => (
                                         <AbstractPhotoPage
-                                            height={height}
+                                            height={height - 1}
                                             width={width}
                                             photos={photos}
                                             clickHandler={clickHandler}

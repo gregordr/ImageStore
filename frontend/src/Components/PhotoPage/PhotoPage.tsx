@@ -274,7 +274,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                                 <AutoSizer>
                                     {({ height, width }) => (
                                         <AbstractPhotoPage
-                                            height={height}
+                                            height={height - 1}
                                             width={width}
                                             photos={photos}
                                             clickHandler={clickHandler}
