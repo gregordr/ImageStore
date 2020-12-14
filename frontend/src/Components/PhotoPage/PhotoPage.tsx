@@ -206,7 +206,9 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             [...event.target.files].forEach((f) => {
                 formData.append("file", f);
             });
+            event.target.value = "";
             await addPhotos(formData);
+
             await fetchPhotos();
         } catch (error) {
             if (error.response) {
