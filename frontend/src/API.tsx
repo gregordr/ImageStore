@@ -1,4 +1,4 @@
-import { Button } from "@material-ui/core";
+import { Button, CircularProgress, Typography } from "@material-ui/core";
 import axios from "axios";
 import JSZip from "jszip";
 import { OptionsObject } from "notistack";
@@ -17,10 +17,23 @@ export async function addPhotos(
     toAlbum?: (photos: string[]) => void
 ) {
     try {
+        let snackMsg;
+        if (enqueueSnackbar && closeSnackbar && toAlbum) {
+            const message = `${formData.getAll("file").length} element${formData.getAll("file").length === 1 ? " is" : "s are"} being uploaded`;
+            const action = SnackbarAction(null, <CircularProgress color="inherit" style={{ padding: 5 }} />);
+            snackMsg = enqueueSnackbar(message, {
+                variant: "info",
+                autoHideDuration: null,
+                action,
+            });
+        }
+
         const res = await axios.post("/media/add", formData);
-        const photos = res.data;
+        const photos: string[] = res.data.success;
+        const errors: string[] = res.data.errors;
 
         if (enqueueSnackbar && closeSnackbar && toAlbum) {
+            if (snackMsg) closeSnackbar(snackMsg);
             const message = `${photos.length} element${photos.length === 1 ? " was" : "s were"} uploaded`;
             const action = SnackbarAction(
                 closeSnackbar,
@@ -30,14 +43,32 @@ export async function addPhotos(
                     </Button>
                 ) : null
             );
-            enqueueSnackbar(message, {
-                variant: "success",
-                autoHideDuration: 3000,
-                action,
-            });
+            const errorMessage = (
+                <div>
+                    The following errors occured:
+                    {errors.map((e) => (
+                        <div>{e}</div>
+                    ))}
+                </div>
+            );
+            const errorAction = SnackbarAction(closeSnackbar);
+
+            if (photos.length !== 0)
+                enqueueSnackbar(message, {
+                    variant: "success",
+                    autoHideDuration: 3000,
+                    action,
+                });
+
+            if (errors.length !== 0)
+                enqueueSnackbar(errorMessage, {
+                    variant: "warning",
+                    autoHideDuration: null,
+                    action: errorAction,
+                });
         }
 
-        return res.data;
+        return photos;
     } catch (error) {
         if (enqueueSnackbar && closeSnackbar && toAlbum) {
             const message = error.response && error.response.data ? error.response.data : error.toString();
@@ -128,6 +159,8 @@ export async function download(photos: PhotoT[]) {
     const a = document.createElement("a");
     a.href = url;
     a.download = name;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 }

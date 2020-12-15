@@ -86,8 +86,7 @@ router.post('/add', async (req, res) => {
                 console.log(e.toString())
             }
         }))
-        res.status(200).send(oids)
-        console.log(errors)
+        res.status(200).send({ success: oids, errors })
     })
 });
 
