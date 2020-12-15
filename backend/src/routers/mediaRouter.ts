@@ -5,6 +5,7 @@ import multer from "multer";
 import { addMedia, removeMedia, getMedia } from '../database/mediaDatabase'
 import sizeOf from 'image-size';
 import sharp from 'sharp';
+import { ISizeCalculationResult } from 'image-size/dist/types/interface';
 
 export const router = express.Router();
 
@@ -26,8 +27,11 @@ router.get('/search/:term', async (req, res) => {
 
 router.post('/add', async (req, res) => {
     upload(req, res, async (err: multer.MulterError | "router") => {
+        const oids: number[] = []
+        const errors: string[] = []
+
         if (err) {
-            res.status(500).send(err.toString())
+            res.status(500).send("File too large")
             return
         }
 
@@ -40,37 +44,50 @@ router.post('/add', async (req, res) => {
             throw new Error();
         }
 
-        const oids: number[] = []
         await Promise.all(req.files.map(async (f) => {
-            if (!f) {
-                res.status(500).send("Invalid file")
-                return
-            }
+            try {
+                if (!f || !f.originalname) {
+                    errors.push("Something went really wrong!")
+                    console.log(f)
+                    return
+                }
 
-            const dims = sizeOf("media/" + f.filename)
+                let dims: ISizeCalculationResult;
+                try {
+                    dims = sizeOf("media/" + f.filename)
+                } catch (error) {
+                    if (error instanceof TypeError) {
+                        errors.push("Invalid type in " + f.originalname)
+                        await fsPromises.unlink("media/" + f.filename)
+                        return
+                    } else {
+                        throw error
+                    }
+                }
 
-            if (!dims.height || !dims.width) {
-                res.status(500).send("Invalid file")
-                return
-            } else {
+                if (!dims || !dims.height || !dims.width) {
+                    errors.push("Invalid dimensions:" + dims + " in " + f.originalname)
+                    return
+                }
+
                 if (dims.orientation && dims.orientation % 2 === 0) {
                     const tmp = dims.height;
                     dims.height = dims.width;
                     dims.width = tmp;
                 }
-                try {
-                    const oid = await addMedia(f.originalname, dims.height, dims.width)
-                    await fsPromises.rename("media/" + f.filename, "media/" + oid);
-                    await sharp("media/" + oid, { failOnError: false }).resize({ width: Math.ceil(dims.width / dims.height * 300), height: 300 }).rotate().toFile("media/thumb_" + oid)
+                const oid = await addMedia(f.originalname, dims.height, dims.width)
+                await fsPromises.rename("media/" + f.filename, "media/" + oid);
+                await sharp("media/" + oid, { failOnError: false }).resize({ width: Math.ceil(dims.width / dims.height * 300), height: 300 }).rotate().toFile("media/thumb_" + oid)
 
-                    oids.push(oid)
+                oids.push(oid)
 
-                } catch (e) {
-                    console.log(e.toString())
-                }
+            } catch (e) {
+                errors.push("Unknown error in " + f.originalname)
+                console.log(e.toString())
             }
         }))
         res.status(200).send(oids)
+        console.log(errors)
     })
 });
 
