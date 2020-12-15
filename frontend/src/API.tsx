@@ -92,9 +92,22 @@ export async function removePhotosFromAlbum(photoIds: string[], albumId: string)
 }
 
 export async function download(photos: PhotoT[]) {
-    if (photos.length > 1) {
-        const zip = new JSZip();
+    if (photos.length === 0) return;
 
+    let content: Blob;
+    let name: string;
+    if (photos.length === 1) {
+        const photo = photos[0];
+        const response = await axios({
+            url: `/media/${photo.id}`,
+            method: "GET",
+            responseType: "blob", // important
+        });
+
+        content = response.data;
+        name = photo.name;
+    } else {
+        const zip = new JSZip();
         await Promise.all(
             photos.map(async (photo) => {
                 const response = await axios({
@@ -107,24 +120,14 @@ export async function download(photos: PhotoT[]) {
             })
         );
 
-        const content = await zip.generateAsync({ type: "blob" });
-        let url = window.URL.createObjectURL(new Blob([content]));
-        let a = document.createElement("a");
-        a.href = url;
-        a.download = `photos.zip`;
-        a.click();
-    } else if (photos.length === 1) {
-        const photo = photos[0];
-        axios({
-            url: `/media/${photo.id}`,
-            method: "GET",
-            responseType: "blob", // important
-        }).then((response) => {
-            let url = window.URL.createObjectURL(new Blob([response.data]));
-            let a = document.createElement("a");
-            a.href = url;
-            a.download = photo.name;
-            a.click();
-        });
+        content = await zip.generateAsync({ type: "blob" });
+        name = `photos.zip`;
     }
+
+    const url = window.URL.createObjectURL(new Blob([content]));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+    window.URL.revokeObjectURL(url);
 }
