@@ -27,7 +27,7 @@ router.get('/search/:term', async (req, res) => {
 
 router.post('/add', async (req, res) => {
     upload(req, res, async (err: multer.MulterError | "router") => {
-        const oids: number[] = []
+        const oids: string[] = []
         const errors: string[] = []
 
         if (err) {
