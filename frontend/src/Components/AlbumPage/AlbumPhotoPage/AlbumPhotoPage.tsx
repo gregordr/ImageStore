@@ -14,6 +14,7 @@ import { addPhotos, addPhotosToAlbums, deletePhotos, download, removePhotosFromA
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
+import { useSnackbar } from "notistack";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -93,6 +94,8 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const [searchTerm, setSearchTerm] = useState("");
     const url = searchTerm === "" ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`;
 
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
     const fetchPhotos = async () => {
         setShowLoadingBar(true);
         const resp = await axios.get(url);
@@ -135,6 +138,11 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         await removePhotosFromAlbum([pid], id);
     };
 
+    const toAlbum = (photos: string[]) => {
+        setSelected(photos);
+        topBarButtonFunctions.addToAlbum();
+    };
+
     const upload = async (event: ChangeEvent<HTMLInputElement>) => {
         try {
             if (!event.target.files || event.target.files.length === 0) return;
@@ -143,7 +151,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                 formData.append("file", f);
             });
             event.target.value = "";
-            const data = await addPhotos(formData);
+            const data = await addPhotos(formData, enqueueSnackbar, closeSnackbar, toAlbum);
 
             await addPhotosToAlbums(data, [id]);
             await fetchPhotos();

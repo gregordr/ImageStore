@@ -7,7 +7,6 @@ import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
 import axios from "axios";
 import AddToAlbum from "../Shared/AddToAlbum";
-import qs from "qs";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
 import { addPhotos, addPhotosToAlbums, deletePhotos, download } from "../../API";
