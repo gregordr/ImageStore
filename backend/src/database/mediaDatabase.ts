@@ -11,10 +11,10 @@ export async function getMedia(searchTerm: string): Promise<unknown[]> {
     });
 }
 
-export async function addMedia(name: string, heigth: number, width: number): Promise<number> {
+export async function addMedia(name: string, heigth: number, width: number): Promise<string> {
     return transaction(async (client) => {
         const res = await client.query(`INSERT INTO ${await media} VALUES ($1::text, $2::integer, $3::integer);`, [name, heigth, width])
-        return res.oid;
+        return res.oid.toString();
     });
 }
 
