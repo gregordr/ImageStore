@@ -129,11 +129,13 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         await props.refresh();
     };
 
-    const deletePhoto = (pid: string) => {
-        deletePhotos([pid], enqueueSnackbar, closeSnackbar);
+    const deletePhoto = async (pid: string) => {
+        setPhotos(photos.filter((p) => p.id !== pid));
+        await deletePhotos([pid], enqueueSnackbar, closeSnackbar);
     };
 
     const removePhoto = async (pid: string) => {
+        setPhotos(photos.filter((p) => p.id !== pid));
         await removePhotosFromAlbum([pid], id, enqueueSnackbar, closeSnackbar);
     };
 

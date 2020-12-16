@@ -165,6 +165,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     const deletePhoto = async (pid: any) => {
+        setPhotos(photos.filter((p) => p.id !== pid));
         await deletePhotos([pid], enqueueSnackbar, closeSnackbar);
     };
 

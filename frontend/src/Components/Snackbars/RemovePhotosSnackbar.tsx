@@ -37,11 +37,12 @@ export class RemovePhotosSnackbar {
         if (this.snackMsg) this.closeSnackbar(this.snackMsg);
         const message = `${photos.length} element${photos.length === 1 ? " was" : "s were"} removed from this album`;
         const action = SnackbarAction(this.closeSnackbar);
+        let count = 0;
         const errorMessage = (
             <div>
                 The following errors occured:
                 {errors.map((e) => (
-                    <div>{e}</div>
+                    <div key={count++}>{e.toString()}</div>
                 ))}
             </div>
         );

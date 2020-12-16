@@ -47,11 +47,12 @@ export class AddPhotosSnackbar {
                 Add to album
             </Button>
         );
+        let count = 0;
         const errorMessage = (
             <div>
                 The following errors occured:
                 {errors.map((e) => (
-                    <div>{e}</div>
+                    <div key={count++}>{e.toString()}</div>
                 ))}
             </div>
         );
