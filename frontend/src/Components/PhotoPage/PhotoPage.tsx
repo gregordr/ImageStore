@@ -142,8 +142,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     const cb = async (albumIds: any) => {
-        await addPhotosToAlbums(selected, albumIds);
         topBarButtonFunctions.unselect();
+        await addPhotosToAlbums(selected, albumIds, enqueueSnackbar, closeSnackbar);
     };
 
     const viewButtonFunctions = {
@@ -156,18 +156,23 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setOpen(true);
         },
         download: async (id: string) => {
-            await download(photos.filter((photo) => id === photo.id));
+            await download(
+                photos.filter((photo) => id === photo.id),
+                enqueueSnackbar,
+                closeSnackbar
+            );
         },
     };
 
     const deletePhoto = async (pid: any) => {
-        await deletePhotos([pid]);
+        await deletePhotos([pid], enqueueSnackbar, closeSnackbar);
     };
 
     const topBarButtonFunctions = {
         delete: async () => {
-            await deletePhotos(selected);
             topBarButtonFunctions.unselect();
+            await deletePhotos(selected, enqueueSnackbar, closeSnackbar);
+            setPhotos(photos.filter((p) => !selected.includes(p.id)));
             await fetchPhotos();
         },
         unselect: () => {
@@ -191,8 +196,12 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setOpen(true);
         },
         download: async () => {
-            await download(photos.filter((photo) => selected.includes(photo.id)));
             topBarButtonFunctions.unselect();
+            await download(
+                photos.filter((photo) => selected.includes(photo.id)),
+                enqueueSnackbar,
+                closeSnackbar
+            );
         },
         search: (s: string) => async () => {
             setSearchTerm(s);

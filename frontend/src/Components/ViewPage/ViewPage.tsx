@@ -162,18 +162,18 @@ export default function ViewPage(props: any) {
     const modifiedButtonFunctions = {
         ...props.buttonFunctions,
         delete: async (id: string) => {
-            await props.buttonFunctions.delete(id);
-
             if (canGo(-1)) go(-1)();
             else if (canGo(1)) go(1)();
             else history.goBack();
+
+            await props.buttonFunctions.delete(id);
         },
         remove: async (id: string) => {
-            await props.buttonFunctions.remove(id);
-
             if (canGo(-1)) go(-1)();
             else if (canGo(1)) go(1)();
             else history.goBack();
+
+            await props.buttonFunctions.remove(id);
         },
         info: () => {
             setOpen(!open);
