@@ -1,5 +1,5 @@
-import { createStyles, IconButton, makeStyles, Theme } from "@material-ui/core";
-import { ArrowBack, CloudDownload, Delete, Info, LibraryAdd, Pages, RemoveCircleOutline } from "@material-ui/icons";
+import { IconButton } from "@material-ui/core";
+import { CloudDownload, Delete, Info, LibraryAdd, Pages, RemoveCircleOutline } from "@material-ui/icons";
 import React from "react";
 
 export default function TopRightBar(props: any) {

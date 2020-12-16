@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import IconButton from "@material-ui/core/IconButton";
-import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Settings, Search, CheckBox } from "@material-ui/icons";
+import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Search, CheckBox } from "@material-ui/icons";
 import SearchBar from "material-ui-search-bar";
-import { createStyles, LinearProgress, makeStyles, Theme } from "@material-ui/core";
+import { LinearProgress } from "@material-ui/core";
 import TopBarStyle from "../Shared/TopBarStyle";
 
 export default function TopBar(props: any) {
