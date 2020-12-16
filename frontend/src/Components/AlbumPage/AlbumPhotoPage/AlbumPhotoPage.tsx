@@ -125,17 +125,17 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     //#region API
 
     const cb = async (albumIds: string[]) => {
-        await addPhotosToAlbums(selected, albumIds);
-        await props.refresh();
         topBarButtonFunctions.unselect();
+        await addPhotosToAlbums(selected, albumIds, enqueueSnackbar, closeSnackbar);
+        await props.refresh();
     };
 
-    const deletePhoto = async (pid: string) => {
-        await deletePhotos([pid]);
+    const deletePhoto = (pid: string) => {
+        deletePhotos([pid], enqueueSnackbar, closeSnackbar);
     };
 
     const removePhoto = async (pid: string) => {
-        await removePhotosFromAlbum([pid], id);
+        await removePhotosFromAlbum([pid], id, enqueueSnackbar, closeSnackbar);
     };
 
     const toAlbum = (photos: string[]) => {
@@ -153,7 +153,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             event.target.value = "";
             const data = await addPhotos(formData, enqueueSnackbar, closeSnackbar, toAlbum);
 
-            await addPhotosToAlbums(data, [id]);
+            await addPhotosToAlbums(data, [id], enqueueSnackbar, closeSnackbar);
             await fetchPhotos();
             await props.refresh();
         } catch (error) {
@@ -196,6 +196,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         },
         remove: async (id: string) => {
             await removePhoto(id);
+            setPhotos(photos.filter((p) => p.id !== id));
             await fetchPhotos();
             await props.refresh();
         },
@@ -208,7 +209,11 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             await props.refresh();
         },
         download: async (id: string) => {
-            await download(photos.filter((photo) => id === photo.id));
+            await download(
+                photos.filter((photo) => id === photo.id),
+                enqueueSnackbar,
+                closeSnackbar
+            );
         },
     };
 
@@ -219,16 +224,18 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             await props.refresh();
         },
         delete: async () => {
-            await deletePhotos(selected);
-
             topBarButtonFunctions.unselect();
+            await deletePhotos(selected, enqueueSnackbar, closeSnackbar);
+            setPhotos(photos.filter((p) => !selected.includes(p.id)));
+
             await fetchPhotos();
             await props.refresh();
         },
         remove: async () => {
-            await removePhotosFromAlbum(selected, id);
-
             topBarButtonFunctions.unselect();
+            await removePhotosFromAlbum(selected, id, enqueueSnackbar, closeSnackbar);
+            setPhotos(photos.filter((p) => !selected.includes(p.id)));
+
             await fetchPhotos();
             await props.refresh();
         },
@@ -253,8 +260,12 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             setOpen(true);
         },
         download: async () => {
-            await download(photos.filter((photo) => selected.includes(photo.id)));
             topBarButtonFunctions.unselect();
+            download(
+                photos.filter((photo) => selected.includes(photo.id)),
+                enqueueSnackbar,
+                closeSnackbar
+            );
         },
         search: (s: string) => async () => {
             setSearchTerm(s);
