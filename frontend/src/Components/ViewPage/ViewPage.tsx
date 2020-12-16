@@ -4,7 +4,6 @@ import { useHistory } from "react-router-dom";
 import { useTransition, animated } from "react-spring";
 import TopLeftBar from "./TopLeftBar";
 import {
-    Avatar,
     createMuiTheme,
     createStyles,
     CssBaseline,
@@ -13,7 +12,6 @@ import {
     IconButton,
     List,
     ListItem,
-    ListItemAvatar,
     ListItemIcon,
     ListItemText,
     makeStyles,
@@ -23,7 +21,7 @@ import {
     useMediaQuery,
     useTheme,
 } from "@material-ui/core";
-import { ChevronLeft, ChevronRight, Close, Inbox, Mail, PhotoOutlined } from "@material-ui/icons";
+import { ChevronLeft, ChevronRight, Close, PhotoOutlined } from "@material-ui/icons";
 import clsx from "clsx";
 import { PhotoT } from "../../Interfaces";
 import { useSwipeable } from "react-swipeable";
@@ -181,8 +179,8 @@ export default function ViewPage(props: any) {
     };
 
     const handlers = useSwipeable({
-        onSwipedLeft: (eventData) => go(1)(),
-        onSwipedRight: (eventData) => go(-1)(),
+        onSwipedLeft: () => go(1)(),
+        onSwipedRight: () => go(-1)(),
     });
 
     const hideArrows = useMediaQuery(theme.breakpoints.down("sm"));

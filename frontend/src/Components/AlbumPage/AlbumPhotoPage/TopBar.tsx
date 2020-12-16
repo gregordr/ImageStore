@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import IconButton from "@material-ui/core/IconButton";
-import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Settings, Search, CheckBox, RemoveCircleOutline, Pages, ArrowBack } from "@material-ui/icons";
+import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Search, CheckBox, RemoveCircleOutline, Pages, ArrowBack } from "@material-ui/icons";
 import SearchBar from "material-ui-search-bar";
 import { useHistory } from "react-router-dom";
 import TopBarStyle from "../../Shared/TopBarStyle";

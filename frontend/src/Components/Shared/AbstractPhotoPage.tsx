@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useMemo, useRef, useEffect } from "react";
+import React, { useCallback, useState, useRef, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { PhotoT } from "../../Interfaces";
 import { VariableSizeList as List } from "react-window";
