@@ -17,7 +17,16 @@ const useStyles = makeStyles({
 });
 
 function Photo(props: any) {
-    const url = "http://localhost:4000/media/thumb_" + props.id;
+    const realUrl = "http://localhost:4000/media/thumb_" + props.id
+    const [url, setUrl] = useState("");
+    useEffect(() => {
+        const timeout = setTimeout(() => setUrl("http://localhost:4000/media/thumb_" + props.id), 500);
+        return () => clearTimeout(timeout)
+    }, [props.id])
+    useEffect(() => {
+        if (!props.isScrolling)
+            setUrl(realUrl)
+    })
     const padding = props.selected ? 0.9 : 1.0;
     const [vis, setVis] = useState(0);
     const opacity = props.anySelected() ? 255 : vis;
@@ -35,14 +44,14 @@ function Photo(props: any) {
         >
             <div onClick={props.imageClick}>
                 <div style={{ backgroundColor: "#eeeeee", height: props.y - 5, width: props.x - 5 }}>
-                    <div style={{ transition: "0.05s linear", transform: `scale(${padding})`, backgroundImage: `url(${url})`, height: props.y - 5, width: props.x - 5, backgroundSize: "100% 100%" }} />
+                    <div style={{ transition: "0.05s linear", transform: `scale(${padding})`, backgroundImage: url === "" ? "none" : `url(${url})`, height: props.y - 5, width: props.x - 5, backgroundSize: "100% 100%" }} />
                 </div>
             </div>
             {(vis || props.anySelected() || true) && <input className={classes.photoBox} style={{ opacity: opacity }} readOnly={true} checked={props.selected} type="checkbox" onClick={props.click} />}
         </div>
     );
 }
-const makePhoto = (photo: PhotoT, realH: number, props: any) => (
+const makePhoto = (photo: PhotoT, realH: number, props: any, isScrolling: boolean) => (
     <Photo
         key={photo.id}
         id={photo.id}
@@ -53,6 +62,7 @@ const makePhoto = (photo: PhotoT, realH: number, props: any) => (
         selected={props.selected.includes(photo.id)}
         anySelected={props.anySelected}
         outZoom={0.9}
+        isScrolling={isScrolling}
     />
 );
 
@@ -89,11 +99,11 @@ const calculate = (photos: PhotoT[], width: number) => {
 const Row = (altprops: any) =>
     altprops.data.linNum <= altprops.index ? (
         <div style={{ ...altprops.style, display: "flex", transition: "0.05s linear" }}>
-            {altprops.data.rowPics[altprops.index].map((p: PhotoT) => makePhoto(p, altprops.data.rowH[altprops.index], altprops.data.props))}
+            {altprops.data.rowPics[altprops.index].map((p: PhotoT) => makePhoto(p, altprops.data.rowH[altprops.index], altprops.data.props, altprops.isScrolling))}
         </div>
     ) : (
-        <div>{altprops.data.rowPics[altprops.index]}</div>
-    );
+            <div>{altprops.data.rowPics[altprops.index]}</div>
+        );
 
 const CustomScrollbars = ({ onScroll, forwardedRef, style, children }: any) => {
     const refSetter = useCallback(
@@ -146,6 +156,7 @@ export default function AbstractPhotoPage(props: {
 
     return (
         <List
+            useIsScrolling
             overscanCount={10}
             height={props.height}
             ref={listRef}
