@@ -225,7 +225,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         }
         event.target.value = "";
 
-        await addPhotos(formData, enqueueSnackbar, closeSnackbar, toAlbum);
+        await addPhotos(formData, enqueueSnackbar, closeSnackbar, albums);
         await fetchPhotos();
     };
 

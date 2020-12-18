@@ -8,7 +8,7 @@ import { AddPhotosToAlbumsSnackbar } from "./Components/Snackbars/AddPhotosToAlb
 import { DeletePhotosSnackbar } from "./Components/Snackbars/DeletePhotosSnackbar";
 import { DownloadSnackbar } from "./Components/Snackbars/DownloadSnackbar";
 import { RemovePhotosSnackbar } from "./Components/Snackbars/RemovePhotosSnackbar";
-import { PhotoT } from "./Interfaces";
+import { AlbumT, PhotoT } from "./Interfaces";
 
 axios.defaults.baseURL = "http://localhost:4000";
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
@@ -17,9 +17,9 @@ export async function addPhotos(
     formData: FormData,
     enqueueSnackbar?: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number,
     closeSnackbar?: (key?: string | number | undefined) => void,
-    toAlbum?: (photos: string[]) => void
+    albums?: AlbumT[]
 ) {
-    const snackbar = AddPhotosSnackbar.createInstance(enqueueSnackbar, closeSnackbar, toAlbum);
+    const snackbar = AddPhotosSnackbar.createInstance(enqueueSnackbar, closeSnackbar, albums);
     try {
         snackbar?.begin(formData.getAll("file").length);
 

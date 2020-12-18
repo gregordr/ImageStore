@@ -1,30 +1,50 @@
-import { Button, CircularProgress } from "@material-ui/core";
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@material-ui/core";
 import { OptionsObject } from "notistack";
 import React from "react";
+import { addPhotosToAlbums } from "../../API";
+import { AlbumT } from "../../Interfaces";
+import AddToAlbum from "../Shared/AddToAlbum";
 import SnackbarAction from "./SnackbarAction";
+
+function DialogComponent(props: any) {
+    const [open, setOpen] = React.useState(false);
+
+    const cb = async (albumIds: any) => {
+        await addPhotosToAlbums(props.photos, albumIds, props.enqueueSnackbar, props.closeSnackbar);
+    };
+
+    return (
+        <div>
+            <Button color="inherit" onClick={() => setOpen(true)}>
+                Add to album
+            </Button>
+            <AddToAlbum zIndex={1000000} open={open} setOpen={setOpen} albums={props.albums} cb={cb} closeCallback={props.closeAddSnackbar} />
+        </div>
+    );
+}
 
 export class AddPhotosSnackbar {
     enqueueSnackbar: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number;
     closeSnackbar: (key?: string | number | undefined) => void;
-    toAlbum?: (photos: string[]) => void;
+    albums?: AlbumT[]
     snackMsg: string | number | undefined;
 
     constructor(
         enqueueSnackbar: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number,
         closeSnackbar: (key?: string | number | undefined) => void,
-        toAlbum?: (photos: string[]) => void
+        albums?: AlbumT[]
     ) {
         this.enqueueSnackbar = enqueueSnackbar;
         this.closeSnackbar = closeSnackbar;
-        this.toAlbum = toAlbum;
+        this.albums = albums;
     }
 
     static createInstance(
         enqueueSnackbar?: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number,
         closeSnackbar?: (key?: string | number | undefined) => void,
-        toAlbum?: (photos: string[]) => void
+        albums?: AlbumT[]
     ): null | AddPhotosSnackbar {
-        if (enqueueSnackbar && closeSnackbar) return new this(enqueueSnackbar, closeSnackbar, toAlbum);
+        if (enqueueSnackbar && closeSnackbar) return new this(enqueueSnackbar, closeSnackbar, albums);
         else return null;
     }
 
@@ -43,9 +63,8 @@ export class AddPhotosSnackbar {
         const message = `${photos.length} element${photos.length === 1 ? " was" : "s were"} uploaded`;
         const action = SnackbarAction(
             this.closeSnackbar,
-            <Button color="inherit" onClick={() => this.toAlbum?.(photos)}>
-                Add to album
-            </Button>
+            this.albums ?
+                (key: any) => <DialogComponent photos={photos} closeSnackbar={this.closeSnackbar} closeAddSnackbar={() => { if (key) this.closeSnackbar(key) }} enqueueSnackbar={this.enqueueSnackbar} albums={this.albums} /> : null
         );
         let count = 0;
         const errorMessage = (

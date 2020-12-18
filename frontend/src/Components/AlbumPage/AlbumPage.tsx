@@ -114,7 +114,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         await fetchAlbums();
     };
 
-    const openAlbum = () => () => {};
+    const openAlbum = () => () => { };
 
     const heights = [searchTerm === "" ? 0 : 20];
 
@@ -163,7 +163,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                             <div style={{ flexGrow: 1 }}>
                                 <AutoSizer>
                                     {({ height, width }) => (
-                                        <AbstractAlbumPage height={height} width={width} albums={albums} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} />
+                                        <AbstractAlbumPage height={height - 1} width={width} albums={albums} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} />
                                     )}
                                 </AutoSizer>
                             </div>

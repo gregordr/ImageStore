@@ -152,7 +152,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                 formData.append("file", f);
             });
             event.target.value = "";
-            const data = await addPhotos(formData, enqueueSnackbar, closeSnackbar, toAlbum);
+            const data = await addPhotos(formData, enqueueSnackbar, closeSnackbar, albums);
 
             await addPhotosToAlbums(data, [id], enqueueSnackbar, closeSnackbar);
             await fetchPhotos();
