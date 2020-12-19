@@ -7,7 +7,7 @@ from api.posts import post_image_labels
 from classification.model import ImageClassifier
 
 
-BASE_ADDRESS = 'http://localhost:4000'
+BASE_ADDRESS = 'http://backend:4000'
 MEDIA_ADDRESS = BASE_ADDRESS + '/media'
 FETCH_INTERVAL = 5
 

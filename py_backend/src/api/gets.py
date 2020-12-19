@@ -9,7 +9,7 @@ def get_new_media(url):
     try:
         response = requests.get(url)
     except ConnectionError as e:
-        print(e)
+        print(e, flush=True)
         return []
 
     if response.status_code == 200:
@@ -30,7 +30,7 @@ def get_image(url):
     try:
         response = requests.get(url)
     except ConnectionError as e:
-        print(e)
+        print(e, flush=True)
         return None
 
     if response.status_code == 200:
