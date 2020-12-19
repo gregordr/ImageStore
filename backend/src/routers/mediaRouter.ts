@@ -17,6 +17,16 @@ router.get('/all', async (req, res) => {
     }
 });
 
+router.get('/new', async (req, res) => {
+    // return the new added images
+    // TODO: this is for test now, rewrite this ASAP
+    try {
+        res.status(200).send(await getMedia("%"));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
 router.get('/search/:term', async (req, res) => {
     try {
         res.status(200).send(await getMedia(`%${req.params.term}%`));
