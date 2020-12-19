@@ -9,3 +9,7 @@ Clone this repo
 run ```docker-compose up```
 
 Go to http://localhost:3000
+
+### Without docker:
+
+WIP
