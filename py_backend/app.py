@@ -3,6 +3,7 @@ import io
 
 from utils.image import rotate_exif
 from api.gets import get_new_media, get_image
+# from api.posts import post_image_label
 from classification.model import ImageClassifier
 
 
@@ -17,9 +18,8 @@ if __name__ == "__main__":
         new_media_list = get_new_media(MEDIA_ADDRESS + '/new')
         for media in new_media_list:
             im = get_image(MEDIA_ADDRESS + '/' + media['id'])
-            print(im_clf.predict(im))
+            im = rotate_exif(im)
+            prediction = im_clf.predict(im)
+
             
         time.sleep(FETCH_INTERVAL)
-    # im = Image.open(io.BytesIO(response.content))
-    # im = rotate_exif(im)
-    # im.show()
