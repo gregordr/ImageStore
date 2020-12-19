@@ -2,3 +2,4 @@ frontend/.eslintcache
 
 # macOS
 .DS_Store
+*.pyc

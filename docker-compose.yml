@@ -4,6 +4,10 @@ services:
         build: frontend
         ports:
             - "3000:3000"
+    py_backend:
+        build: py_backend
+        ports:
+            - "3999:3999"
     backend:
         build: backend
         ports:
