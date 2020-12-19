@@ -4,6 +4,8 @@ Instructions:
 
 Clone this repo
 
+### With docker:
+
 run ```docker-compose up```
 
-Go to https://localhost:3000
+Go to http://localhost:3000
