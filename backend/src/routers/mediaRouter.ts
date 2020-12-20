@@ -31,12 +31,14 @@ router.post('/add', async (req, res) => {
         const errors: string[] = []
 
         if (err) {
-            res.status(500).send("File too large")
+            errors.push("Backend error: Either some file is too large, or /media does not exist.")
+            res.status(200).send({ success: [], errors })
             return
         }
 
         if (!req.files) {
-            res.status(500).send("No file uploaded")
+            errors.push("No file was uploaded")
+            res.status(200).send({ success: [], errors })
             return
         }
 

@@ -14,7 +14,10 @@ import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
 import { useSnackbar } from "notistack";
+import { useDropzone, FileRejection } from "react-dropzone";
+import { UploadErrorSnackbar } from "../Snackbars/UploadErrorSnackbar";
 
+const maxFileSize = 50 * 1000 * 1000;
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -74,7 +77,6 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any }) {
     const classes = useStyles();
-    const hiddenFileInput: RefObject<HTMLInputElement> = React.useRef(null);
 
     const [photos, setPhotos] = useState<PhotoT[]>([]);
     const [albums, setAlbums] = useState<AlbumT[]>([]);
@@ -85,6 +87,14 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [viewId, setViewId] = useState("");
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+    const { getRootProps, open: openM, getInputProps, acceptedFiles, fileRejections } = useDropzone({
+        // Disable click and keydown behavior
+        noClick: true,
+        noKeyboard: true,
+        accept: 'image/jpeg, image/png',
+    })
+
+    useEffect(() => { upload(acceptedFiles, fileRejections) }, [acceptedFiles, fileRejections])
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
@@ -181,11 +191,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setSelectable(false);
         },
         upload: () => {
-            if (!hiddenFileInput || !hiddenFileInput.current) {
-                console.log("hiddenFileInput is null");
-            } else {
-                hiddenFileInput.current.click();
-            }
+            openM()
         },
         settings: () => {
             //Nav to settings page
@@ -211,19 +217,22 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setShowSearchBar(!showSearchBar);
         },
     };
+    const upload = async (files: File[], fileRejections: FileRejection[]) => {
+        if (!files) return;
 
-    const toAlbum = (photos: string[]) => {
-        setSelected(photos);
-        topBarButtonFunctions.addToAlbum();
-    };
-
-    const upload = async (event: ChangeEvent<HTMLInputElement>) => {
-        if (!event.target.files) return;
         const formData = new FormData();
-        for (const file of event.target.files) {
-            formData.append("file", file);
-        }
-        event.target.value = "";
+        files.forEach((file) => {
+            if (file.size > maxFileSize) {
+                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxFileSize} bytes`, code: "file-too-large" }] })
+            } else {
+                formData.append("file", file);
+            }
+        });
+
+        const snackbar = UploadErrorSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
+        snackbar?.begin(fileRejections)
+
+        if (formData.getAll("file").length === 0) return;
 
         await addPhotos(formData, enqueueSnackbar, closeSnackbar, albums);
         await fetchPhotos();
@@ -249,8 +258,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                     <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
                 </Route>
                 <Route path="/">
-                    <div className={classes.root}>
-                        <input type="file" onChange={upload} ref={hiddenFileInput} style={{ display: "none" }} multiple={true} />
+                    <div  {...getRootProps({ className: 'dropzone' })} className={classes.root} >
+                        <input {...getInputProps()} />
                         <CssBaseline />
 
                         <AppBar position="fixed" className={classes.appBar}>

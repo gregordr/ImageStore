@@ -89,7 +89,6 @@ export async function addPhotosToAlbums(
     try {
         snackbar?.begin(photoIds.length, albumIds.length);
         const result = await axios.post("/albums/addPhotos", qs.stringify(requestBody));
-        console.log(result);
         snackbar?.end(photoIds, albumIds, []);
     } catch (error) {
         snackbar?.end([], [], [error]);
@@ -106,7 +105,6 @@ export async function removePhotosFromAlbum(
     try {
         snackbar?.begin(photoIds.length);
         const smth = await Promise.all(photoIds.map(async (pid) => await axios.post(`/albums/remove/${albumId}/${pid}`)));
-        console.log(smth);
         snackbar?.end(photoIds, []);
     } catch (error) {
         snackbar?.end([], [error]);
