@@ -16,6 +16,7 @@ import SearchBar from "material-ui-search-bar";
 import { useSnackbar } from "notistack";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { UploadErrorSnackbar } from "../../Snackbars/UploadErrorSnackbar";
+import { CloudUpload } from "@material-ui/icons";
 
 const maxFileSize = 50 * 1000 * 1000;
 const drawerWidth = 240;
@@ -96,7 +97,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const url = searchTerm === "" ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`;
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-    const { getRootProps, open: openM, getInputProps, acceptedFiles, fileRejections } = useDropzone({
+    const { getRootProps, open: openM, getInputProps, acceptedFiles, fileRejections, isDragActive } = useDropzone({
         // Disable click and keydown behavior
         noClick: true,
         noKeyboard: true,
@@ -306,6 +307,23 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                 </Route>
                 <Route path="/">
                     <div  {...getRootProps({ className: 'dropzone' })} className={classes.root} >
+                        <div style={{
+                            display: isDragActive || true ? "flex" : "none",
+                            transition: "0.10s linear",
+                            position: "fixed", zIndex: 10000, height: "100vh", width: "100vw",
+                            flexDirection: "row",
+                            flexWrap: "wrap",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            backgroundColor: "#00006666",
+                            opacity: isDragActive ? "1" : "0",
+                            pointerEvents: "none",
+                        }}>
+                            <div style={{}}>
+                                <CloudUpload style={{ fontSize: 200, color: "#1976d2aa" }}></CloudUpload>
+                            </div>
+                        </div>
+
                         <input {...getInputProps()} />
                         <CssBaseline />
 
