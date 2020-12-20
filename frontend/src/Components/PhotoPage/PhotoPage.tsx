@@ -263,8 +263,6 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
                         <Backdrop open={isDragActive} transitionDuration={150} style={{
                             zIndex: 1201,
-                            justifyContent: "center",
-                            alignItems: "center",
                             backgroundColor: "#00006666",
                         }}>
                             <div>
