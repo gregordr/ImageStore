@@ -1,7 +1,7 @@
 import express from 'express'
 import fs, { promises as fsPromises } from "fs";
 import { upload } from '../middleware/upload'
-import multer from "multer";
+import multer, { MulterError } from "multer";
 import { addMedia, removeMedia, getMedia } from '../database/mediaDatabase'
 import sizeOf from 'image-size';
 import sharp from 'sharp';
@@ -37,8 +37,12 @@ router.post('/add', async (req, res) => {
         const errors: string[] = []
 
         if (err) {
-
-            errors.push("Backend error: Either some file is too large, or /media does not exist.")
+            if (err instanceof MulterError && err.code === 'LIMIT_FILE_SIZE')
+                errors.push("Some file is over the maxiumum file size.")
+            else {
+                console.log(err)
+                errors.push("Unknown error happened and logged.")
+            }
             res.status(200).send({ success: [], errors })
             return
         }
@@ -91,7 +95,7 @@ router.post('/add', async (req, res) => {
                 oids.push(oid)
 
             } catch (e) {
-                errors.push("Unknown error in " + f.originalname)
+                errors.push("Unknown error happened and logged in " + f.originalname)
                 console.log(e.toString())
             }
         }))
