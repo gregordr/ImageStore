@@ -309,8 +309,6 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                     <div  {...getRootProps({ className: 'dropzone' })} className={classes.root} >
                         <Backdrop open={isDragActive} transitionDuration={150} style={{
                             zIndex: 1201,
-                            flexDirection: "row",
-                            flexWrap: "wrap",
                             justifyContent: "center",
                             alignItems: "center",
                             backgroundColor: "#00006666",
