@@ -23,6 +23,7 @@ class ImageClassifier:
 
     def _get_labels(self, predictions):
         labels = set()
+
         for pred in predictions:
             name = pred[1].replace('_', ' ').lower().strip()
             if name in self._rules:
@@ -40,6 +41,19 @@ class ImageClassifier:
                     if 'categories' in rule:
                         labels.update(rule['categories'])
 
+        labels.update(self._get_all_categories(labels))
         return list(labels)
+
+
+    def _get_all_categories(self, categories):
+        output = set()
+
+        for name in categories:
+            if name in self._rules and 'categories' in self._rules[name]:
+                output.update(self._rules[name]['categories'])
+                output.update(self._get_all_categories(self._rules[name]['categories']))
+
+        return output
+
 
 
