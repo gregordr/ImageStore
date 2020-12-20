@@ -1,7 +1,7 @@
 import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Backdrop } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
@@ -260,22 +260,19 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                 </Route>
                 <Route path="/">
                     <div  {...getRootProps({ className: 'dropzone' })} className={classes.root} >
-                        <div style={{
-                            display: isDragActive || true ? "flex" : "none",
-                            transition: "0.10s linear",
-                            position: "fixed", zIndex: 10000, height: "100vh", width: "100vw",
+
+                        <Backdrop open={isDragActive} transitionDuration={150} style={{
+                            position: "fixed", height: "100vh", width: "100vw", zIndex: 100000,
                             flexDirection: "row",
                             flexWrap: "wrap",
                             justifyContent: "center",
                             alignItems: "center",
                             backgroundColor: "#00006666",
-                            opacity: isDragActive ? "1" : "0",
-                            pointerEvents: "none",
                         }}>
-                            <div style={{}}>
+                            <div>
                                 <CloudUpload style={{ fontSize: 200, color: "#1976d2aa" }}></CloudUpload>
                             </div>
-                        </div>
+                        </Backdrop>
                         <input {...getInputProps()} />
                         <CssBaseline />
 
