@@ -10,18 +10,18 @@ from classification.model import ImageClassifier
 BASE_ADDRESS = 'http://backend:4000'
 MEDIA_ADDRESS = BASE_ADDRESS + '/media'
 FETCH_INTERVAL = 5
+RULE_PATH = 'data/rules.yml'
 
 
 if __name__ == "__main__":
-    im_clf = ImageClassifier()
+    im_clf = ImageClassifier(RULE_PATH)
+    time.sleep(FETCH_INTERVAL)
     while True:
         new_media_list = get_new_media(MEDIA_ADDRESS + '/new_images')
         for media in new_media_list:
             im = get_image(MEDIA_ADDRESS + '/' + media['id'])
             im = rotate_exif(im)
             prediction = im_clf.predict(im)
-            print(prediction, flush=True)
             post_image_labels(MEDIA_ADDRESS + '/add_labels', media['id'], prediction)
-            print("posted", flush=True)
             
         time.sleep(FETCH_INTERVAL)
