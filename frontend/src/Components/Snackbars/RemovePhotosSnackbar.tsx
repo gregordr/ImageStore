@@ -7,12 +7,10 @@ export class RemovePhotosSnackbar {
     enqueueSnackbar: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number;
     closeSnackbar: (key?: string | number | undefined) => void;
     snackMsg: string | number | undefined;
-    test: string;
 
-    constructor(enqueueSnackbar: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number, closeSnackbar: (key?: string | number | undefined) => void, test?: string) {
+    constructor(enqueueSnackbar: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number, closeSnackbar: (key?: string | number | undefined) => void) {
         this.enqueueSnackbar = enqueueSnackbar;
         this.closeSnackbar = closeSnackbar;
-        this.test = test!;
     }
 
     static createInstance(
