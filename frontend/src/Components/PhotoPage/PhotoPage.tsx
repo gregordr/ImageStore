@@ -262,7 +262,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                     <div  {...getRootProps({ className: 'dropzone' })} className={classes.root} >
 
                         <Backdrop open={isDragActive} transitionDuration={150} style={{
-                            position: "fixed", height: "100vh", width: "100vw", zIndex: 100000,
+                            zIndex: 1201,
                             flexDirection: "row",
                             flexWrap: "wrap",
                             justifyContent: "center",
