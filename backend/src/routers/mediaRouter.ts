@@ -108,6 +108,7 @@ router.post('/delete/:name', async (req, res) => {
         const name = await removeMedia(req.params.name);
         try {
             await fsPromises.unlink('media/' + name)
+            await fsPromises.unlink('media/thumb_' + name)
         } catch (err) {
             console.log(err)
         }
