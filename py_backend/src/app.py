@@ -16,6 +16,7 @@ RULE_PATH = 'data/rules.yml'
 if __name__ == "__main__":
     im_clf = ImageClassifier(RULE_PATH)
     time.sleep(FETCH_INTERVAL)
+    
     while True:
         new_media_list = get_new_media(MEDIA_ADDRESS + '/new_images')
         for media in new_media_list:
