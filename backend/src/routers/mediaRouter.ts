@@ -1,7 +1,7 @@
 import express from 'express'
-import { promises as fsPromises } from "fs";
+import fs, { promises as fsPromises } from "fs";
 import { upload } from '../middleware/upload'
-import multer from "multer";
+import multer, { MulterError } from "multer";
 import { addMedia, removeMedia, getMedia } from '../database/mediaDatabase'
 import sizeOf from 'image-size';
 import sharp from 'sharp';
@@ -25,18 +25,31 @@ router.get('/search/:term', async (req, res) => {
     }
 });
 
+const dir = "media/"
+
+if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+}
+
 router.post('/add', async (req, res) => {
     upload(req, res, async (err: multer.MulterError | "router") => {
-        const oids: number[] = []
+        const oids: string[] = []
         const errors: string[] = []
 
         if (err) {
-            res.status(500).send("File too large")
+            if (err instanceof MulterError && err.code === 'LIMIT_FILE_SIZE')
+                errors.push("Some file is over the maxiumum file size.")
+            else {
+                console.log(err)
+                errors.push("Unknown error happened and logged.")
+            }
+            res.status(200).send({ success: [], errors })
             return
         }
 
         if (!req.files) {
-            res.status(500).send("No file uploaded")
+            errors.push("No file was uploaded")
+            res.status(200).send({ success: [], errors })
             return
         }
 
@@ -54,11 +67,11 @@ router.post('/add', async (req, res) => {
 
                 let dims: ISizeCalculationResult;
                 try {
-                    dims = sizeOf("media/" + f.filename)
+                    dims = sizeOf(dir + f.filename)
                 } catch (error) {
                     if (error instanceof TypeError) {
                         errors.push("Invalid type in " + f.originalname)
-                        await fsPromises.unlink("media/" + f.filename)
+                        await fsPromises.unlink(dir + f.filename)
                         return
                     } else {
                         throw error
@@ -76,18 +89,17 @@ router.post('/add', async (req, res) => {
                     dims.width = tmp;
                 }
                 const oid = await addMedia(f.originalname, dims.height, dims.width)
-                await fsPromises.rename("media/" + f.filename, "media/" + oid);
-                await sharp("media/" + oid, { failOnError: false }).resize({ width: Math.ceil(dims.width / dims.height * 300), height: 300 }).rotate().toFile("media/thumb_" + oid)
+                await fsPromises.rename(dir + f.filename, dir + oid);
+                await sharp(dir + oid, { failOnError: false }).resize({ width: Math.ceil(dims.width / dims.height * 300), height: 300 }).rotate().toFile(dir + "thumb_" + oid)
 
                 oids.push(oid)
 
             } catch (e) {
-                errors.push("Unknown error in " + f.originalname)
+                errors.push("Unknown error happened and logged in " + f.originalname)
                 console.log(e.toString())
             }
         }))
-        res.status(200).send(oids)
-        console.log(errors)
+        res.status(200).send({ success: oids, errors })
     })
 });
 
@@ -96,6 +108,7 @@ router.post('/delete/:name', async (req, res) => {
         const name = await removeMedia(req.params.name);
         try {
             await fsPromises.unlink('media/' + name)
+            await fsPromises.unlink('media/thumb_' + name)
         } catch (err) {
             console.log(err)
         }

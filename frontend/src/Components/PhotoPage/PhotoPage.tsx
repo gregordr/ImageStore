@@ -1,13 +1,12 @@
 import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Button } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Backdrop } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
 import axios from "axios";
 import AddToAlbum from "../Shared/AddToAlbum";
-import qs from "qs";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
 import { addPhotos, addPhotosToAlbums, deletePhotos, download } from "../../API";
@@ -15,7 +14,11 @@ import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
 import { useSnackbar } from "notistack";
+import { useDropzone, FileRejection } from "react-dropzone";
+import { UploadErrorSnackbar } from "../Snackbars/UploadErrorSnackbar";
+import { CloudUpload } from "@material-ui/icons";
 
+const maxSize = parseInt(process.env.MAX_SIZE || (50 * 1024 * 1024).toString());
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -75,7 +78,6 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any }) {
     const classes = useStyles();
-    const hiddenFileInput: RefObject<HTMLInputElement> = React.useRef(null);
 
     const [photos, setPhotos] = useState<PhotoT[]>([]);
     const [albums, setAlbums] = useState<AlbumT[]>([]);
@@ -86,6 +88,14 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [viewId, setViewId] = useState("");
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+    const { getRootProps, open: openM, getInputProps, acceptedFiles, fileRejections, isDragActive } = useDropzone({
+        // Disable click and keydown behavior
+        noClick: true,
+        noKeyboard: true,
+        accept: 'image/jpeg, image/png',
+    })
+
+    useEffect(() => { upload(acceptedFiles, fileRejections) }, [acceptedFiles, fileRejections])
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
@@ -143,8 +153,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     const cb = async (albumIds: any) => {
-        await addPhotosToAlbums(selected, albumIds);
         topBarButtonFunctions.unselect();
+        await addPhotosToAlbums(selected, albumIds, enqueueSnackbar, closeSnackbar);
     };
 
     const viewButtonFunctions = {
@@ -157,18 +167,24 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setOpen(true);
         },
         download: async (id: string) => {
-            await download(photos.filter((photo) => id === photo.id));
+            await download(
+                photos.filter((photo) => id === photo.id),
+                enqueueSnackbar,
+                closeSnackbar
+            );
         },
     };
 
     const deletePhoto = async (pid: any) => {
-        await deletePhotos([pid]);
+        setPhotos(photos.filter((p) => p.id !== pid));
+        await deletePhotos([pid], enqueueSnackbar, closeSnackbar);
     };
 
     const topBarButtonFunctions = {
         delete: async () => {
-            await deletePhotos(selected);
             topBarButtonFunctions.unselect();
+            await deletePhotos(selected, enqueueSnackbar, closeSnackbar);
+            setPhotos(photos.filter((p) => !selected.includes(p.id)));
             await fetchPhotos();
         },
         unselect: () => {
@@ -176,11 +192,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setSelectable(false);
         },
         upload: () => {
-            if (!hiddenFileInput || !hiddenFileInput.current) {
-                console.log("hiddenFileInput is null");
-            } else {
-                hiddenFileInput.current.click();
-            }
+            openM()
         },
         settings: () => {
             //Nav to settings page
@@ -192,8 +204,12 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setOpen(true);
         },
         download: async () => {
-            await download(photos.filter((photo) => selected.includes(photo.id)));
             topBarButtonFunctions.unselect();
+            await download(
+                photos.filter((photo) => selected.includes(photo.id)),
+                enqueueSnackbar,
+                closeSnackbar
+            );
         },
         search: (s: string) => async () => {
             setSearchTerm(s);
@@ -202,21 +218,24 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setShowSearchBar(!showSearchBar);
         },
     };
+    const upload = async (files: File[], fileRejections: FileRejection[]) => {
+        if (!files) return;
 
-    const toAlbum = (photos: string[]) => {
-        setSelected(photos);
-        topBarButtonFunctions.addToAlbum();
-    };
-
-    const upload = async (event: ChangeEvent<HTMLInputElement>) => {
-        if (!event.target.files) return;
         const formData = new FormData();
-        for (const file of event.target.files) {
-            formData.append("file", file);
-        }
-        event.target.value = "";
+        files.forEach((file) => {
+            if (file.size > maxSize) {
+                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize} bytes`, code: "file-too-large" }] })
+            } else {
+                formData.append("file", file);
+            }
+        });
 
-        await addPhotos(formData, enqueueSnackbar, closeSnackbar, toAlbum);
+        const snackbar = UploadErrorSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
+        snackbar?.begin(fileRejections)
+
+        if (formData.getAll("file").length === 0) return;
+
+        await addPhotos(formData, enqueueSnackbar, closeSnackbar, albums);
         await fetchPhotos();
     };
 
@@ -240,8 +259,17 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                     <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
                 </Route>
                 <Route path="/">
-                    <div className={classes.root}>
-                        <input type="file" onChange={upload} ref={hiddenFileInput} style={{ display: "none" }} multiple={true} />
+                    <div  {...getRootProps({ className: 'dropzone' })} className={classes.root} >
+
+                        <Backdrop open={isDragActive} transitionDuration={150} style={{
+                            zIndex: 1201,
+                            backgroundColor: "#00006666",
+                        }}>
+                            <div>
+                                <CloudUpload style={{ fontSize: 200, color: "#1976d2aa" }}></CloudUpload>
+                            </div>
+                        </Backdrop>
+                        <input {...getInputProps()} />
                         <CssBaseline />
 
                         <AppBar position="fixed" className={classes.appBar}>
