@@ -2,3 +2,8 @@ requests
 Pillow
 tensorflow
 pyyaml
+python-dotenv
+image
+numpy
+efficientnet
+keras

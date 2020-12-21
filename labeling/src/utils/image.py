@@ -19,5 +19,7 @@ def rotate_exif(image):
 
     except (AttributeError, KeyError, IndexError): # image don't have getexif
         pass
+    except Exception as e:
+        print(e)
 
     return image

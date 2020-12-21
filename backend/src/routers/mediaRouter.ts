@@ -17,28 +17,12 @@ router.get('/all', async (req, res) => {
     }
 });
 
-router.get('/new_images', async (req, res) => {
-    // new added images
-    // TODO: this is for test now, rewrite this ASAP
-    try {
-        res.status(200).send(await getMedia("%"));
-    } catch (err) {
-        res.status(500).send(err.toString());
-    }
-});
-
 router.get('/search/:term', async (req, res) => {
     try {
         res.status(200).send(await getMedia(`%${req.params.term}%`));
     } catch (err) {
         res.status(500).send(err.toString());
     }
-});
-
-router.post('/add_labels', async (req, res) => {
-    // TODO: this is for test now, rewrite this ASAP
-    console.log(req.body);
-    res.status(200).send(req.body)
 });
 
 router.post('/add', async (req, res) => {

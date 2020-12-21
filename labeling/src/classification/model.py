@@ -2,24 +2,31 @@ import numpy as np
 from PIL import Image
 import yaml
 import tensorflow as tf
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_predictions, MobileNetV2
+
+from keras.applications.imagenet_utils import decode_predictions, preprocess_input
+from tensorflow.keras.applications import EfficientNetB7
+from efficientnet.keras import center_crop_and_resize
 
 class ImageClassifier:
     def __init__(self, rule_path):
-        self._model = MobileNetV2(weights='imagenet')
+        self._model = EfficientNetB7(weights='imagenet')
         with open(rule_path) as file:
             self._rules = yaml.full_load(file)
 
 
     def predict(self, image):
-        x = image.resize((224, 224), Image.ANTIALIAS)
-        x = np.array(x)
-        x = x[np.newaxis, :]
-        x = preprocess_input(x)
-        preds = self._model.predict(x)
-        decoded = decode_predictions(preds, top=5)[0]
-        return self._get_labels(decoded)
+        try:
+            image_size = self._model.input_shape[1]
+            x = np.array(image)
+            x = center_crop_and_resize(x, image_size=image_size)
+            x = preprocess_input(x)
+            x = np.expand_dims(x, 0)
+            preds = self._model.predict(x)
+            decoded = decode_predictions(preds, top=5)[0]
+            return self._get_labels(decoded)
+        except Exception as e:
+            print(e)
+            return []
 
     def _get_labels(self, predictions):
         labels = set()
@@ -32,7 +39,7 @@ class ImageClassifier:
                 if 'see' in rule:
                     if rule['see'] != 'ignore':
                         labels.add(rule['see'])
-                elif pred[2] > rule['threshold']:
+                elif 'threshold' not in rule or pred[2] > rule ['threshold']:
                     if 'label' in rule:
                         labels.add(rule['label'])
                     else:

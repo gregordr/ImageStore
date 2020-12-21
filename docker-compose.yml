@@ -4,10 +4,11 @@ services:
         build: frontend
         ports:
             - "3000:3000"
-    py_backend:
-        build: py_backend
-        ports:
-            - "3999:3999"
+    labeling:
+        build: labeling
+        environment:
+            BASE_ADDRESS: backend:4000
+            FETCH_INTERVAL: 60
     backend:
         build: backend
         ports:

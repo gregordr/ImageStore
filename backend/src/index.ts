@@ -26,5 +26,8 @@ app.use('/media', mediaRouter);
 import { router as albumRouter } from './routers/albumRouter';
 app.use('/albums', albumRouter);
 
+import { router as labelRouter } from './routers/labelRouter';
+app.use('/labels', labelRouter);
+
 const port = process.env.PORT || 4000;
 app.listen(port, () => console.log(`Listening on port ${port}`));

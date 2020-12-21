@@ -1,4 +1,5 @@
 import json
+from os import error
 import requests
 import io
 from PIL import Image
@@ -17,7 +18,7 @@ def get(url):
         return response
     else:
         # TODO: handle connection error here
-        print(f'Error while fetching new images f{url}: \n {response.status_code}', flush=True)
+        print(f'Error while fetching new images {url}: \n {response.status_code}', flush=True)
 
     return None
 
@@ -27,7 +28,7 @@ def get_new_media(url):
 
     try:
         return json.loads(response.content)
-    except ValueError as e:
+    except error as e:
         # TODO: handle loading error here
         print(f'Error while parsing: \n{e}', flush=True)
 

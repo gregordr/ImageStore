@@ -23,10 +23,11 @@ import {
     useMediaQuery,
     useTheme,
 } from "@material-ui/core";
-import { ChevronLeft, ChevronRight, Close, Inbox, Mail, PhotoOutlined } from "@material-ui/icons";
+import { ChevronLeft, ChevronRight, Close, Inbox, Label, Mail, PhotoOutlined } from "@material-ui/icons";
 import clsx from "clsx";
 import { PhotoT } from "../../Interfaces";
 import { useSwipeable } from "react-swipeable";
+import axios from "axios";
 
 const theme = createMuiTheme({
     palette: {
@@ -98,10 +99,25 @@ export default function ViewPage(props: any) {
     const [opacityRight, setOpacityRight] = useState(0);
     const [opacityLeft, setOpacityLeft] = useState(0);
     const [open, setOpen] = useState(false);
+    const [labels, setLabels] = useState<string>("Loading labels");
 
     useEffect(() => {
         props.setViewId(id);
     }, [id, props.setViewed]);
+
+    useEffect(() => {
+        getLabels();
+    }, [id])
+
+    const getLabels = async () => {
+        const resp = await axios.get("/labels/labels/" + id)
+        if (resp.status === 200) {
+            console.log(resp.data)
+            setLabels(resp.data.length === 0 ? "No labels yet" : resp.data.join(" - "));
+        } else {
+            window.alert(await resp.data);
+        }
+    }
 
     const index = props.photos.findIndex((v: PhotoT) => v.id === id);
     const photo = props.photos[index];
@@ -300,6 +316,12 @@ export default function ViewPage(props: any) {
                             <PhotoOutlined />
                         </ListItemIcon>
                         <ListItemText primary={photo ? photo.name : ""} secondary="Useful info" />
+                    </ListItem>
+                    <ListItem>
+                        <ListItemIcon>
+                            <Label />
+                        </ListItemIcon>
+                        <ListItemText primary="labels" secondary={labels} />
                     </ListItem>
                 </List>
             </Drawer>
