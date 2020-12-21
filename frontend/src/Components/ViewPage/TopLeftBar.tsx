@@ -1,9 +1,9 @@
-import { createStyles, IconButton, makeStyles, Theme } from "@material-ui/core";
+import { IconButton } from "@material-ui/core";
 import { ArrowBack } from "@material-ui/icons";
 import React from "react";
 import { useHistory } from "react-router-dom";
 
-export default function TopLeftBar(props: any) {
+export default function TopLeftBar() {
     const history = useHistory();
 
     return (

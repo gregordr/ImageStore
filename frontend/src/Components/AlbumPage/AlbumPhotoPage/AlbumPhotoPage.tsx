@@ -1,20 +1,24 @@
 import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Backdrop } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../../ViewPage/ViewPage";
 import axios from "axios";
 import AddToAlbum from "../../Shared/AddToAlbum";
-import qs from "qs";
 import { PhotoT, AlbumT } from "../../../Interfaces";
 import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
 import { addPhotos, addPhotosToAlbums, deletePhotos, download, removePhotosFromAlbum, setCover } from "../../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
+import { useSnackbar } from "notistack";
+import { FileRejection, useDropzone } from "react-dropzone";
+import { UploadErrorSnackbar } from "../../Snackbars/UploadErrorSnackbar";
+import { CloudUpload } from "@material-ui/icons";
 
+const maxSize = parseInt(process.env.MAX_SIZE || (50 * 1024 * 1024).toString());
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -75,7 +79,6 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; refresh: () => Promise<void> }) {
     //#region Hooks
     const classes = useStyles();
-    const hiddenFileInput: RefObject<HTMLInputElement> = React.useRef(null);
 
     const history = useHistory();
     const id = window.location.pathname.split("/")[3];
@@ -92,6 +95,16 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const [searchBarText, setSearchBarText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const url = searchTerm === "" ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`;
+
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+    const { getRootProps, open: openM, getInputProps, acceptedFiles, fileRejections, isDragActive } = useDropzone({
+        // Disable click and keydown behavior
+        noClick: true,
+        noKeyboard: true,
+        accept: 'image/jpeg, image/png',
+    })
+
+    useEffect(() => { upload(acceptedFiles, fileRejections) }, [acceptedFiles, fileRejections])
 
     const fetchPhotos = async () => {
         setShowLoadingBar(true);
@@ -122,37 +135,42 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     //#region API
 
     const cb = async (albumIds: string[]) => {
-        await addPhotosToAlbums(selected, albumIds);
-        await props.refresh();
         topBarButtonFunctions.unselect();
+        await addPhotosToAlbums(selected, albumIds, enqueueSnackbar, closeSnackbar);
+        await props.refresh();
     };
 
     const deletePhoto = async (pid: string) => {
-        await deletePhotos([pid]);
+        setPhotos(photos.filter((p) => p.id !== pid));
+        await deletePhotos([pid], enqueueSnackbar, closeSnackbar);
     };
 
     const removePhoto = async (pid: string) => {
-        await removePhotosFromAlbum([pid], id);
+        setPhotos(photos.filter((p) => p.id !== pid));
+        await removePhotosFromAlbum([pid], id, enqueueSnackbar, closeSnackbar);
     };
 
-    const upload = async (event: ChangeEvent<HTMLInputElement>) => {
-        try {
-            if (!event.target.files || event.target.files.length === 0) return;
-            const formData = new FormData();
-            [...event.target.files].forEach((f) => {
-                formData.append("file", f);
-            });
-            event.target.value = "";
-            const data = await addPhotos(formData);
+    const upload = async (files: File[], fileRejections: FileRejection[]) => {
+        if (!files) return;
 
-            await addPhotosToAlbums(data, [id]);
-            await fetchPhotos();
-            await props.refresh();
-        } catch (error) {
-            if (error.response) {
-                window.alert(error.response.data);
+        const formData = new FormData();
+        files.forEach((file) => {
+            if (file.size > maxSize) {
+                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize} bytes`, code: "file-too-large" }] })
+            } else {
+                formData.append("file", file);
             }
-        }
+        });
+
+        const snackbar = UploadErrorSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
+        snackbar?.begin(fileRejections)
+
+        if (formData.getAll("file").length === 0) return;
+        const data = await addPhotos(formData, enqueueSnackbar, closeSnackbar, albums);
+
+        await addPhotosToAlbums(data, [id], enqueueSnackbar, closeSnackbar);
+        await fetchPhotos();
+        await props.refresh();
     };
     //#endregion API
 
@@ -188,6 +206,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         },
         remove: async (id: string) => {
             await removePhoto(id);
+            setPhotos(photos.filter((p) => p.id !== id));
             await fetchPhotos();
             await props.refresh();
         },
@@ -200,7 +219,11 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             await props.refresh();
         },
         download: async (id: string) => {
-            await download(photos.filter((photo) => id === photo.id));
+            await download(
+                photos.filter((photo) => id === photo.id),
+                enqueueSnackbar,
+                closeSnackbar
+            );
         },
     };
 
@@ -211,16 +234,18 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             await props.refresh();
         },
         delete: async () => {
-            await deletePhotos(selected);
-
             topBarButtonFunctions.unselect();
+            await deletePhotos(selected, enqueueSnackbar, closeSnackbar);
+            setPhotos(photos.filter((p) => !selected.includes(p.id)));
+
             await fetchPhotos();
             await props.refresh();
         },
         remove: async () => {
-            await removePhotosFromAlbum(selected, id);
-
             topBarButtonFunctions.unselect();
+            await removePhotosFromAlbum(selected, id, enqueueSnackbar, closeSnackbar);
+            setPhotos(photos.filter((p) => !selected.includes(p.id)));
+
             await fetchPhotos();
             await props.refresh();
         },
@@ -229,11 +254,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             setSelectable(false);
         },
         upload: () => {
-            if (!hiddenFileInput || !hiddenFileInput.current) {
-                console.log("hiddenFileInput is null");
-            } else {
-                hiddenFileInput.current.click();
-            }
+            openM()
         },
         settings: () => {
             //Nav to settings page
@@ -245,8 +266,12 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             setOpen(true);
         },
         download: async () => {
-            await download(photos.filter((photo) => selected.includes(photo.id)));
             topBarButtonFunctions.unselect();
+            download(
+                photos.filter((photo) => selected.includes(photo.id)),
+                enqueueSnackbar,
+                closeSnackbar
+            );
         },
         search: (s: string) => async () => {
             setSearchTerm(s);
@@ -281,8 +306,17 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                     <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
                 </Route>
                 <Route path="/">
-                    <div className={classes.root}>
-                        <input type="file" onChange={upload} ref={hiddenFileInput} style={{ display: "none" }} multiple={true} />
+                    <div  {...getRootProps({ className: 'dropzone' })} className={classes.root} >
+                        <Backdrop open={isDragActive} transitionDuration={150} style={{
+                            zIndex: 1201,
+                            backgroundColor: "#00006666",
+                        }}>
+                            <div>
+                                <CloudUpload style={{ fontSize: 200, color: "#1976d2aa" }}></CloudUpload>
+                            </div>
+                        </Backdrop>
+
+                        <input {...getInputProps()} />
                         <CssBaseline />
 
                         <AppBar position="fixed" className={classes.appBar}>

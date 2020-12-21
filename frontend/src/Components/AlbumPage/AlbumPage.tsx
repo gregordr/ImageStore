@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, GridListTile, GridListTileBar, GridList, createMuiTheme, ThemeProvider, Typography } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
 import TopBar from "./TopBar";
-import { Route, Switch, useHistory } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import axios from "axios";
 import { AlbumT } from "../../Interfaces";
 import CreateAlbum from "./CreateAlbum";
-import { Info, PhotoAlbum } from "@material-ui/icons";
 import AlbumPhotoPage from "./AlbumPhotoPage/AlbumPhotoPage";
-import AlbumInfo from "./AlbumInfo";
 import AbstractAlbumPage from "../Shared/AbstractAlbumPage";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
@@ -116,7 +114,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         await fetchAlbums();
     };
 
-    const openAlbum = (album: AlbumT) => () => {};
+    const openAlbum = () => () => { };
 
     const heights = [searchTerm === "" ? 0 : 20];
 
@@ -165,7 +163,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                             <div style={{ flexGrow: 1 }}>
                                 <AutoSizer>
                                     {({ height, width }) => (
-                                        <AbstractAlbumPage height={height} width={width} albums={albums} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} />
+                                        <AbstractAlbumPage height={height - 1} width={width} albums={albums} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} />
                                     )}
                                 </AutoSizer>
                             </div>

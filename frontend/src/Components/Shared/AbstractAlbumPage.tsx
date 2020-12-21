@@ -1,6 +1,6 @@
-import React, { useCallback, useState, useMemo, useRef, useEffect } from "react";
-import { createMuiTheme, createStyles, makeStyles, Theme, ThemeProvider } from "@material-ui/core/styles";
-import { AlbumT, PhotoT } from "../../Interfaces";
+import React, { useCallback, useState, useRef, useEffect } from "react";
+import { createMuiTheme, createStyles, makeStyles, ThemeProvider } from "@material-ui/core/styles";
+import { AlbumT } from "../../Interfaces";
 import { VariableSizeList as List } from "react-window";
 import { Scrollbars } from "react-custom-scrollbars";
 import { GridList, GridListTile, GridListTileBar, IconButton } from "@material-ui/core";
@@ -19,7 +19,7 @@ const theme = createMuiTheme({
 });
 
 function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Promise<void>; dimension: number }) {
-    const useStyles = makeStyles((theme: Theme) =>
+    const useStyles = makeStyles(() =>
         createStyles({
             root: {
                 overflow: "hidden",
