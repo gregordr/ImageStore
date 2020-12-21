@@ -18,7 +18,7 @@ import { useDropzone, FileRejection } from "react-dropzone";
 import { UploadErrorSnackbar } from "../Snackbars/UploadErrorSnackbar";
 import { CloudUpload } from "@material-ui/icons";
 
-const maxFileSize = 50 * 1000 * 1000;
+const maxSize = parseInt(process.env.MAX_SIZE || (50 * 1024 * 1024).toString());
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -223,8 +223,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
         const formData = new FormData();
         files.forEach((file) => {
-            if (file.size > maxFileSize) {
-                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxFileSize} bytes`, code: "file-too-large" }] })
+            if (file.size > maxSize) {
+                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize} bytes`, code: "file-too-large" }] })
             } else {
                 formData.append("file", file);
             }
