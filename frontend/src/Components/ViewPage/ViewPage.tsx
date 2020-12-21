@@ -211,7 +211,13 @@ export default function ViewPage(props: any) {
             >
                 <ThemeProvider theme={theme}>
                     {transitions.map(({ item, props, key }) => (
-                        <div key={key} className="imageHolder" {...handlers}>
+                        <div key={key} className="imageHolder" {...handlers} style={{
+                            width: `calc(100% - ${open ? drawerWidth : 0}px)`,
+                            transition: theme.transitions.create("width", {
+                                easing: theme.transitions.easing.sharp,
+                                duration: theme.transitions.duration.leavingScreen,
+                            }),
+                        }}>
                             <animated.div style={{ ...props, alignSelf: "center", justifySelf: "center" }}>
                                 <img
                                     className="display"
@@ -219,11 +225,7 @@ export default function ViewPage(props: any) {
                                     style={{
                                         objectFit: "scale-down",
                                         height: "100vh",
-                                        width: `calc(100% - ${open ? drawerWidth : 0}px)`,
-                                        transition: theme.transitions.create("width", {
-                                            easing: theme.transitions.easing.sharp,
-                                            duration: theme.transitions.duration.leavingScreen,
-                                        }),
+                                        width: `100%`,
                                     }}
                                     src={item}
                                 />
@@ -284,11 +286,18 @@ export default function ViewPage(props: any) {
                             </IconButton>
                         </div>
                     </div>
-
-                    <div className="rootTop" style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div className="rootTop" style={{
+                        display: "flex", justifyContent: "space-between",
+                        width: `calc(100% - ${open ? drawerWidth : 0}px)`,
+                        transition: theme.transitions.create("width", {
+                            easing: theme.transitions.easing.sharp,
+                            duration: theme.transitions.duration.leavingScreen,
+                        }),
+                    }}>
                         <TopLeftBar />
                         {props.topRightBar(id, modifiedButtonFunctions)}
                     </div>
+
                 </ThemeProvider>
             </main>
             <Drawer
