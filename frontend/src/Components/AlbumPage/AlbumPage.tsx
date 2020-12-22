@@ -139,7 +139,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar buttonFunctions={topBarButtonFunctions} show={showLoadingBar} autocompleteOptions={autocompleteOptions} />
+                                <TopBar searchBarText={searchBarText} setSearchBarText={setSearchBarText} autocompleteOptions={autocompleteOptions} buttonFunctions={topBarButtonFunctions} show={showLoadingBar} />
                             </Toolbar>
                         </AppBar>
 

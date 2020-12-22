@@ -33,6 +33,8 @@ export default function AutocompleteSearchBar(props: any) {
                             className={props.onlyMobile}
                             value={value}
                             onChange={(newValue) => {
+                                if (newValue === "")
+                                    props.search("")();
                                 params.inputProps.onChange({ target: { value: newValue } });
                                 setValue(newValue)
                             }}

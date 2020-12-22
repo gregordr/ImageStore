@@ -1,15 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import IconButton from "@material-ui/core/IconButton";
 import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Search, CheckBox } from "@material-ui/icons";
-import SearchBar from "material-ui-search-bar";
 import { LinearProgress } from "@material-ui/core";
 import TopBarStyle from "../Shared/TopBarStyle";
 import AutocompleteSearchBar from "../Shared/SearchBar";
 
 export default function TopBar(props: any) {
     const classes = TopBarStyle();
-
-    const [searchBarText, setSearchBarText] = useState("");
 
     return (
         <div style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
@@ -19,9 +16,9 @@ export default function TopBar(props: any) {
                         options={props.autocompleteOptions}
                         search={props.buttonFunctions.search}
                         className={classes.notMobile}
-                        value={searchBarText}
-                        onChange={(s: string) => setSearchBarText(s)}
-                        onRequestSearch={props.buttonFunctions.search(searchBarText)}
+                        value={props.searchBarText}
+                        onChange={(s: string) => props.setSearchBarText(s)}
+                        onRequestSearch={props.buttonFunctions.search(props.searchBarText)}
                     />
                 </div>
                 <div className={classes.right}>
