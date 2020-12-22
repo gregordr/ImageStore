@@ -5,11 +5,10 @@ import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typograp
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../../ViewPage/ViewPage";
-import axios from "axios";
 import AddToAlbum from "../../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../../Interfaces";
 import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
-import { addPhotos, addPhotosToAlbums, deletePhotos, download, removePhotosFromAlbum, setCover } from "../../../API";
+import { addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotosInAlbum, removePhotosFromAlbum, setCover } from "../../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
@@ -94,7 +93,6 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
-    const url = searchTerm === "" ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`;
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
     const { getRootProps, open: openM, getInputProps, acceptedFiles, fileRejections, isDragActive } = useDropzone({
@@ -108,7 +106,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     const fetchPhotos = async () => {
         setShowLoadingBar(true);
-        const resp = await axios.get(url);
+        const resp = await getPhotosInAlbum(id, searchTerm);
         if (resp.status === 200) {
             setPhotos(resp.data);
             setShowLoadingBar(false);
@@ -118,7 +116,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     };
 
     const fetchAlbums = async () => {
-        const resp = await axios.get("albums/all");
+        const resp = await getAlbums("")
         if (resp.status === 200) {
             setAlbums(resp.data);
         } else {
@@ -129,7 +127,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     useEffect(() => {
         fetchPhotos();
         fetchAlbums();
-    }, [url]);
+    }, [searchTerm, id]);
     //#endregion hooks
 
     //#region API

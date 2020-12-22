@@ -181,3 +181,19 @@ export async function addLabel(ids: string[], labels: string[]) {
     };
     await axios.post("/labels/add", qs.stringify(requestBody));
 }
+
+export async function getPhotoLabel(id: string) {
+    return await axios.get("/labels/labels/" + id);
+}
+
+export async function getAlbums(searchTerm: string) {
+    return await axios.get(searchTerm === "" ? "albums/all" : "albums/search/" + searchTerm);
+}
+
+export async function getPhotos(searchTerm: string) {
+    return await axios.get(searchTerm === "" ? "media/all" : "media/search/" + searchTerm);
+}
+
+export async function getPhotosInAlbum(id: string, searchTerm: string) {
+    return await axios.get(searchTerm === "" ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`);
+}

@@ -5,11 +5,10 @@ import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typograp
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
-import axios from "axios";
 import AddToAlbum from "../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
-import { addPhotos, addPhotosToAlbums, deletePhotos, download } from "../../API";
+import { addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotos } from "../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
@@ -101,11 +100,10 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [searchBarText, setSearchBarText] = useState("");
 
     const [searchTerm, setSearchTerm] = useState("");
-    const url = searchTerm === "" ? "media/all" : "media/search/" + searchTerm;
 
     const fetchPhotos = async () => {
         setShowLoadingBar(true);
-        const resp = await axios.get(url);
+        const resp = await getPhotos(searchTerm);
         if (resp.status === 200) {
             setPhotos(resp.data);
             setShowLoadingBar(false);
@@ -115,7 +113,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     const fetchAlbums = async () => {
-        const resp = await axios.get("albums/all");
+        const resp = await getAlbums("");
         if (resp.status === 200) {
             setAlbums(resp.data);
         } else {
@@ -126,7 +124,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     useEffect(() => {
         fetchPhotos();
         fetchAlbums();
-    }, [url]);
+    }, [searchTerm]);
 
     const history = useHistory();
 

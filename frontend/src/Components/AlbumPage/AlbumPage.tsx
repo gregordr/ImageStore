@@ -4,14 +4,13 @@ import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch } from "react-router-dom";
-import axios from "axios";
 import { AlbumT } from "../../Interfaces";
 import CreateAlbum from "./CreateAlbum";
 import AlbumPhotoPage from "./AlbumPhotoPage/AlbumPhotoPage";
 import AbstractAlbumPage from "../Shared/AbstractAlbumPage";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
-import { createAlbum } from "../../API";
+import { createAlbum, getAlbums } from "../../API";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -80,11 +79,10 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
-    const url = searchTerm === "" ? "albums/all" : "albums/search/" + searchTerm;
 
     const fetchAlbums = async () => {
         setShowLoadingBar(true);
-        const resp = await axios.get(url);
+        const resp = await getAlbums(searchTerm);
         if (resp.status === 200) {
             setAlbums(resp.data);
             setShowLoadingBar(false);
@@ -95,7 +93,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     useEffect(() => {
         fetchAlbums();
-    }, [url]);
+    }, [searchTerm]);
 
     const topBarButtonFunctions = {
         add: async () => {
