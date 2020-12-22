@@ -2,8 +2,7 @@ import { DatabaseError, requireTable, transaction } from './databaseHelper'
 import { labelTable } from './labelDatabase';
 
 export const photo = 'photo'
-export const media = requireTable('media', `(${photo} varchar, UNIQUE(oid), h integer, w integer, labeled boolean default false) WITH OIDS`).catch((err) => { console.log(err) });
-//Todo: photos instead of media?
+export const media = requireTable('media', `(${photo} varchar, UNIQUE(oid), h integer, w integer, labeled boolean default false) WITH OIDS`)
 
 export async function getMedia(searchTerm: string, label: string): Promise<unknown[]> {
     return transaction(async (client) => {

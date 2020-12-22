@@ -2,8 +2,12 @@ import { requireTable, transaction } from './databaseHelper'
 import { media, photo } from './mediaDatabase';
 
 export const label = 'label'
-export const labelTable = (async () => requireTable('labelTable', `(${photo} OID, ${label} varchar, PRIMARY KEY(${photo}, ${label}),
-CONSTRAINT photo_Exists FOREIGN KEY(${photo}) REFERENCES ${await media}(OID) ON DELETE CASCADE)`).catch((err) => { console.log(err) }))();
+export const labelTable = (async () => {
+    await media
+    const name = await requireTable('labelTable', `(${photo} OID, ${label} varchar, PRIMARY KEY(${photo}, ${label}),
+CONSTRAINT photo_Exists FOREIGN KEY(${photo}) REFERENCES ${await media}(OID) ON DELETE CASCADE)`)
+    return name;
+})()
 
 export async function getUnlabeled(): Promise<unknown[]> {
     return transaction(async (client) => {
