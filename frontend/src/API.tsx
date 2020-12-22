@@ -164,3 +164,20 @@ export async function download(
         snackbar?.end([], [error]);
     }
 }
+
+
+export async function removeLabel(id: string, label: string) {
+    const requestBody = {
+        id,
+        label,
+    };
+    await axios.post("/labels/remove", qs.stringify(requestBody));
+}
+
+export async function addLabel(ids: string[], labels: string[]) {
+    const requestBody = {
+        ids,
+        labels,
+    };
+    await axios.post("/labels/add", qs.stringify(requestBody));
+}

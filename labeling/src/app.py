@@ -26,6 +26,6 @@ if __name__ == "__main__":
             im = get_image(MEDIA_ADDRESS + '/' + media['id'])
             im = rotate_exif(im)
             prediction = im_clf.predict(im)
-            post_image_labels(LABEL_ADDRESS + '/label', media['id'], prediction)
+            post_image_labels(LABEL_ADDRESS + '/labelAuto', media['id'], prediction)
             
         time.sleep(FETCH_INTERVAL)

@@ -4,6 +4,8 @@ import { useHistory } from "react-router-dom";
 import { useTransition, animated } from "react-spring";
 import TopLeftBar from "./TopLeftBar";
 import {
+    Chip,
+    CircularProgress,
     createMuiTheme,
     createStyles,
     CssBaseline,
@@ -15,17 +17,20 @@ import {
     ListItemIcon,
     ListItemText,
     makeStyles,
+    Paper,
+    TextField,
     Theme,
     ThemeProvider,
     Typography,
     useMediaQuery,
     useTheme,
 } from "@material-ui/core";
-import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined } from "@material-ui/icons";
+import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, HighlightOff } from "@material-ui/icons";
 import clsx from "clsx";
 import { PhotoT } from "../../Interfaces";
 import { useSwipeable } from "react-swipeable";
 import axios from "axios";
+import { addLabel, removeLabel } from "../../API";
 
 const theme = createMuiTheme({
     palette: {
@@ -87,6 +92,9 @@ const useStyles = makeStyles((theme: Theme) =>
                 display: "none",
             },
         },
+        chip: {
+            margin: theme.spacing(0.5),
+        },
     })
 );
 
@@ -97,7 +105,7 @@ export default function ViewPage(props: any) {
     const [opacityRight, setOpacityRight] = useState(0);
     const [opacityLeft, setOpacityLeft] = useState(0);
     const [open, setOpen] = useState(false);
-    const [labels, setLabels] = useState<string>("Loading labels");
+    const [labels, setLabels] = useState<string[] | "Loading">("Loading");
 
     useEffect(() => {
         props.setViewId(id);
@@ -110,8 +118,7 @@ export default function ViewPage(props: any) {
     const getLabels = async () => {
         const resp = await axios.get("/labels/labels/" + id)
         if (resp.status === 200) {
-            console.log(resp.data)
-            setLabels(resp.data.length === 0 ? "No labels yet" : resp.data.join(" - "));
+            setLabels(resp.data);
         } else {
             window.alert(await resp.data);
         }
@@ -138,6 +145,7 @@ export default function ViewPage(props: any) {
     const go = (dir: number) => () => {
         const photos = props.photos;
         let ind = photos.findIndex((v: any) => v.id === id);
+        setLabels("Loading")
         if (!canGo(dir * 2)) {
             if (dir < 0) setOpacityLeft(0);
             else setOpacityRight(0);
@@ -328,10 +336,69 @@ export default function ViewPage(props: any) {
                         <ListItemIcon>
                             <Label />
                         </ListItemIcon>
-                        <ListItemText primary="labels" secondary={labels} />
+                        <ListItemText primary="Labels" />
+                    </ListItem>
+                    <ListItem>
+                        <ul style={{
+                            display: 'flex',
+                            justifyContent: 'left',
+                            flexWrap: 'wrap',
+                            listStyle: 'none',
+                            padding: 0,
+                            margin: 0,
+                            marginLeft: 5,
+                            marginTop: -15,
+                        }}>
+                            {labels === "Loading" ? <CircularProgress size={20} style={{ margin: 10 }} /> :
+                                <>
+                                    {labels.map((label) => {
+                                        return (
+                                            <li key={label}>
+                                                <LabelChip id={id} label={label} removeLabel={removeLabel} getLabels={getLabels} />
+                                            </li>
+                                        );
+                                    })}
+                                    <LabelInputChip addLabel={addLabel} getLabels={getLabels} id={id} />
+                                </>
+                            }
+                        </ul>
                     </ListItem>
                 </List>
             </Drawer>
         </div>
     );
+}
+
+function LabelChip(props: any) {
+
+    const classes = useStyles(useTheme());
+    const [deleted, setDeleted] = useState(false);
+
+    return (
+        <Chip
+            label={props.label}
+            onDelete={async () => { setDeleted(true); await props.removeLabel(props.id, props.label); props.getLabels() }}
+            className={classes.chip}
+            deleteIcon={deleted ? <CircularProgress style={{ height: 20, width: 20, padding: 1.5, marginRight: 7 }} /> : undefined}
+        />)
+}
+
+function LabelInputChip(props: any) {
+    const classes = useStyles(useTheme());
+    const [value, setValue] = useState("");
+    const [added, setAdded] = useState(false);
+
+    return (
+        <Chip style={{ width: 120 }}
+            label={<TextField style={{ height: 25, marginBottom: 5, marginLeft: 5 }} value={value} onChange={(event) => setValue(event.target.value)}></TextField>}
+            onDelete={async () => {
+                setAdded(true);
+                await props.addLabel([props.id], [value]);
+                setValue("");
+                setAdded(false);
+                props.getLabels();
+            }}
+            className={classes.chip}
+            deleteIcon={added ? <CircularProgress style={{ height: 20, width: 20, padding: 1.5, marginRight: 7 }} /> : < AddCircle style={{ transform: "rotate(0deg)" }} />}
+        />)
 }
