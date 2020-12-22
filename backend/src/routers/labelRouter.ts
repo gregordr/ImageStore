@@ -11,8 +11,8 @@ router.get('/getBatch', async (req, res) => {
     }
 });
 
-router.get('/labels/:id', async (req, res) => {
-    res.status(200).send(await getLabels(req.params.id))
+router.post('/get', async (req, res) => {
+    res.status(200).send(await getLabels(req.body.ids))
 });
 
 router.post('/labelAuto', async (req, res) => {

@@ -4,6 +4,7 @@ import { Search, CreateNewFolder } from "@material-ui/icons";
 import SearchBar from "material-ui-search-bar";
 import TopBarStyle from "../Shared/TopBarStyle";
 import { LinearProgress } from "@material-ui/core";
+import AutocompleteSearchBar from "../Shared/SearchBar";
 
 export default function TopBar(props: any) {
     const classes = TopBarStyle();
@@ -13,14 +14,12 @@ export default function TopBar(props: any) {
         <div style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
             <div className={classes.TopBar}>
                 <div className={classes.middle}>
-                    <SearchBar
-                        onCancelSearch={async () => {
-                            setSearchBarText("");
-                            props.buttonFunctions.search("")();
-                        }}
+                    <AutocompleteSearchBar
+                        options={props.autocompleteOptions}
+                        search={props.buttonFunctions.search}
                         className={classes.notMobile}
                         value={searchBarText}
-                        onChange={(s) => setSearchBarText(s)}
+                        onChange={(s: string) => setSearchBarText(s)}
                         onRequestSearch={props.buttonFunctions.search(searchBarText)}
                     />
                 </div>

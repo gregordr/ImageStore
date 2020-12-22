@@ -11,9 +11,9 @@ export async function getUnlabeled(): Promise<unknown[]> {
         return result.rows;
     });
 }
-export async function getLabels(id: string): Promise<string[]> {
+export async function getLabels(ids: string[]): Promise<string[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT ARRAY(SELECT label::text FROM ${await labelTable} WHERE ${photo} = $1);`, [id]);
+        const result = await client.query(`SELECT ARRAY(SELECT DISTINCT label::text FROM ${await labelTable} WHERE ${photo} = ANY ($1));`, [ids]);
         return result.rows[0].array;
     });
 }

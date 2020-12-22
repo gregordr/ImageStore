@@ -8,7 +8,7 @@ import ViewPage from "../../ViewPage/ViewPage";
 import AddToAlbum from "../../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../../Interfaces";
 import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
-import { addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotosInAlbum, removePhotosFromAlbum, setCover } from "../../../API";
+import { addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosInAlbum, removePhotosFromAlbum, setCover } from "../../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
@@ -16,6 +16,7 @@ import { useSnackbar } from "notistack";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { UploadErrorSnackbar } from "../../Snackbars/UploadErrorSnackbar";
 import { CloudUpload } from "@material-ui/icons";
+import AutocompleteSearchBar from "../../Shared/SearchBar";
 
 const maxSize = parseInt(process.env.MAX_SIZE || (50 * 1024 * 1024).toString());
 const drawerWidth = 240;
@@ -93,6 +94,18 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+
+    const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
+
+    useEffect(() => {
+        (async () => {
+            if (photos.length === 0)
+                setAutocompleteOptions([])
+            else
+                setAutocompleteOptions((await getPhotoLabels(photos.map(photo => photo.id))).data)
+
+        })()
+    }, [photos])
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
     const { getRootProps, open: openM, getInputProps, acceptedFiles, fileRejections, isDragActive } = useDropzone({
@@ -290,12 +303,12 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         <Typography variant="h4" style={{ paddingTop: 10, paddingLeft: 5 }}>
             {(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}
         </Typography>,
-        <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block", paddingLeft: 5 }}>
+        <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block", paddingLeft: 5 }}>
             Search results for {searchTerm}:
         </Typography>,
     ];
 
-    const heights = [12, 42, searchTerm === "" ? 0 : 28];
+    const heights = [12, 42, searchTerm === "" || !searchTerm ? 0 : 28];
 
     return (
         <div>
@@ -322,7 +335,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar numSelected={() => selected.length} buttonFunctions={topBarButtonFunctions} show={showLoadingBar} />
+                                <TopBar numSelected={() => selected.length} buttonFunctions={topBarButtonFunctions} show={showLoadingBar} autocompleteOptions={autocompleteOptions} />
                             </Toolbar>
                         </AppBar>
 
@@ -331,16 +344,14 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
                             {showSearchBar && (
-                                <SearchBar
-                                    onCancelSearch={async () => {
-                                        setSearchBarText("");
-                                        topBarButtonFunctions.search("")();
-                                    }}
-                                    style={{ marginLeft: -12, borderRadius: 0, alignSelf: "flex-top" }}
+                                <AutocompleteSearchBar
+                                    options={autocompleteOptions}
+                                    search={topBarButtonFunctions.search}
                                     className={classes.onlyMobile}
                                     value={searchBarText}
-                                    onChange={(s) => setSearchBarText(s)}
+                                    onChange={(s: string) => setSearchBarText(s)}
                                     onRequestSearch={topBarButtonFunctions.search(searchBarText)}
+                                    style={{ marginLeft: -6, borderRadius: 0, alignSelf: "flex-top" }}
                                 />
                             )}
                             <div style={{ flexGrow: 1 }}>

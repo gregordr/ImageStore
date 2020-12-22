@@ -29,7 +29,7 @@ import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, High
 import clsx from "clsx";
 import { PhotoT } from "../../Interfaces";
 import { useSwipeable } from "react-swipeable";
-import { addLabel, getPhotoLabel, removeLabel } from "../../API";
+import { addLabel, getPhotoLabels, removeLabel } from "../../API";
 
 const theme = createMuiTheme({
     palette: {
@@ -115,7 +115,7 @@ export default function ViewPage(props: any) {
     }, [id])
 
     const getLabels = async () => {
-        const resp = await getPhotoLabel(id)
+        const resp = await getPhotoLabels([id])
         if (resp.status === 200) {
             setLabels(resp.data);
         } else {

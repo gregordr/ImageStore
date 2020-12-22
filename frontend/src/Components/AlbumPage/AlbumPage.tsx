@@ -11,6 +11,7 @@ import AbstractAlbumPage from "../Shared/AbstractAlbumPage";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
 import { createAlbum, getAlbums } from "../../API";
+import AutocompleteSearchBar from "../Shared/SearchBar";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -79,6 +80,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+    const [autocompleteOptions, setAutocompleteOption] = useState<string[]>([]);
 
     const fetchAlbums = async () => {
         setShowLoadingBar(true);
@@ -114,10 +116,10 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     const openAlbum = () => () => { };
 
-    const heights = [searchTerm === "" ? 0 : 20];
+    const heights = [searchTerm === "" || !searchTerm ? 0 : 20];
 
     const lines = [
-        <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
+        <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block" }}>
             Search results for {searchTerm}:
         </Typography>,
     ];
@@ -137,7 +139,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar buttonFunctions={topBarButtonFunctions} show={showLoadingBar} />
+                                <TopBar buttonFunctions={topBarButtonFunctions} show={showLoadingBar} autocompleteOptions={autocompleteOptions} />
                             </Toolbar>
                         </AppBar>
 
@@ -146,16 +148,14 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
                             {showSearchBar && (
-                                <SearchBar
-                                    onCancelSearch={async () => {
-                                        setSearchBarText("");
-                                        topBarButtonFunctions.search("")();
-                                    }}
-                                    style={{ marginLeft: -12, borderRadius: 0 }}
+                                <AutocompleteSearchBar
+                                    options={autocompleteOptions}
+                                    search={topBarButtonFunctions.search}
                                     className={classes.onlyMobile}
                                     value={searchBarText}
-                                    onChange={(s) => setSearchBarText(s)}
+                                    onChange={(s: string) => setSearchBarText(s)}
                                     onRequestSearch={topBarButtonFunctions.search(searchBarText)}
+                                    style={{ marginLeft: -6, borderRadius: 0, alignSelf: "flex-top" }}
                                 />
                             )}
                             <div style={{ flexGrow: 1 }}>
