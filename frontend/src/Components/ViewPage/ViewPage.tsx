@@ -388,16 +388,35 @@ function LabelInputChip(props: any) {
     const [value, setValue] = useState("");
     const [added, setAdded] = useState(false);
 
+    const handleAdd = async () => {
+        setAdded(true);
+        await props.addLabel([props.id], [value]);
+        setValue("");
+        setAdded(false);
+        props.getLabels();
+    }
+
     return (
         <Chip style={{ width: 120 }}
-            label={<TextField style={{ height: 25, marginBottom: 5, marginLeft: 5 }} value={value} onChange={(event) => setValue(event.target.value)}></TextField>}
-            onDelete={async () => {
-                setAdded(true);
-                await props.addLabel([props.id], [value]);
-                setValue("");
-                setAdded(false);
-                props.getLabels();
+            label={<TextField
+                style={{ height: 25, marginBottom: 5, marginLeft: 5 }}
+                value={value}
+                onChange={(event) => setValue(event.target.value)}
+                onKeyPress={(ev) => {
+                    if (ev.key === 'Enter') {
+                        handleAdd()
+                        ev.preventDefault();
+                    }
+                }}
+            />}
+            onKeyPress={(ev) => {
+                console.log(`Pressed keyCode ${ev.key}`);
+                if (ev.key === 'Enter') {
+                    // Do code here
+                    ev.preventDefault();
+                }
             }}
+            onDelete={handleAdd}
             className={classes.chip}
             deleteIcon={added ? <CircularProgress style={{ height: 20, width: 20, padding: 1.5, marginRight: 7 }} /> : < AddCircle style={{ transform: "rotate(0deg)" }} />}
         />)
