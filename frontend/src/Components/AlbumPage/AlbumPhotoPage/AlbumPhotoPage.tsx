@@ -212,13 +212,13 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const viewButtonFunctions = {
         delete: async (id: string) => {
             await deletePhoto(id);
-            await fetchPhotos();
+            // await fetchPhotos();
             await props.refresh();
         },
         remove: async (id: string) => {
             await removePhoto(id);
             setPhotos(photos.filter((p) => p.id !== id));
-            await fetchPhotos();
+            // await fetchPhotos();
             await props.refresh();
         },
         addToAlbum: (id: string) => {

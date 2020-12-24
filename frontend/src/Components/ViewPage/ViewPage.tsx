@@ -105,11 +105,12 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function ViewPage(props: any) {
     const history = useHistory();
     const [id, setId] = useState(window.location.pathname.split("/").slice(-1)[0]);
-    const [dir, setDir] = useState(0);
     const [opacityRight, setOpacityRight] = useState(0);
     const [opacityLeft, setOpacityLeft] = useState(0);
     const [open, setOpen] = useState(false);
     const [labels, setLabels] = useState<string[] | "Loading">("Loading");
+    const index = props.photos.findIndex((v: PhotoT) => v.id === id);
+    const photo = props.photos[index];
 
     useEffect(() => {
         props.setViewId(id);
@@ -128,16 +129,11 @@ export default function ViewPage(props: any) {
         }
     }
 
-    const index = props.photos.findIndex((v: PhotoT) => v.id === id);
-    const photo = props.photos[index];
-
     const classes = useStyles(useTheme());
 
     const handleDrawerClose = () => {
         setOpen(false);
     };
-
-    const url = "http://localhost:4000/media/" + id;
 
     const canGo = (dir: number) => {
         const photos = props.photos;
@@ -147,43 +143,19 @@ export default function ViewPage(props: any) {
     };
 
     const slideChange = (index: number) => {
-        console.log("ind; " + index)
         const photos = props.photos;
         const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
         history.replace(`${afterWithout}${photos[index].id}`);
         setId(photos[index].id);
-        if (!canGo(-1))
-            setOpacityLeft(0);
-        if (!canGo(1))
-            setOpacityRight(0);
     }
 
-    const go = (dir: number) => () => {
-        const photos = props.photos;
-        let ind = photos.findIndex((v: any) => v.id === id);
-        setLabels("Loading")
-        if (!canGo(dir * 2)) {
-            if (dir < 0) setOpacityLeft(0);
-            else setOpacityRight(0);
-        }
-        if (canGo(dir)) {
-            setDir(50 * dir);
-            ind += dir;
-            const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
-            history.replace(`${afterWithout}${photos[ind].id}`);
-            setId(photos[ind].id);
-        }
-    };
-
     const mouseRight = () => {
-        if (canGo(1)) setOpacityRight(100);
-        else setOpacityRight(0);
+        setOpacityRight(100);
         setOpacityLeft(0);
     };
 
     const mouseLeft = () => {
-        if (canGo(-1)) setOpacityLeft(100);
-        else setOpacityLeft(0);
+        setOpacityLeft(100);
         setOpacityRight(0);
     };
     const mouseCenter = () => {
@@ -194,17 +166,18 @@ export default function ViewPage(props: any) {
     const modifiedButtonFunctions = {
         ...props.buttonFunctions,
         delete: async (id: string) => {
-            if (canGo(-1)) slideChange(index - 1);
-            else if (canGo(1)) slideChange(index + 1);
-            else history.goBack();
-
+            if (props.photos.length === 1) history.goBack();
+            else if (index === 0) {
+                slideChange(1)
+            } else {
+                slideChange(index - 1)
+            }
             await props.buttonFunctions.delete(id);
         },
         remove: async (id: string) => {
-            if (canGo(-1)) go(-1)();
-            else if (canGo(1)) go(1)();
-            else history.goBack();
-
+            if (props.photos.length === 1) history.goBack();
+            else
+                slideChange(index === 0 ? 1 : index - 1)
             await props.buttonFunctions.remove(id);
         },
         info: () => {
@@ -239,11 +212,11 @@ export default function ViewPage(props: any) {
                             }),
                         }}
                     >
-                        <div ref={prevRef} className="leftIm" onMouseEnter={mouseLeft}>
+                        <div ref={prevRef} className="leftIm" onMouseEnter={mouseLeft} onMouseMove={mouseLeft}>
                             <IconButton
                                 style={{
                                     transition: "0.01s linear",
-                                    opacity: opacityLeft,
+                                    opacity: index === 0 ? 0 : opacityLeft,
                                     backgroundColor: "#222222",
                                     alignSelf: "center",
                                     justifySelf: "left",
@@ -260,11 +233,11 @@ export default function ViewPage(props: any) {
                             </IconButton>
                         </div>
                         <div className="center" onClick={() => history.goBack()} onMouseEnter={mouseCenter}></div>
-                        <div ref={nextRef} className="rightIm" onMouseEnter={mouseRight}>
+                        <div ref={nextRef} className="rightIm" onMouseEnter={mouseRight} onMouseMove={mouseRight}>
                             <IconButton
                                 style={{
                                     transition: "0.01s linear",
-                                    opacity: opacityRight,
+                                    opacity: index === props.photos.length - 1 ? 0 : opacityRight,
                                     backgroundColor: "#222222",
                                     alignSelf: "center",
                                     justifySelf: "right",
@@ -400,6 +373,7 @@ function LabelInputChip(props: any) {
                 console.log(`Pressed keyCode ${ev.key}`);
                 if (ev.key === 'Enter') {
                     // Do code here
+                    //TODO::IMPORTANT!
                     ev.preventDefault();
                 }
             }}
@@ -411,37 +385,31 @@ function LabelInputChip(props: any) {
 
 function makeSlides(photos: PhotoT[]): any[] {
     return photos.map((photo: PhotoT, index: number) => {
-        return (<SwiperSlide key={photo.id} virtualIndex={index} style={{ alignSelf: "center", justifySelf: "center" }}>
-            <img
-                className="display"
-                alt={photo.id}
-                style={{
-                    objectFit: "scale-down",
-                    height: "100vh",
-                    width: `100vw`,
-                }}
-                src={"http://localhost:4000/media/" + photo.id}
-            />
-        </SwiperSlide>);
+        return (
+            <SwiperSlide key={photo.id} virtualIndex={index} style={{ alignSelf: "center", justifySelf: "center" }}>
+                <img
+                    className="display"
+                    alt={photo.id}
+                    style={{
+                        objectFit: "scale-down",
+                        height: "100vh",
+                        width: `100vw`,
+                    }}
+                    src={"http://localhost:4000/media/" + photo.id}
+                />
+            </SwiperSlide>
+        );
     })
 }
 
-const Carousel = React.memo(function Carousel(props: any) {
-
-    const [ref, setRef] = useState<SwiperCore | undefined>(undefined);
+const Carousel = (props: any) => {
+    const [key, setKey] = useState(1)
 
     useEffect(() => {
-        console.log(props.photos)
-        if (ref) {
-            ref.virtual.slides.forEach((s) => console.log(s.key))
-            ref.virtual.removeAllSlides()
-            ref.virtual.appendSlide(makeSlides(props.photos))
-            ref.slideTo(props.index, 0, false)
-            ref.virtual.update(true);
-        }
+        setKey(key + 1)
     }, [props.photos])
 
-    return props.photos.length === 0 ? null : <Swiper className="imageHolder" spaceBetween={50} slidesPerView={1} virtual style={{
+    return props.photos.length === 0 ? null : <Swiper key={key} className="imageHolder" spaceBetween={50} slidesPerView={1} virtual style={{
         width: `calc(100vw - ${props.open ? drawerWidth : 0}px)`,
         zIndex: -1,
         position: "absolute",
@@ -450,9 +418,8 @@ const Carousel = React.memo(function Carousel(props: any) {
             prevEl: props.prevRef.current ? props.prevRef.current : undefined,
             nextEl: props.nextRef.current ? props.nextRef.current : undefined,
         }}
-        initialSlide={props.index}
+        initialSlide={props.index >= props.photos.length ? props.photos.length - 1 : props.index}
         onInit={swiper => {
-            setRef(swiper)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             // eslint-disable-next-line no-param-reassign
@@ -463,8 +430,8 @@ const Carousel = React.memo(function Carousel(props: any) {
             swiper.params.navigation.nextEl = props.nextRef.current
             swiper.navigation.update()
         }}
-        onSlideChange={(e) => props.slideChange(e.activeIndex)}
+        onSlideChange={(e) => { props.slideChange(e.activeIndex) }}
     >
         {makeSlides(props.photos)}
     </Swiper>
-})
+}
