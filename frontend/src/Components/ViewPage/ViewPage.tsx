@@ -395,7 +395,7 @@ function makeSlides(photos: PhotoT[]): any[] {
                         height: "100vh",
                         width: `100vw`,
                     }}
-                    src={"http://localhost:4000/media/" + photo.id}
+                    src={baseURL + "/media/" + photo.id}
                 />
             </SwiperSlide>
         );
