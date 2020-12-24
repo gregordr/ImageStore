@@ -7,6 +7,7 @@ import { GridList, GridListTile, GridListTileBar, IconButton } from "@material-u
 import { PhotoAlbum, Info } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
 import AlbumInfo from "../AlbumPage/AlbumInfo";
+import { baseURL } from "../../API";
 
 const theme = createMuiTheme({
     palette: {
@@ -52,7 +53,7 @@ function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Pro
         history.push(`/albums/open/${props.album.id}`);
     };
 
-    const onInfoClick = () => {};
+    const onInfoClick = () => { };
 
     return (
         <GridList className={classes.root}>
@@ -60,16 +61,16 @@ function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Pro
                 {props.album.cover === null ? (
                     <PhotoAlbum style={{ height: props.dimension, width: props.dimension, color: "#666666" }} />
                 ) : (
-                    <div
-                        style={{
-                            backgroundImage: `url(${"http://localhost:4000/media/thumb_" + props.album.cover})`,
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                            height: props.dimension,
-                            width: props.dimension,
-                        }}
-                    />
-                )}
+                        <div
+                            style={{
+                                backgroundImage: `url(${baseURL + "/media/thumb_" + props.album.cover})`,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                                height: props.dimension,
+                                width: props.dimension,
+                            }}
+                        />
+                    )}
                 <GridListTileBar
                     title={props.album.name}
                     subtitle={<span>{props.album.imagecount} elements</span>}
@@ -131,8 +132,8 @@ const Row = (altprops: any) =>
             {altprops.data.rowPics[altprops.index].map((a: AlbumT) => makeAlbum(a, altprops.data.rowH[altprops.index], altprops.data.props))}
         </div>
     ) : (
-        <div>{altprops.data.rowPics[altprops.index]}</div>
-    );
+            <div>{altprops.data.rowPics[altprops.index]}</div>
+        );
 
 const CustomScrollbars = ({ onScroll, forwardedRef, style, children }: any) => {
     const refSetter = useCallback(

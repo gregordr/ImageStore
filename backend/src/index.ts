@@ -5,7 +5,7 @@ import cors from 'cors'
 import responseTime from 'response-time'
 
 const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: true
 }
 
 app.use(cors(corsOptions))

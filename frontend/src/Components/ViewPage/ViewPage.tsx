@@ -29,7 +29,7 @@ import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, High
 import clsx from "clsx";
 import { PhotoT } from "../../Interfaces";
 import { useSwipeable } from "react-swipeable";
-import { addLabel, getPhotoLabels, removeLabel } from "../../API";
+import { addLabel, baseURL, getPhotoLabels, removeLabel } from "../../API";
 
 const theme = createMuiTheme({
     palette: {
@@ -132,7 +132,7 @@ export default function ViewPage(props: any) {
         setOpen(false);
     };
 
-    const url = "http://localhost:4000/media/" + id;
+    const url = baseURL + "/media/" + id;
 
     const canGo = (dir: number) => {
         const photos = props.photos;
@@ -227,7 +227,6 @@ export default function ViewPage(props: any) {
                         }}>
                             <animated.div style={{ ...props, alignSelf: "center", justifySelf: "center" }}>
                                 <img
-                                    className="display"
                                     alt={id}
                                     style={{
                                         objectFit: "scale-down",
@@ -240,6 +239,8 @@ export default function ViewPage(props: any) {
                         </div>
                     ))}
 
+                    <img src={baseURL + "/media/" + props.photos[index - 1]?.id} style={{ height: 0, width: 0, display: "none" }} />
+                    <img src={baseURL + "/media/" + props.photos[index + 1]?.id} style={{ height: 0, width: 0, display: "none" }} />
                     <div
                         className="root"
                         style={{

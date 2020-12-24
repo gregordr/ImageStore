@@ -10,7 +10,8 @@ import { DownloadSnackbar } from "./Components/Snackbars/DownloadSnackbar";
 import { RemovePhotosSnackbar } from "./Components/Snackbars/RemovePhotosSnackbar";
 import { AlbumT, PhotoT } from "./Interfaces";
 
-axios.defaults.baseURL = "http://localhost:4000";
+export const baseURL = "http://10.0.0.9:4000";
+axios.defaults.baseURL = baseURL;
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 
 export async function addPhotos(
