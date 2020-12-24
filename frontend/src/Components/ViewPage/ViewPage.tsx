@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { renderToStaticMarkup } from "react-dom/server"
 import "./ViewPage.css";
 import { useHistory } from "react-router-dom";
 import { useTransition, animated } from "react-spring";
@@ -30,6 +31,10 @@ import clsx from "clsx";
 import { PhotoT } from "../../Interfaces";
 import { useSwipeable } from "react-swipeable";
 import { addLabel, getPhotoLabels, removeLabel } from "../../API";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import SwiperCore, { Virtual, Navigation } from "swiper";
+import 'swiper/swiper.scss';
+SwiperCore.use([Virtual, Navigation]);
 
 const theme = createMuiTheme({
     palette: {
@@ -141,6 +146,18 @@ export default function ViewPage(props: any) {
         return ind >= 0 && ind < photos.length;
     };
 
+    const slideChange = (index: number) => {
+        console.log("ind; " + index)
+        const photos = props.photos;
+        const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
+        history.replace(`${afterWithout}${photos[index].id}`);
+        setId(photos[index].id);
+        if (!canGo(-1))
+            setOpacityLeft(0);
+        if (!canGo(1))
+            setOpacityRight(0);
+    }
+
     const go = (dir: number) => () => {
         const photos = props.photos;
         let ind = photos.findIndex((v: any) => v.id === id);
@@ -157,12 +174,6 @@ export default function ViewPage(props: any) {
             setId(photos[ind].id);
         }
     };
-
-    const transitions = useTransition(url, (p) => p, {
-        from: { opacity: 0, transform: `translate3d(${dir}%,0,0)` },
-        enter: { opacity: 1, transform: "translate3d(0%,0,0)" },
-        leave: { opacity: 0, transform: "translate3d(-50%,0,0)" },
-    });
 
     const mouseRight = () => {
         if (canGo(1)) setOpacityRight(100);
@@ -183,8 +194,8 @@ export default function ViewPage(props: any) {
     const modifiedButtonFunctions = {
         ...props.buttonFunctions,
         delete: async (id: string) => {
-            if (canGo(-1)) go(-1)();
-            else if (canGo(1)) go(1)();
+            if (canGo(-1)) slideChange(index - 1);
+            else if (canGo(1)) slideChange(index + 1);
             else history.goBack();
 
             await props.buttonFunctions.delete(id);
@@ -201,12 +212,12 @@ export default function ViewPage(props: any) {
         },
     };
 
-    const handlers = useSwipeable({
-        onSwipedLeft: () => go(1)(),
-        onSwipedRight: () => go(-1)(),
-    });
+    const swiperRef = useRef<SwiperCore>(null)
+    const prevRef = useRef<HTMLDivElement>(null)
+    const nextRef = useRef<HTMLDivElement>(null)
 
     const hideArrows = useMediaQuery(theme.breakpoints.down("sm"));
+
 
     return (
         <div className={classes.root}>
@@ -217,29 +228,6 @@ export default function ViewPage(props: any) {
                 })}
             >
                 <ThemeProvider theme={theme}>
-                    {transitions.map(({ item, props, key }) => (
-                        <div key={key} className="imageHolder" {...handlers} style={{
-                            width: `calc(100% - ${open ? drawerWidth : 0}px)`,
-                            transition: theme.transitions.create("width", {
-                                easing: theme.transitions.easing.sharp,
-                                duration: theme.transitions.duration.leavingScreen,
-                            }),
-                        }}>
-                            <animated.div style={{ ...props, alignSelf: "center", justifySelf: "center" }}>
-                                <img
-                                    className="display"
-                                    alt={id}
-                                    style={{
-                                        objectFit: "scale-down",
-                                        height: "100vh",
-                                        width: `100%`,
-                                    }}
-                                    src={item}
-                                />
-                            </animated.div>
-                        </div>
-                    ))}
-
                     <div
                         className="root"
                         style={{
@@ -251,7 +239,7 @@ export default function ViewPage(props: any) {
                             }),
                         }}
                     >
-                        <div className="leftIm" onMouseEnter={mouseLeft} onClick={go(-1)}>
+                        <div ref={prevRef} className="leftIm" onMouseEnter={mouseLeft}>
                             <IconButton
                                 style={{
                                     transition: "0.01s linear",
@@ -272,7 +260,7 @@ export default function ViewPage(props: any) {
                             </IconButton>
                         </div>
                         <div className="center" onClick={() => history.goBack()} onMouseEnter={mouseCenter}></div>
-                        <div className="rightIm" onMouseEnter={mouseRight} onClick={go(1)}>
+                        <div ref={nextRef} className="rightIm" onMouseEnter={mouseRight}>
                             <IconButton
                                 style={{
                                     transition: "0.01s linear",
@@ -304,7 +292,7 @@ export default function ViewPage(props: any) {
                         <TopLeftBar />
                         {props.topRightBar(id, modifiedButtonFunctions)}
                     </div>
-
+                    <Carousel slideChange={slideChange} index={index} photos={props.photos} open={open} swiperRef={swiperRef} prevRef={prevRef} nextRef={nextRef} />
                 </ThemeProvider>
             </main>
             <Drawer
@@ -364,7 +352,7 @@ export default function ViewPage(props: any) {
                     </ListItem>
                 </List>
             </Drawer>
-        </div>
+        </div >
     );
 }
 
@@ -420,3 +408,63 @@ function LabelInputChip(props: any) {
             deleteIcon={added ? <CircularProgress style={{ height: 20, width: 20, padding: 1.5, marginRight: 7 }} /> : < AddCircle style={{ transform: "rotate(0deg)" }} />}
         />)
 }
+
+function makeSlides(photos: PhotoT[]): any[] {
+    return photos.map((photo: PhotoT, index: number) => {
+        return (<SwiperSlide key={photo.id} virtualIndex={index} style={{ alignSelf: "center", justifySelf: "center" }}>
+            <img
+                className="display"
+                alt={photo.id}
+                style={{
+                    objectFit: "scale-down",
+                    height: "100vh",
+                    width: `100vw`,
+                }}
+                src={"http://localhost:4000/media/" + photo.id}
+            />
+        </SwiperSlide>);
+    })
+}
+
+const Carousel = React.memo(function Carousel(props: any) {
+
+    const [ref, setRef] = useState<SwiperCore | undefined>(undefined);
+
+    useEffect(() => {
+        console.log(props.photos)
+        if (ref) {
+            ref.virtual.slides.forEach((s) => console.log(s.key))
+            ref.virtual.removeAllSlides()
+            ref.virtual.appendSlide(makeSlides(props.photos))
+            ref.slideTo(props.index, 0, false)
+            ref.virtual.update(true);
+        }
+    }, [props.photos])
+
+    return props.photos.length === 0 ? null : <Swiper className="imageHolder" spaceBetween={50} slidesPerView={1} virtual style={{
+        width: `calc(100vw - ${props.open ? drawerWidth : 0}px)`,
+        zIndex: -1,
+        position: "absolute",
+    }}
+        navigation={{
+            prevEl: props.prevRef.current ? props.prevRef.current : undefined,
+            nextEl: props.nextRef.current ? props.nextRef.current : undefined,
+        }}
+        initialSlide={props.index}
+        onInit={swiper => {
+            setRef(swiper)
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // eslint-disable-next-line no-param-reassign
+            swiper.params.navigation.prevEl = props.prevRef.current
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // eslint-disable-next-line no-param-reassign
+            swiper.params.navigation.nextEl = props.nextRef.current
+            swiper.navigation.update()
+        }}
+        onSlideChange={(e) => props.slideChange(e.activeIndex)}
+    >
+        {makeSlides(props.photos)}
+    </Swiper>
+})
