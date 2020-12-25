@@ -1,6 +1,7 @@
 {
   "name": "frontend",
   "version": "0.1.0",
+  "homepage": "http://gregordr.github.io/ImageStore",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.11.2",
@@ -43,7 +44,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -66,6 +69,7 @@
   "devDependencies": {
     "@types/qs": "^6.9.5",
     "@types/react-custom-scrollbars": "^4.0.7",
-    "@types/react-window": "^1.8.2"
+    "@types/react-window": "^1.8.2",
+    "gh-pages": "^3.1.0"
   }
 }

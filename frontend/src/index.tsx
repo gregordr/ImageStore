@@ -26,7 +26,7 @@ const theme = createMuiTheme({
 
 ReactDOM.render(
     <React.StrictMode>
-        <Router>
+        <Router basename={process.env.PUBLIC_URL}>
             <ThemeProvider theme={theme}>
                 <SnackbarProvider
                     anchorOrigin={{
