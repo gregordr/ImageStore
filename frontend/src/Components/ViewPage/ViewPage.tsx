@@ -33,7 +33,7 @@ import { useSwipeable } from "react-swipeable";
 import { addLabel, baseURL, getPhotoLabels, removeLabel } from "../../API";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import SwiperCore, { Virtual, Navigation } from "swiper";
-import 'swiper/swiper.scss';
+import 'swiper/swiper.min.css';
 SwiperCore.use([Virtual, Navigation]);
 
 const theme = createMuiTheme({
