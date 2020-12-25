@@ -5,7 +5,7 @@ import cors from 'cors'
 import responseTime from 'response-time'
 
 const corsOptions = {
-    origin: "*"
+    origin: true
 }
 
 app.use(cors(corsOptions))

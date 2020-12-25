@@ -135,13 +135,6 @@ export default function ViewPage(props: any) {
         setOpen(false);
     };
 
-    const canGo = (dir: number) => {
-        const photos = props.photos;
-        let ind = photos.findIndex((v: any) => v.id === id);
-        ind += dir;
-        return ind >= 0 && ind < photos.length;
-    };
-
     const slideChange = (index: number) => {
         const photos = props.photos;
         const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
@@ -254,6 +247,7 @@ export default function ViewPage(props: any) {
                             </IconButton>
                         </div>
                     </div>
+                    <Carousel slideChange={slideChange} index={index} photos={props.photos} open={open} swiperRef={swiperRef} prevRef={prevRef} nextRef={nextRef} />
                     <div className="rootTop" style={{
                         display: "flex", justifyContent: "space-between",
                         width: `calc(100% - ${open ? drawerWidth : 0}px)`,
@@ -265,7 +259,7 @@ export default function ViewPage(props: any) {
                         <TopLeftBar />
                         {props.topRightBar(id, modifiedButtonFunctions)}
                     </div>
-                    <Carousel slideChange={slideChange} index={index} photos={props.photos} open={open} swiperRef={swiperRef} prevRef={prevRef} nextRef={nextRef} />
+
                 </ThemeProvider>
             </main>
             <Drawer
@@ -393,7 +387,7 @@ function makeSlides(photos: PhotoT[]): any[] {
                     style={{
                         objectFit: "scale-down",
                         height: "100vh",
-                        width: `100vw`,
+                        width: `100%`,
                     }}
                     src={baseURL + "/media/" + photo.id}
                 />
@@ -407,7 +401,7 @@ const Carousel = (props: any) => {
 
     useEffect(() => {
         setKey(key + 1)
-    }, [props.photos])
+    }, [props.photos, props.open])
 
     return props.photos.length === 0 ? null : <Swiper key={key} className="imageHolder" spaceBetween={50} slidesPerView={1} virtual style={{
         width: `calc(100vw - ${props.open ? drawerWidth : 0}px)`,
