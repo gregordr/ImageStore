@@ -249,7 +249,6 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             await deletePhotos(selected, enqueueSnackbar, closeSnackbar);
             setPhotos(photos.filter((p) => !selected.includes(p.id)));
 
-            await fetchPhotos();
             await props.refresh();
         },
         remove: async () => {
@@ -257,7 +256,6 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             await removePhotosFromAlbum(selected, id, enqueueSnackbar, closeSnackbar);
             setPhotos(photos.filter((p) => !selected.includes(p.id)));
 
-            await fetchPhotos();
             await props.refresh();
         },
         unselect: () => {
