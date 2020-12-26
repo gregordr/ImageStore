@@ -169,7 +169,6 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const viewButtonFunctions = {
         delete: async (id: string) => {
             await deletePhoto(id);
-            await fetchPhotos();
         },
         addToAlbum: (id: string) => {
             setSelected([id]);
