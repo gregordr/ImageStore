@@ -1,7 +1,6 @@
 import axios from "axios";
 import JSZip from "jszip";
 import { OptionsObject } from "notistack";
-import qs from "qs";
 import React from "react";
 import { AddPhotosSnackbar } from "./Components/Snackbars/AddPhotosSnackbar";
 import { AddPhotosToAlbumsSnackbar } from "./Components/Snackbars/AddPhotosToAlbumsSnackbar";
@@ -10,8 +9,7 @@ import { DownloadSnackbar } from "./Components/Snackbars/DownloadSnackbar";
 import { RemovePhotosSnackbar } from "./Components/Snackbars/RemovePhotosSnackbar";
 import { AlbumT, PhotoT } from "./Interfaces";
 
-console.log(window.location.hostname)
-export const baseURL = "http://" + window.location.hostname + ":4000"
+export const baseURL = "http://" + window.location.hostname + (window.location.port ? ":" : "") + window.location.port + "/" + process.env.PUBLIC_URL
 console.log(baseURL)
 axios.defaults.baseURL = baseURL;
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
@@ -21,12 +19,23 @@ function delay(ms: number) {
 }
 
 const defaults = {
-    photos: [{ id: "6596031", name: "20170729_165718.jpg", height: 3024, width: 4032 }, { id: "6596034", name: "20170729_170213.jpg", height: 4032, width: 3024 }, { id: "6596036", name: "20170729_170841.jpg", height: 3024, width: 4032 }, { id: "6596037", name: "20170729_194019.jpg", height: 4032, width: 3024 }, { id: "6596038", name: "20170729_204048.jpg", height: 3024, width: 4032 }, { id: "6596039", name: "20170729_204055.jpg", height: 3024, width: 4032 }, { id: "6596040", name: "20170729_204058.jpg", height: 3024, width: 4032 }, { id: "6596041", name: "20170729_213432.jpg", height: 3024, width: 4032 }, { id: "6596042", name: "20170729_213434.jpg", height: 3024, width: 4032 }, { id: "6596043", name: "20170729_213615.jpg", height: 3024, width: 4032 }, { id: "6596044", name: "20170729_213656.jpg", height: 3024, width: 4032 }, { id: "6596045", name: "20170729_213659.jpg", height: 4032, width: 3024 }, { id: "6596046", name: "20170729_213701.jpg", height: 4032, width: 3024 }, { id: "6596047", name: "20170729_213729.jpg", height: 4032, width: 3024 }, { id: "6596048", name: "20170729_213818.jpg", height: 3024, width: 4032 }],
+    photos: [
+        { id: "cat1.jpg", name: "my_cat_1.jpg", height: 3458, width: 5026 },
+        { id: "cat2.jpg", name: "my_cat_2.jpg", height: 5866, width: 3035 },
+        { id: "cat3.jpg", name: "my_cat_3.jpg", height: 4498, width: 3374 },
+        { id: "cat4.jpg", name: "my_cat_4.jpg", height: 2333, width: 2333 },
+        { id: "cat5.jpg", name: "my_cat_5.jpg", height: 5472, width: 3648 },
+        { id: "cat6.jpg", name: "my_cat_6.jpg", height: 4032, width: 3024 },
+        { id: "cat7.jpg", name: "my_cat_7.jpg", height: 3803, width: 2853 },
+        { id: "cat8.jpg", name: "my_cat_8.jpg", height: 3648, width: 5472 },
+        { id: "cat9.jpg", name: "my_cat_9.jpg", height: 6016, width: 4000 },
+        { id: "cat10.jpg", name: "my_cat_10.jpg", height: 2834, width: 2834 },
+    ],
 
-    albums: [{ id: 6553538, name: "My kitten", cover: 6596031, imagecount: 3 }],
-    albumPhotos: { 6553538: ["6596031", "6596034", "6596036"] },
+    albums: [{ id: 6553538, name: "My stock kitten", cover: "cat1.jpg", imagecount: 3 }],
+    albumPhotos: { "6553538": ["6596031", "cat1.jpg", "cat2.jpg", "cat3.jpg", "cat4.jpg", "cat5.jpg", "cat6.jpg", "cat9.jpg", "cat10.jpg", "cat7.jpg", "cat8.jpg"] },
 
-    labels: { 6596031: ["one", "tw"] }
+    labels: { "cat1.jpg": ["one", "tw"] }
 
 }
 
@@ -77,8 +86,9 @@ export async function deletePhotos(
 
 export async function setCover(albumId: string, photoId: string) {
     const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
-    const after = before.map(a => a.id !== albumId ? a : { id: a.id, name: a.name, cover: photoId, imagecount: a.imagecount })
+    const after = before.map(a => a.id != albumId ? a : { id: a.id, name: a.name, cover: photoId, imagecount: a.imagecount })
     sessionStorage.setItem("albums", JSON.stringify(after));
+    console.log(photoId)
     await delay(200)
 }
 export async function clearCover(albumId: string) {
@@ -256,7 +266,10 @@ export async function getPhotoLabels(ids: string[]) {
 }
 
 export async function getAlbums(searchTerm: string) {
+    const photos: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos))
     let before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
+    const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos))
+
     if (searchTerm !== "") {
         before = before.filter(a => {
             if (a.name.includes(searchTerm))
@@ -265,14 +278,26 @@ export async function getAlbums(searchTerm: string) {
             return false;
         })
     }
+
+    const after: AlbumT[] = []
+
+    for (const album of before) {
+        let count = 0
+        for (const photo of albumPhotos[album.id])
+            if (photos.map(p => p.id).includes(photo))
+                count++;
+
+        after.push({ id: album.id, name: album.name, cover: album.cover, imagecount: count })
+    }
+
     delay(200)
-    return { status: 200, data: before }
+    return { status: 200, data: after }
 }
 
 export async function getPhotos(searchTerm: string) {
     let before: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos))
     const labels = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels))
-    if (searchTerm !== "") {
+    if (searchTerm && searchTerm !== "") {
         before = before.filter(p => {
             if (p.name.includes(searchTerm))
                 return true;
@@ -295,8 +320,8 @@ export async function getPhotosInAlbum(id: string, searchTerm: string) {
     console.log(included)
 
     photos = photos.filter(p => included.includes(p.id))
-
-    if (searchTerm !== "") {
+    console.log(searchTerm)
+    if (searchTerm && searchTerm !== "") {
         photos = photos.filter(p => {
             if (p.name.includes(searchTerm))
                 return true;
@@ -304,6 +329,7 @@ export async function getPhotosInAlbum(id: string, searchTerm: string) {
             return false;
         })
     }
+
     delay(200)
     return { status: 200, data: photos }
 }
