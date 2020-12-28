@@ -4,12 +4,12 @@ import yaml
 import tensorflow as tf
 
 from keras.applications.imagenet_utils import decode_predictions, preprocess_input
-from tensorflow.keras.applications import EfficientNetB7
+from tensorflow.keras.applications import EfficientNetB0
 from efficientnet.keras import center_crop_and_resize
 
 class ImageClassifier:
     def __init__(self, rule_path):
-        self._model = EfficientNetB7(weights='imagenet')
+        self._model = EfficientNetB0(weights='imagenet')
         with open(rule_path) as file:
             self._rules = yaml.full_load(file)
 
