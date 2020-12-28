@@ -26,6 +26,9 @@ def get(url):
 def get_new_media(url):
     response = get(url)
 
+    if response is None:
+        return []
+
     try:
         return json.loads(response.content)
     except error as e:
@@ -34,6 +37,9 @@ def get_new_media(url):
 
 def get_image(url):
     response = get(url)
+
+    if response is None:
+        return None
     
     try:
         return Image.open(io.BytesIO(response.content))
