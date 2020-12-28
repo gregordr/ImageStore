@@ -9,7 +9,9 @@ import { DownloadSnackbar } from "./Components/Snackbars/DownloadSnackbar";
 import { RemovePhotosSnackbar } from "./Components/Snackbars/RemovePhotosSnackbar";
 import { AlbumT, PhotoT } from "./Interfaces";
 
-export const baseURL = "http://" + window.location.hostname + (window.location.port ? ":" : "") + window.location.port + "/" + process.env.PUBLIC_URL
+const schema = window.location.protocol
+
+export const baseURL = schema + "//" + window.location.hostname + (window.location.port ? ":" : "") + window.location.port + "/" + process.env.PUBLIC_URL
 console.log(baseURL)
 axios.defaults.baseURL = baseURL;
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
@@ -20,22 +22,22 @@ function delay(ms: number) {
 
 const defaults = {
     photos: [
-        { id: "cat1.jpg", name: "my_cat_1.jpg", height: 3458, width: 5026 },
-        { id: "cat2.jpg", name: "my_cat_2.jpg", height: 5866, width: 3035 },
-        { id: "cat3.jpg", name: "my_cat_3.jpg", height: 4498, width: 3374 },
-        { id: "cat4.jpg", name: "my_cat_4.jpg", height: 2333, width: 2333 },
-        { id: "cat5.jpg", name: "my_cat_5.jpg", height: 5472, width: 3648 },
-        { id: "cat6.jpg", name: "my_cat_6.jpg", height: 4032, width: 3024 },
-        { id: "cat7.jpg", name: "my_cat_7.jpg", height: 3803, width: 2853 },
-        { id: "cat8.jpg", name: "my_cat_8.jpg", height: 3648, width: 5472 },
-        { id: "cat9.jpg", name: "my_cat_9.jpg", height: 6016, width: 4000 },
-        { id: "cat10.jpg", name: "my_cat_10.jpg", height: 2834, width: 2834 },
+        { id: "6738313", name: "my_cat_1.jpg", height: 5458, width: 3026 },
+        { id: "6738314", name: "my_cat_2.jpg", height: 2866, width: 4035 },
+        { id: "6738315", name: "my_cat_3.jpg", height: 4498, width: 3374 },
+        { id: "6738316", name: "my_cat_4.jpg", height: 3033, width: 2333 },
+        { id: "6738317", name: "my_cat_5.jpg", height: 5472, width: 3648 },
+        { id: "6738318", name: "my_cat_6.jpg", height: 3024, width: 3024 },
+        { id: "6738319", name: "my_cat_7.jpg", height: 3803, width: 2853 },
+        { id: "6738320", name: "my_cat_8.jpg", height: 3648, width: 5472 },
+        { id: "6738321", name: "my_cat_9.jpg", height: 6016, width: 4000 },
+        { id: "6738322", name: "my_cat_10.jpg", height: 2834, width: 2834 },
     ],
 
-    albums: [{ id: 6553538, name: "My stock kitten", cover: "cat1.jpg", imagecount: 3 }],
-    albumPhotos: { "6553538": ["6596031", "cat1.jpg", "cat2.jpg", "cat3.jpg", "cat4.jpg", "cat5.jpg", "cat6.jpg", "cat9.jpg", "cat10.jpg", "cat7.jpg", "cat8.jpg"] },
+    albums: [{ id: 6553538, name: "My stock kitten", cover: "6738313", imagecount: 3 }],
+    albumPhotos: { "6553538": ["6738313", "6738314", "6738315", "6738316", "6738317", "6738318", "6738321", "6738322", "6738319", "6738320"] },
 
-    labels: { "cat1.jpg": ["one", "tw"] }
+    labels: { "6738313": ["cat"], "6738314": ["cat"], "6738315": ["cat", "building"], "6738316": ["cat"], "6738317": ["cat"], "6738318": ["cat"], "6738319": ["cat"], "6738320": ["cat", "furniture"], "6738321": ["cat", "nature"], "6738322": ["cat"] }
 
 }
 
@@ -101,11 +103,12 @@ export async function clearCover(albumId: string) {
 export async function createAlbum(name: string) {
     const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
     const max = before.map(a => parseInt(a.id)).reduce((max, cur) => Math.max(max, cur))
-    before.push({ id: "" + max + 1, name: name, cover: null, imagecount: 0 })
+    const newInd = "" + max + 1
+    before.push({ id: newInd, name: name, cover: null, imagecount: 0 })
     sessionStorage.setItem("albums", JSON.stringify(before));
 
     const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos))
-    albumPhotos[max + 1] = []
+    albumPhotos[newInd] = []
     sessionStorage.setItem("albumPhotos", JSON.stringify(albumPhotos));
     await delay(200)
 }
