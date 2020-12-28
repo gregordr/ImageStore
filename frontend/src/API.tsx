@@ -16,6 +16,18 @@ console.log(baseURL)
 axios.defaults.baseURL = baseURL;
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 
+function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const defaults = {
+    photos: [{ id: "6596031", name: "20170729_165718.jpg", height: 3024, width: 4032 }, { id: "6596034", name: "20170729_170213.jpg", height: 4032, width: 3024 }, { id: "6596036", name: "20170729_170841.jpg", height: 3024, width: 4032 }, { id: "6596037", name: "20170729_194019.jpg", height: 4032, width: 3024 }, { id: "6596038", name: "20170729_204048.jpg", height: 3024, width: 4032 }, { id: "6596039", name: "20170729_204055.jpg", height: 3024, width: 4032 }, { id: "6596040", name: "20170729_204058.jpg", height: 3024, width: 4032 }, { id: "6596041", name: "20170729_213432.jpg", height: 3024, width: 4032 }, { id: "6596042", name: "20170729_213434.jpg", height: 3024, width: 4032 }, { id: "6596043", name: "20170729_213615.jpg", height: 3024, width: 4032 }, { id: "6596044", name: "20170729_213656.jpg", height: 3024, width: 4032 }, { id: "6596045", name: "20170729_213659.jpg", height: 4032, width: 3024 }, { id: "6596046", name: "20170729_213701.jpg", height: 4032, width: 3024 }, { id: "6596047", name: "20170729_213729.jpg", height: 4032, width: 3024 }, { id: "6596048", name: "20170729_213818.jpg", height: 3024, width: 4032 }],
+
+    albums: [{ id: 6553538, name: "My kitten", cover: 6596031, imagecount: 3 }],
+
+    labels: { 6596031: ["one", "tw"] }
+}
+
 export async function addPhotos(
     formData: FormData,
     enqueueSnackbar?: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number,
@@ -26,9 +38,10 @@ export async function addPhotos(
     try {
         snackbar?.begin(formData.getAll("file").length);
 
-        const res = await axios.post("/media/add", formData);
-        const photos: string[] = res.data.success;
-        const errors: string[] = res.data.errors;
+        await delay(200)
+
+        const photos: string[] = [];
+        const errors: string[] = ["You cannot upload photos to the demo page, please download the self-hosted version"];
 
         snackbar?.end(photos, errors);
 
@@ -47,8 +60,13 @@ export async function deletePhotos(
     const snackbar = DeletePhotosSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
     try {
         snackbar?.begin(photoIds.length);
-        const something = await Promise.all(photoIds.map(async (pid) => await axios.post("/media/delete/" + pid)));
-        snackbar?.end(something, []);
+
+        const before: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos))
+        const after = before.filter(p => !photoIds.includes(p.id))
+        sessionStorage.setItem("photos", JSON.stringify(after));
+        await delay(300)
+
+        snackbar?.end(photoIds, []);
     } catch (error) {
         snackbar?.end([], [error]);
         return [];
@@ -56,26 +74,38 @@ export async function deletePhotos(
 }
 
 export async function setCover(albumId: string, photoId: string) {
-    await axios.post(`/albums/setCover/${albumId}/${photoId}`);
+    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
+    const after = before.map(a => a.id !== albumId ? a : { id: a.id, name: a.name, cover: photoId, imagecount: a.imagecount })
+    sessionStorage.setItem("albums", JSON.stringify(after));
+    await delay(200)
 }
 export async function clearCover(albumId: string) {
-    await axios.post(`/albums/clearCover/${albumId}`);
+    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
+    const after = before.map(a => a.id !== albumId ? a : { id: a.id, name: a.name, cover: null, imagecount: a.imagecount })
+    sessionStorage.setItem("albums", JSON.stringify(after));
+    await delay(200)
 }
 
 export async function createAlbum(name: string) {
-    await axios.post("/albums/new/" + name);
+    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
+    const max = before.map(a => parseInt(a.id)).reduce((max, cur) => Math.max(max, cur))
+    before.push({ id: "" + max + 1, name: name, cover: null, imagecount: 0 })
+    sessionStorage.setItem("albums", JSON.stringify(before));
+    await delay(200)
 }
 
 export async function deleteAlbum(albumId: string) {
-    await axios.post(`/albums/delete/${albumId}`);
+    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
+    const after = before.filter(a => a.id !== albumId)
+    sessionStorage.setItem("albums", JSON.stringify(after));
+    await delay(200)
 }
 
 export async function renameAlbum(albumId: string, newAlbumName: string) {
-    const requestBody = {
-        newAlbumName,
-        albumId,
-    };
-    await axios.post("/albums/rename", qs.stringify(requestBody));
+    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
+    const after = before.map(a => a.id !== albumId ? a : { id: a.id, name: newAlbumName, cover: a.cover, imagecount: a.imagecount })
+    sessionStorage.setItem("albums", JSON.stringify(after));
+    await delay(200)
 }
 
 export async function addPhotosToAlbums(
@@ -84,14 +114,14 @@ export async function addPhotosToAlbums(
     enqueueSnackbar?: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number,
     closeSnackbar?: (key?: string | number | undefined) => void
 ) {
-    const requestBody = {
-        photos: photoIds,
-        albums: albumIds,
-    };
     const snackbar = AddPhotosToAlbumsSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
     try {
         snackbar?.begin(photoIds.length, albumIds.length);
-        const result = await axios.post("/albums/addPhotos", qs.stringify(requestBody));
+
+        for (const photoId in photoIds)
+            for (const albumId in albumIds) {
+
+            }
         snackbar?.end(photoIds, albumIds, []);
     } catch (error) {
         snackbar?.end([], [], [error]);
@@ -107,8 +137,8 @@ export async function removePhotosFromAlbum(
     const snackbar = RemovePhotosSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
     try {
         snackbar?.begin(photoIds.length);
-        const smth = await Promise.all(photoIds.map(async (pid) => await axios.post(`/albums/remove/${albumId}/${pid}`)));
-        snackbar?.end(photoIds, []);
+        await delay(200)
+        snackbar?.end([], ["You cannot do this on the demo page, please download the self-hosted version"]);
     } catch (error) {
         snackbar?.end([], [error]);
     }
@@ -168,38 +198,67 @@ export async function download(
     }
 }
 
-
 export async function removeLabel(id: string, label: string) {
-    const requestBody = {
-        id,
-        label,
-    };
-    await axios.post("/labels/remove", qs.stringify(requestBody));
+    await delay(300)
+    const before = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels))
+    before[id] = before[id].filter((l: string) => l !== label)
+    sessionStorage.setItem("labels", JSON.stringify(before));
 }
 
 export async function addLabel(ids: string[], labels: string[]) {
-    const requestBody = {
-        ids,
-        labels,
-    };
-    await axios.post("/labels/add", qs.stringify(requestBody));
+    await delay(300)
+    const before = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels))
+    for (const id of ids)
+        if (!before[id].includes(labels[0]))
+            before[id].push(labels[0])
+    sessionStorage.setItem("labels", JSON.stringify(before));
 }
 
 export async function getPhotoLabels(ids: string[]) {
-    const requestBody = {
-        ids,
-    };
-    return await axios.post("/labels/get/", qs.stringify(requestBody));
+    const labels = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels))
+
+    const found: string[] = []
+
+    for (const id of ids) {
+        if (labels[parseInt(id)]) {
+            for (const label of labels[parseInt(id)]) {
+                if (!found.includes(label))
+                    found.push(label)
+            }
+        }
+    }
+
+    return { "status": 200, "data": found }
 }
 
 export async function getAlbums(searchTerm: string) {
-    return await axios.get(searchTerm === "" || !searchTerm ? "albums/all" : "albums/search/" + searchTerm);
+    let before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
+    if (searchTerm !== "") {
+        before = before.filter(a => {
+            if (a.name.includes(searchTerm))
+                return true;
+
+            return false;
+        })
+    }
+    delay(200)
+    return { status: 200, data: before }
 }
 
 export async function getPhotos(searchTerm: string) {
-    return await axios.get(searchTerm === "" || !searchTerm ? "media/all" : "media/search/" + searchTerm);
+    let before: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos))
+    if (searchTerm !== "") {
+        before = before.filter(p => {
+            if (p.name.includes(searchTerm))
+                return true;
+
+            return false;
+        })
+    }
+    delay(200)
+    return { status: 200, data: before }
 }
 
 export async function getPhotosInAlbum(id: string, searchTerm: string) {
-    return await axios.get(searchTerm === "" || !searchTerm ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`);
+    return await getPhotos(searchTerm)
 }

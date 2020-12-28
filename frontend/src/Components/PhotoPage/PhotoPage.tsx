@@ -262,7 +262,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     return (
         <div>
-            <Switch>
+            <Switch >
                 <Route path="/view">
                     <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
                 </Route>

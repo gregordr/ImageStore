@@ -137,7 +137,7 @@ export default function ViewPage(props: any) {
 
     const slideChange = (index: number) => {
         const photos = props.photos;
-        const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
+        const afterWithout = window.location.pathname.substr(process.env.PUBLIC_URL.length, window.location.pathname.lastIndexOf("/") + 1 - process.env.PUBLIC_URL.length);
         history.replace(`${afterWithout}${photos[index].id}`);
         setId(photos[index].id);
     }
