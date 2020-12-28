@@ -81,7 +81,8 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const classes = useStyles();
 
     const history = useHistory();
-    const id = window.location.pathname.split("/")[3];
+
+    const id = window.location.pathname.split("/")[2 + process.env.PUBLIC_URL.split('/').length];
 
     const [photos, setPhotos] = useState<PhotoT[]>([]);
     const [albums, setAlbums] = useState<AlbumT[]>([]);

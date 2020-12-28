@@ -24,8 +24,10 @@ const defaults = {
     photos: [{ id: "6596031", name: "20170729_165718.jpg", height: 3024, width: 4032 }, { id: "6596034", name: "20170729_170213.jpg", height: 4032, width: 3024 }, { id: "6596036", name: "20170729_170841.jpg", height: 3024, width: 4032 }, { id: "6596037", name: "20170729_194019.jpg", height: 4032, width: 3024 }, { id: "6596038", name: "20170729_204048.jpg", height: 3024, width: 4032 }, { id: "6596039", name: "20170729_204055.jpg", height: 3024, width: 4032 }, { id: "6596040", name: "20170729_204058.jpg", height: 3024, width: 4032 }, { id: "6596041", name: "20170729_213432.jpg", height: 3024, width: 4032 }, { id: "6596042", name: "20170729_213434.jpg", height: 3024, width: 4032 }, { id: "6596043", name: "20170729_213615.jpg", height: 3024, width: 4032 }, { id: "6596044", name: "20170729_213656.jpg", height: 3024, width: 4032 }, { id: "6596045", name: "20170729_213659.jpg", height: 4032, width: 3024 }, { id: "6596046", name: "20170729_213701.jpg", height: 4032, width: 3024 }, { id: "6596047", name: "20170729_213729.jpg", height: 4032, width: 3024 }, { id: "6596048", name: "20170729_213818.jpg", height: 3024, width: 4032 }],
 
     albums: [{ id: 6553538, name: "My kitten", cover: 6596031, imagecount: 3 }],
+    albumPhotos: { 6553538: ["6596031", "6596034", "6596036"] },
 
     labels: { 6596031: ["one", "tw"] }
+
 }
 
 export async function addPhotos(
@@ -91,6 +93,10 @@ export async function createAlbum(name: string) {
     const max = before.map(a => parseInt(a.id)).reduce((max, cur) => Math.max(max, cur))
     before.push({ id: "" + max + 1, name: name, cover: null, imagecount: 0 })
     sessionStorage.setItem("albums", JSON.stringify(before));
+
+    const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos))
+    albumPhotos[max + 1] = []
+    sessionStorage.setItem("albumPhotos", JSON.stringify(albumPhotos));
     await delay(200)
 }
 
@@ -118,10 +124,18 @@ export async function addPhotosToAlbums(
     try {
         snackbar?.begin(photoIds.length, albumIds.length);
 
-        for (const photoId in photoIds)
-            for (const albumId in albumIds) {
 
+        const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos))
+
+        for (const photoId of photoIds)
+            for (const albumId of albumIds) {
+                if (!albumPhotos[albumId].includes(photoId)) {
+                    albumPhotos[albumId].push(photoId)
+                }
             }
+
+        sessionStorage.setItem("albumPhotos", JSON.stringify(albumPhotos));
+
         snackbar?.end(photoIds, albumIds, []);
     } catch (error) {
         snackbar?.end([], [], [error]);
@@ -136,9 +150,16 @@ export async function removePhotosFromAlbum(
 ) {
     const snackbar = RemovePhotosSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
     try {
-        snackbar?.begin(photoIds.length);
+
+        let albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos))
+
+        for (const photoId of photoIds)
+            albumPhotos[albumId] = albumPhotos[albumId].filter((p: string) => p !== photoId)
+
+        sessionStorage.setItem("albumPhotos", JSON.stringify(albumPhotos));
+
         await delay(200)
-        snackbar?.end([], ["You cannot do this on the demo page, please download the self-hosted version"]);
+        snackbar?.end(photoIds, []);
     } catch (error) {
         snackbar?.end([], [error]);
     }
@@ -208,9 +229,12 @@ export async function removeLabel(id: string, label: string) {
 export async function addLabel(ids: string[], labels: string[]) {
     await delay(300)
     const before = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels))
-    for (const id of ids)
+    for (const id of ids) {
+        if (!before[id])
+            before[id] = []
         if (!before[id].includes(labels[0]))
             before[id].push(labels[0])
+    }
     sessionStorage.setItem("labels", JSON.stringify(before));
 }
 
@@ -247,10 +271,14 @@ export async function getAlbums(searchTerm: string) {
 
 export async function getPhotos(searchTerm: string) {
     let before: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos))
+    const labels = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels))
     if (searchTerm !== "") {
         before = before.filter(p => {
             if (p.name.includes(searchTerm))
                 return true;
+
+            if (labels[p.id] && labels[p.id].includes(searchTerm))
+                return true
 
             return false;
         })
@@ -260,5 +288,22 @@ export async function getPhotos(searchTerm: string) {
 }
 
 export async function getPhotosInAlbum(id: string, searchTerm: string) {
-    return await getPhotos(searchTerm)
+    let photos: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos))
+    const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos))
+
+    const included = albumPhotos[id]
+    console.log(included)
+
+    photos = photos.filter(p => included.includes(p.id))
+
+    if (searchTerm !== "") {
+        photos = photos.filter(p => {
+            if (p.name.includes(searchTerm))
+                return true;
+
+            return false;
+        })
+    }
+    delay(200)
+    return { status: 200, data: photos }
 }
