@@ -1,9 +1,7 @@
 requests
 Pillow
-tensorflow
-pyyaml
+numpy
 python-dotenv
 image
-numpy
-efficientnet
-keras
+vocabulary
+opencv-python

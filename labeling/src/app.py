@@ -1,9 +1,9 @@
 import time
 import os
 
-from utils.image import rotate_exif
-from api.gets import get_new_media, get_image
-from api.posts import post_image_labels
+from misc.image import rotate_exif
+from misc.gets import get_new_media, get_image
+from misc.posts import post_image_labels
 from classification.model import ImageClassifier
 from dotenv import load_dotenv
 
@@ -13,11 +13,10 @@ BASE_ADDRESS = "http://" + os.getenv("BASE_ADDRESS", 'localhost:4000')
 MEDIA_ADDRESS = BASE_ADDRESS + '/media'
 LABEL_ADDRESS = BASE_ADDRESS + '/labels'
 FETCH_INTERVAL = int(os.getenv("FETCH_INTERVAL", '5'))
-RULE_PATH = 'data/rules.yml'
 
 
 if __name__ == "__main__":
-    im_clf = ImageClassifier(RULE_PATH)
+    im_clf = ImageClassifier()
     time.sleep(FETCH_INTERVAL)
     
     while True:
