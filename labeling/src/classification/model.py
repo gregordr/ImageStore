@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 import sys
 import os
+import time
 import torch
 
 sys.path.append("yolov5")
@@ -26,6 +27,7 @@ class ImageClassifier:
 
     def predict(self, image):
         print('predicting', flush=True)
+        t0 = time.time()
         
         img = np.array(image)[:, :, :3].copy()
 
@@ -43,12 +45,10 @@ class ImageClassifier:
             img = img.unsqueeze(0)
 
         # Inference
-        t1 = time_synchronized()
         pred = self._model(img, augment=self._args.augment)[0]
 
         # Apply NMS
         pred = non_max_suppression(pred, self._args.conf_thres, self._args.iou_thres, classes=self._args.classes, agnostic=self._args.agnostic_nms)
-        t2 = time_synchronized()
 
         det = pred[0]
 
@@ -57,5 +57,6 @@ class ImageClassifier:
             outputs.append(self._names[int(c)])
 
         print(outputs, flush=True)
+        print(f'Time: {time.time() - t0}s', flush=True)
 
         return outputs
