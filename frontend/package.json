@@ -17,7 +17,7 @@
     "@types/react-dom": "^16.9.10",
     "@types/react-router-dom": "^5.1.6",
     "@types/react-virtualized-auto-sizer": "^1.0.0",
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "clsx": "^1.1.1",
     "jszip": "^3.5.0",
     "material-design-icons": "^3.0.1",
