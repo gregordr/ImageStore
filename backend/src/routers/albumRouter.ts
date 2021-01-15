@@ -32,7 +32,7 @@ router.get('/all', async (req, res) => {
 
 router.get('/:name/all', async (req, res) => {
     try {
-        res.status(200).send(await getMediaInAlbum(req.params.name, "%"));
+        res.status(200).send(await getMediaInAlbum(req.params.name, "%", ""));
     } catch (err) {
         res.status(500).send(err.toString());
     }
@@ -40,7 +40,7 @@ router.get('/:name/all', async (req, res) => {
 
 router.get('/:name/search/:term', async (req, res) => {
     try {
-        res.status(200).send(await getMediaInAlbum(req.params.name, `%${req.params.term}%`));
+        res.status(200).send(await getMediaInAlbum(req.params.name, `%${req.params.term}%`, req.params.term));
     } catch (err) {
         res.status(500).send(err.toString());
     }

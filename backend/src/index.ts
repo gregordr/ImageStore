@@ -5,7 +5,7 @@ import cors from 'cors'
 import responseTime from 'response-time'
 
 const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: true
 }
 
 app.use(cors(corsOptions))
@@ -25,6 +25,9 @@ app.use('/media', mediaRouter);
 
 import { router as albumRouter } from './routers/albumRouter';
 app.use('/albums', albumRouter);
+
+import { router as labelRouter } from './routers/labelRouter';
+app.use('/labels', labelRouter);
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => console.log(`Listening on port ${port}`));

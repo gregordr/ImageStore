@@ -1,4 +1,5 @@
 import { DatabaseError, requireTable, transaction } from './databaseHelper'
+import { labelTable } from './labelDatabase';
 import { media, photo } from './mediaDatabase';
 
 const album = 'album'
@@ -37,14 +38,26 @@ export async function deleteAlbum(name: string): Promise<string> {
 }
 
 
-export async function getMediaInAlbum(album: string, searchTerm: string): Promise<unknown[]> {
+export async function getMediaInAlbum(album: string, searchTerm: string, label: string): Promise<unknown[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width FROM ${await media} WHERE ${photo} like $1::text AND OID IN
+        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width FROM ${await media} WHERE 
+        (
+            ${photo} like $1::text
+            OR
+            OID IN
+            (
+                SELECT photo
+                FROM ${await labelTable}
+                WHERE label = $3::text
+            )
+        ) 
+        AND OID IN
         (
             SELECT photo
             FROM ${await album_photo}
             WHERE Album = $2::OID
-        );`, [searchTerm, album]);
+        )
+        ;`, [searchTerm, album, label]);
         return result.rows;
     });
 }

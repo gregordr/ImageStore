@@ -6,9 +6,6 @@ import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter as Router } from "react-router-dom";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core";
 import { SnackbarProvider } from "notistack";
-import axios from "axios";
-axios.defaults.baseURL = "http://localhost:4000";
-axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 
 const theme = createMuiTheme({
     palette: {

@@ -1,0 +1,14 @@
+requests
+Pillow
+numpy
+opencv-python
+python-dotenv
+
+Cython
+matplotlib>=3.2.2
+PyYAML>=5.3
+scipy>=1.4.1
+tensorboard>=2.2
+tqdm>=4.41.0
+seaborn>=0.11.0
+pandas

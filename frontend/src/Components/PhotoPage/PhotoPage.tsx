@@ -5,18 +5,17 @@ import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typograp
 import TopBar from "./TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
-import axios from "axios";
 import AddToAlbum from "../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
-import { addPhotos, addPhotosToAlbums, deletePhotos, download } from "../../API";
+import { addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotos } from "../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
-import SearchBar from "material-ui-search-bar";
 import { useSnackbar } from "notistack";
 import { useDropzone, FileRejection } from "react-dropzone";
 import { UploadErrorSnackbar } from "../Snackbars/UploadErrorSnackbar";
 import { CloudUpload } from "@material-ui/icons";
+import AutocompleteSearchBar from "../Shared/SearchBar";
 
 const maxSize = parseInt(process.env.MAX_SIZE || (50 * 1024 * 1024).toString());
 const drawerWidth = 240;
@@ -99,13 +98,23 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
-
     const [searchTerm, setSearchTerm] = useState("");
-    const url = searchTerm === "" ? "media/all" : "media/search/" + searchTerm;
+
+    const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
+
+    useEffect(() => {
+        (async () => {
+            if (photos.length === 0)
+                setAutocompleteOptions([])
+            else
+                setAutocompleteOptions((await getPhotoLabels(photos.map(photo => photo.id))).data)
+
+        })()
+    }, [photos])
 
     const fetchPhotos = async () => {
         setShowLoadingBar(true);
-        const resp = await axios.get(url);
+        const resp = await getPhotos(searchTerm);
         if (resp.status === 200) {
             setPhotos(resp.data);
             setShowLoadingBar(false);
@@ -115,7 +124,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     const fetchAlbums = async () => {
-        const resp = await axios.get("albums/all");
+        const resp = await getAlbums("");
         if (resp.status === 200) {
             setAlbums(resp.data);
         } else {
@@ -126,7 +135,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     useEffect(() => {
         fetchPhotos();
         fetchAlbums();
-    }, [url]);
+    }, [searchTerm]);
 
     const history = useHistory();
 
@@ -160,7 +169,6 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const viewButtonFunctions = {
         delete: async (id: string) => {
             await deletePhoto(id);
-            await fetchPhotos();
         },
         addToAlbum: (id: string) => {
             setSelected([id]);
@@ -245,12 +253,12 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const lines = [
         <div></div>,
-        <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block", paddingTop: 10, paddingLeft: 5 }}>
+        <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block", paddingTop: 10, paddingLeft: 5 }}>
             Search results for {searchTerm}:
         </Typography>,
     ];
 
-    const heights = [12, searchTerm === "" ? 0 : 28];
+    const heights = [12, searchTerm === "" || !searchTerm ? 0 : 28];
 
     return (
         <div>
@@ -277,7 +285,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar anySelected={anySelected} buttonFunctions={topBarButtonFunctions} numSelected={() => selected.length} show={showLoadingBar} />
+                                <TopBar searchBarText={searchBarText} setSearchBarText={setSearchBarText} autocompleteOptions={autocompleteOptions} anySelected={anySelected} buttonFunctions={topBarButtonFunctions} numSelected={() => selected.length} show={showLoadingBar} />
                             </Toolbar>
                         </AppBar>
 
@@ -286,16 +294,14 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
                             {showSearchBar && (
-                                <SearchBar
-                                    onCancelSearch={async () => {
-                                        setSearchBarText("");
-                                        topBarButtonFunctions.search("")();
-                                    }}
-                                    style={{ marginLeft: -12, borderRadius: 0, alignSelf: "flex-top" }}
+                                <AutocompleteSearchBar
+                                    options={autocompleteOptions}
+                                    search={topBarButtonFunctions.search}
                                     className={classes.onlyMobile}
                                     value={searchBarText}
-                                    onChange={(s) => setSearchBarText(s)}
+                                    onChange={(s: string) => setSearchBarText(s)}
                                     onRequestSearch={topBarButtonFunctions.search(searchBarText)}
+                                    style={{ marginLeft: -6, borderRadius: 0, alignSelf: "flex-top" }}
                                 />
                             )}
                             <div style={{ flexGrow: 1 }}>
