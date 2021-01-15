@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # SERVER
-    parser.add_argument('--fetch_interval', type=float, default=5, help='time interval between GET operations')
+    parser.add_argument('--fetch_interval', type=float, default=os.getenv("FETCH_INTERVAL", '5'), help='time interval between GET operations')
 
     # YOLO V5
     parser.add_argument('--weights', nargs='+', type=str, default='yolov5s.pt', help='model.pt path(s)')
@@ -29,9 +29,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     im_clf = ImageClassifier(args)
-    time.sleep(args.fetch_interval)
     
     while True:
+        time.sleep(args.fetch_interval)
         new_media_list = get_new_media(backend_address + '/labels/getBatch')
         for media in new_media_list:
             im = get_image(backend_address + '/media/thumb_' + media['id'])
@@ -39,4 +39,3 @@ if __name__ == "__main__":
             prediction = im_clf.predict(im)
             post_image_labels(backend_address + '/labels/labelAuto', media['id'], prediction)
             
-        time.sleep(args.fetch_interval)
