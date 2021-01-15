@@ -10,9 +10,7 @@ import { DownloadSnackbar } from "./Components/Snackbars/DownloadSnackbar";
 import { RemovePhotosSnackbar } from "./Components/Snackbars/RemovePhotosSnackbar";
 import { AlbumT, PhotoT } from "./Interfaces";
 
-console.log(window.location.hostname)
 export const baseURL = "http://" + window.location.hostname + ":4000"
-console.log(baseURL)
 axios.defaults.baseURL = baseURL;
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 
