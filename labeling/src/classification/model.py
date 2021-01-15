@@ -26,7 +26,6 @@ class ImageClassifier:
             self._model.half()  # to FP16
 
     def predict(self, image):
-        print('predicting', flush=True)
         try:
             t0 = time.time()
             
@@ -56,9 +55,6 @@ class ImageClassifier:
             outputs = []
             for c in det[:, -1].unique():
                 outputs.append(self._names[int(c)])
-
-            print(outputs, flush=True)
-            print(f'Time: {time.time() - t0}s', flush=True)
 
             return outputs
         except Exception as e:
