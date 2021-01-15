@@ -34,7 +34,7 @@ if __name__ == "__main__":
     while True:
         new_media_list = get_new_media(backend_address + '/labels/getBatch')
         for media in new_media_list:
-            im = get_image(backend_address + '/media/' + media['id'])
+            im = get_image(backend_address + '/media/thumb_' + media['id'])
             im = rotate_exif(im)
             prediction = im_clf.predict(im)
             post_image_labels(backend_address + '/labels/labelAuto', media['id'], prediction)
