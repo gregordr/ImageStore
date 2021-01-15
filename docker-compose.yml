@@ -4,11 +4,11 @@ services:
         build: frontend
         ports:
             - "3000:3000"
-    labeling:
-        build: labeling
+    detectron2:
+        build: detectron2
         environment:
             BASE_ADDRESS: backend:4000
-            FETCH_INTERVAL: 60
+            FETCH_INTERVAL: 10
     backend:
         build: backend
         ports:
