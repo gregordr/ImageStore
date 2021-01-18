@@ -1,12 +1,23 @@
 import { DatabaseError, requireTable, transaction } from './databaseHelper'
+import { labelTable } from './labelDatabase';
 
 export const photo = 'photo'
-export const media = requireTable('media', `(${photo} varchar, UNIQUE(oid), h integer, w integer) WITH OIDS`).catch((err) => { console.log(err) });
-//Todo: photos instead of media?
+export const media = requireTable('media', `(${photo} varchar, UNIQUE(oid), h integer, w integer, labeled boolean default false) WITH OIDS`)
 
-export async function getMedia(searchTerm: string): Promise<unknown[]> {
+export async function getMedia(searchTerm: string, label: string): Promise<unknown[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width FROM ${await media} WHERE ${photo} like $1::text;`, [searchTerm]);
+        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width FROM ${await media} WHERE         
+        (
+            ${photo} like $1::text
+            OR
+            OID IN
+            (
+                SELECT photo
+                FROM ${await labelTable}
+                WHERE label = $2::text
+            )
+        )
+        ;`, [searchTerm, label]);
         return result.rows;
     });
 }

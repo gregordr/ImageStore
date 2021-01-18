@@ -3,6 +3,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { PhotoT } from "../../Interfaces";
 import { VariableSizeList as List } from "react-window";
 import { Scrollbars } from "react-custom-scrollbars";
+import { baseURL } from "../../API";
 
 const useStyles = makeStyles({
     photoDiv: {
@@ -17,10 +18,10 @@ const useStyles = makeStyles({
 });
 
 function Photo(props: any) {
-    const realUrl = "http://localhost:4000/media/thumb_" + props.id
+    const realUrl = baseURL + "/media/thumb_" + props.id
     const [url, setUrl] = useState("");
     useEffect(() => {
-        const timeout = setTimeout(() => setUrl("http://localhost:4000/media/thumb_" + props.id), 500);
+        const timeout = setTimeout(() => setUrl(baseURL + "/media/thumb_" + props.id), 500);
         return () => clearTimeout(timeout)
     }, [props.id])
     useEffect(() => {

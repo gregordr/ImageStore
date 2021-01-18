@@ -4,14 +4,14 @@ import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
 import TopBar from "./TopBar";
 import { Route, Switch } from "react-router-dom";
-import axios from "axios";
 import { AlbumT } from "../../Interfaces";
 import CreateAlbum from "./CreateAlbum";
 import AlbumPhotoPage from "./AlbumPhotoPage/AlbumPhotoPage";
 import AbstractAlbumPage from "../Shared/AbstractAlbumPage";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
-import { createAlbum } from "../../API";
+import { createAlbum, getAlbums } from "../../API";
+import AutocompleteSearchBar from "../Shared/SearchBar";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -80,11 +80,11 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
-    const url = searchTerm === "" ? "albums/all" : "albums/search/" + searchTerm;
+    const [autocompleteOptions, setAutocompleteOption] = useState<string[]>([]);
 
     const fetchAlbums = async () => {
         setShowLoadingBar(true);
-        const resp = await axios.get(url);
+        const resp = await getAlbums(searchTerm);
         if (resp.status === 200) {
             setAlbums(resp.data);
             setShowLoadingBar(false);
@@ -95,7 +95,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     useEffect(() => {
         fetchAlbums();
-    }, [url]);
+    }, [searchTerm]);
 
     const topBarButtonFunctions = {
         add: async () => {
@@ -116,10 +116,10 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     const openAlbum = () => () => { };
 
-    const heights = [searchTerm === "" ? 0 : 20];
+    const heights = [searchTerm === "" || !searchTerm ? 0 : 20];
 
     const lines = [
-        <Typography variant="h5" style={{ display: searchTerm === "" ? "none" : "block" }}>
+        <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block" }}>
             Search results for {searchTerm}:
         </Typography>,
     ];
@@ -139,7 +139,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar buttonFunctions={topBarButtonFunctions} show={showLoadingBar} />
+                                <TopBar searchBarText={searchBarText} setSearchBarText={setSearchBarText} autocompleteOptions={autocompleteOptions} buttonFunctions={topBarButtonFunctions} show={showLoadingBar} />
                             </Toolbar>
                         </AppBar>
 
@@ -148,16 +148,14 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                         <main className={classes.content}>
                             <div className={classes.toolbar} />
                             {showSearchBar && (
-                                <SearchBar
-                                    onCancelSearch={async () => {
-                                        setSearchBarText("");
-                                        topBarButtonFunctions.search("")();
-                                    }}
-                                    style={{ marginLeft: -12, borderRadius: 0 }}
+                                <AutocompleteSearchBar
+                                    options={autocompleteOptions}
+                                    search={topBarButtonFunctions.search}
                                     className={classes.onlyMobile}
                                     value={searchBarText}
-                                    onChange={(s) => setSearchBarText(s)}
+                                    onChange={(s: string) => setSearchBarText(s)}
                                     onRequestSearch={topBarButtonFunctions.search(searchBarText)}
+                                    style={{ marginLeft: -6, borderRadius: 0, alignSelf: "flex-top" }}
                                 />
                             )}
                             <div style={{ flexGrow: 1 }}>

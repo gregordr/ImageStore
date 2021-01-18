@@ -11,7 +11,7 @@ export const router = express.Router();
 
 router.get('/all', async (req, res) => {
     try {
-        res.status(200).send(await getMedia("%"));
+        res.status(200).send(await getMedia("%", ""));
     } catch (err) {
         res.status(500).send(err.toString());
     }
@@ -19,7 +19,7 @@ router.get('/all', async (req, res) => {
 
 router.get('/search/:term', async (req, res) => {
     try {
-        res.status(200).send(await getMedia(`%${req.params.term}%`));
+        res.status(200).send(await getMedia(`%${req.params.term}%`, req.params.term));
     } catch (err) {
         res.status(500).send(err.toString());
     }

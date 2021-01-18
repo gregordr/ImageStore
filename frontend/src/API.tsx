@@ -10,13 +10,12 @@ import { DownloadSnackbar } from "./Components/Snackbars/DownloadSnackbar";
 import { RemovePhotosSnackbar } from "./Components/Snackbars/RemovePhotosSnackbar";
 import { AlbumT, PhotoT } from "./Interfaces";
 
-axios.defaults.baseURL = "http://localhost:4000";
 
-// const port = 4000
+const port = 4000
 
-// export const baseURL = window.location.protocol + "//" + window.location.hostname + (port ? ":" : "") + port + process.env.PUBLIC_URL
+export const baseURL = window.location.protocol + "//" + window.location.hostname + (port ? ":" : "") + port + process.env.PUBLIC_URL
 
-// axios.defaults.baseURL = baseURL;
+axios.defaults.baseURL = baseURL;
 
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 
@@ -170,4 +169,40 @@ export async function download(
     } catch (error) {
         snackbar?.end([], [error]);
     }
+}
+
+
+export async function removeLabel(id: string, label: string) {
+    const requestBody = {
+        id,
+        label,
+    };
+    await axios.post("/labels/remove", qs.stringify(requestBody));
+}
+
+export async function addLabel(ids: string[], labels: string[]) {
+    const requestBody = {
+        ids,
+        labels,
+    };
+    await axios.post("/labels/add", qs.stringify(requestBody));
+}
+
+export async function getPhotoLabels(ids: string[]) {
+    const requestBody = {
+        ids,
+    };
+    return await axios.post("/labels/get/", qs.stringify(requestBody));
+}
+
+export async function getAlbums(searchTerm: string) {
+    return await axios.get(searchTerm === "" || !searchTerm ? "albums/all" : "albums/search/" + searchTerm);
+}
+
+export async function getPhotos(searchTerm: string) {
+    return await axios.get(searchTerm === "" || !searchTerm ? "media/all" : "media/search/" + searchTerm);
+}
+
+export async function getPhotosInAlbum(id: string, searchTerm: string) {
+    return await axios.get(searchTerm === "" || !searchTerm ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`);
 }

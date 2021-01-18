@@ -35,3 +35,13 @@ jobs:
         with:
           file: ./backend/Dockerfile
           context: ./backend
+      - name: Build yolo
+        uses: docker/build-push-action@v2.2.1
+        with:
+          file: ./yolo/Dockerfile
+          context: ./yolo
+      - name: Build detectron2
+        uses: docker/build-push-action@v2.2.1
+        with:
+          file: ./detectron2/Dockerfile
+          context: ./detectron2
