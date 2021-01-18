@@ -2,7 +2,7 @@ export interface AlbumT {
     id: string;
     name: string;
     imagecount: number;
-    cover: string;
+    cover: string | null;
 }
 
 export interface PhotoT {

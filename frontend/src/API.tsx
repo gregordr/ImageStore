@@ -11,6 +11,13 @@ import { RemovePhotosSnackbar } from "./Components/Snackbars/RemovePhotosSnackba
 import { AlbumT, PhotoT } from "./Interfaces";
 
 axios.defaults.baseURL = "http://localhost:4000";
+
+// const port = 4000
+
+// export const baseURL = window.location.protocol + "//" + window.location.hostname + (port ? ":" : "") + port + process.env.PUBLIC_URL
+
+// axios.defaults.baseURL = baseURL;
+
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 
 export async function addPhotos(

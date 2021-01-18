@@ -129,7 +129,7 @@ export default function ViewPage(props: any) {
         if (canGo(dir)) {
             setDir(50 * dir);
             ind += dir;
-            const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
+            const afterWithout = window.location.pathname.substr(process.env.PUBLIC_URL.length, window.location.pathname.lastIndexOf("/") + 1 - process.env.PUBLIC_URL.length);
             history.replace(`${afterWithout}${photos[ind].id}`);
             setId(photos[ind].id);
         }
