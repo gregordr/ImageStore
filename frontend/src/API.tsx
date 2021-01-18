@@ -9,15 +9,17 @@ import { DownloadSnackbar } from "./Components/Snackbars/DownloadSnackbar";
 import { RemovePhotosSnackbar } from "./Components/Snackbars/RemovePhotosSnackbar";
 import { AlbumT, PhotoT } from "./Interfaces";
 
-const schema = window.location.protocol
+const schema = window.location.protocol;
 
-export const baseURL = schema + "//" + window.location.hostname + (window.location.port ? ":" : "") + window.location.port + "/" + process.env.PUBLIC_URL
-console.log(baseURL)
+export const baseURL = schema + "//" + window.location.hostname + (window.location.port ? ":" : "") + window.location.port + process.env.PUBLIC_URL;
+console.log(baseURL);
+console.log(process.env.PUBLIC_URL);
+console.log(window.location.port);
 axios.defaults.baseURL = baseURL;
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 
 function delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const defaults = {
@@ -37,9 +39,19 @@ const defaults = {
     albums: [{ id: 6553538, name: "My stock kitten", cover: "6738313", imagecount: 3 }],
     albumPhotos: { "6553538": ["6738313", "6738314", "6738315", "6738316", "6738317", "6738318", "6738321", "6738322", "6738319", "6738320"] },
 
-    labels: { "6738313": ["cat"], "6738314": ["cat"], "6738315": ["cat", "building"], "6738316": ["cat"], "6738317": ["cat"], "6738318": ["cat"], "6738319": ["cat"], "6738320": ["cat", "furniture"], "6738321": ["cat", "nature"], "6738322": ["cat"] }
-
-}
+    labels: {
+        "6738313": ["cat"],
+        "6738314": ["cat"],
+        "6738315": ["cat", "building"],
+        "6738316": ["cat"],
+        "6738317": ["cat"],
+        "6738318": ["cat"],
+        "6738319": ["cat"],
+        "6738320": ["cat", "furniture"],
+        "6738321": ["cat", "nature"],
+        "6738322": ["cat"],
+    },
+};
 
 export async function addPhotos(
     formData: FormData,
@@ -51,7 +63,7 @@ export async function addPhotos(
     try {
         snackbar?.begin(formData.getAll("file").length);
 
-        await delay(200)
+        await delay(200);
 
         const photos: string[] = [];
         const errors: string[] = ["You cannot upload photos to the demo page, please download the self-hosted version"];
@@ -74,10 +86,10 @@ export async function deletePhotos(
     try {
         snackbar?.begin(photoIds.length);
 
-        const before: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos))
-        const after = before.filter(p => !photoIds.includes(p.id))
+        const before: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos));
+        const after = before.filter((p) => !photoIds.includes(p.id));
         sessionStorage.setItem("photos", JSON.stringify(after));
-        await delay(300)
+        await delay(300);
 
         snackbar?.end(photoIds, []);
     } catch (error) {
@@ -87,44 +99,44 @@ export async function deletePhotos(
 }
 
 export async function setCover(albumId: string, photoId: string) {
-    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
-    const after = before.map(a => a.id != albumId ? a : { id: a.id, name: a.name, cover: photoId, imagecount: a.imagecount })
+    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums));
+    const after = before.map((a) => (a.id != albumId ? a : { id: a.id, name: a.name, cover: photoId, imagecount: a.imagecount }));
     sessionStorage.setItem("albums", JSON.stringify(after));
-    console.log(photoId)
-    await delay(200)
+    console.log(photoId);
+    await delay(200);
 }
 export async function clearCover(albumId: string) {
-    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
-    const after = before.map(a => a.id !== albumId ? a : { id: a.id, name: a.name, cover: null, imagecount: a.imagecount })
+    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums));
+    const after = before.map((a) => (a.id !== albumId ? a : { id: a.id, name: a.name, cover: null, imagecount: a.imagecount }));
     sessionStorage.setItem("albums", JSON.stringify(after));
-    await delay(200)
+    await delay(200);
 }
 
 export async function createAlbum(name: string) {
-    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
-    const max = before.map(a => parseInt(a.id)).reduce((max, cur) => Math.max(max, cur))
-    const newInd = "" + max + 1
-    before.push({ id: newInd, name: name, cover: null, imagecount: 0 })
+    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums));
+    const max = before.map((a) => parseInt(a.id)).reduce((max, cur) => Math.max(max, cur));
+    const newInd = "" + max + 1;
+    before.push({ id: newInd, name: name, cover: null, imagecount: 0 });
     sessionStorage.setItem("albums", JSON.stringify(before));
 
-    const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos))
-    albumPhotos[newInd] = []
+    const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos));
+    albumPhotos[newInd] = [];
     sessionStorage.setItem("albumPhotos", JSON.stringify(albumPhotos));
-    await delay(200)
+    await delay(200);
 }
 
 export async function deleteAlbum(albumId: string) {
-    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
-    const after = before.filter(a => a.id !== albumId)
+    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums));
+    const after = before.filter((a) => a.id !== albumId);
     sessionStorage.setItem("albums", JSON.stringify(after));
-    await delay(200)
+    await delay(200);
 }
 
 export async function renameAlbum(albumId: string, newAlbumName: string) {
-    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
-    const after = before.map(a => a.id !== albumId ? a : { id: a.id, name: newAlbumName, cover: a.cover, imagecount: a.imagecount })
+    const before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums));
+    const after = before.map((a) => (a.id !== albumId ? a : { id: a.id, name: newAlbumName, cover: a.cover, imagecount: a.imagecount }));
     sessionStorage.setItem("albums", JSON.stringify(after));
-    await delay(200)
+    await delay(200);
 }
 
 export async function addPhotosToAlbums(
@@ -137,13 +149,12 @@ export async function addPhotosToAlbums(
     try {
         snackbar?.begin(photoIds.length, albumIds.length);
 
-
-        const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos))
+        const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos));
 
         for (const photoId of photoIds)
             for (const albumId of albumIds) {
                 if (!albumPhotos[albumId].includes(photoId)) {
-                    albumPhotos[albumId].push(photoId)
+                    albumPhotos[albumId].push(photoId);
                 }
             }
 
@@ -163,15 +174,13 @@ export async function removePhotosFromAlbum(
 ) {
     const snackbar = RemovePhotosSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
     try {
+        let albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos));
 
-        let albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos))
-
-        for (const photoId of photoIds)
-            albumPhotos[albumId] = albumPhotos[albumId].filter((p: string) => p !== photoId)
+        for (const photoId of photoIds) albumPhotos[albumId] = albumPhotos[albumId].filter((p: string) => p !== photoId);
 
         sessionStorage.setItem("albumPhotos", JSON.stringify(albumPhotos));
 
-        await delay(200)
+        await delay(200);
         snackbar?.end(photoIds, []);
     } catch (error) {
         snackbar?.end([], [error]);
@@ -233,106 +242,100 @@ export async function download(
 }
 
 export async function removeLabel(id: string, label: string) {
-    await delay(300)
-    const before = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels))
-    before[id] = before[id].filter((l: string) => l !== label)
+    await delay(300);
+    const before = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels));
+    before[id] = before[id].filter((l: string) => l !== label);
     sessionStorage.setItem("labels", JSON.stringify(before));
 }
 
 export async function addLabel(ids: string[], labels: string[]) {
-    await delay(300)
-    const before = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels))
+    await delay(300);
+    const before = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels));
     for (const id of ids) {
-        if (!before[id])
-            before[id] = []
-        if (!before[id].includes(labels[0]))
-            before[id].push(labels[0])
+        if (!before[id]) before[id] = [];
+        if (!before[id].includes(labels[0])) before[id].push(labels[0]);
     }
     sessionStorage.setItem("labels", JSON.stringify(before));
 }
 
 export async function getPhotoLabels(ids: string[]) {
-    const labels = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels))
+    const labels = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels));
 
-    const found: string[] = []
+    const found: string[] = [];
 
     for (const id of ids) {
         if (labels[parseInt(id)]) {
             for (const label of labels[parseInt(id)]) {
-                if (!found.includes(label))
-                    found.push(label)
+                if (!found.includes(label)) found.push(label);
             }
         }
     }
 
-    return { "status": 200, "data": found }
+    return { status: 200, data: found };
 }
 
 export async function getAlbums(searchTerm: string) {
-    const photos: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos))
-    let before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums))
-    const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos))
+    const photos: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos));
+    let before: AlbumT[] = JSON.parse(sessionStorage.getItem("albums") || JSON.stringify(defaults.albums));
+    const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos));
 
     if (searchTerm !== "") {
-        before = before.filter(a => {
-            if (a.name.includes(searchTerm))
-                return true;
+        before = before.filter((a) => {
+            if (a.name.includes(searchTerm)) return true;
 
             return false;
-        })
+        });
     }
 
-    const after: AlbumT[] = []
+    const after: AlbumT[] = [];
 
     for (const album of before) {
-        let count = 0
-        for (const photo of albumPhotos[album.id])
-            if (photos.map(p => p.id).includes(photo))
-                count++;
+        let count = 0;
+        for (const photo of albumPhotos[album.id]) if (photos.map((p) => p.id).includes(photo)) count++;
 
-        after.push({ id: album.id, name: album.name, cover: album.cover, imagecount: count })
+        after.push({ id: album.id, name: album.name, cover: album.cover, imagecount: count });
     }
 
-    delay(200)
-    return { status: 200, data: after }
+    delay(200);
+    return { status: 200, data: after };
 }
 
 export async function getPhotos(searchTerm: string) {
-    let before: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos))
-    const labels = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels))
+    let before: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos));
+    const labels = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels));
     if (searchTerm && searchTerm !== "") {
-        before = before.filter(p => {
-            if (p.name.includes(searchTerm))
-                return true;
+        before = before.filter((p) => {
+            if (p.name.includes(searchTerm)) return true;
 
-            if (labels[p.id] && labels[p.id].includes(searchTerm))
-                return true
+            if (labels[p.id] && labels[p.id].includes(searchTerm)) return true;
 
             return false;
-        })
+        });
     }
-    delay(200)
-    return { status: 200, data: before }
+    delay(200);
+    return { status: 200, data: before };
 }
 
 export async function getPhotosInAlbum(id: string, searchTerm: string) {
-    let photos: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos))
-    const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos))
+    let photos: PhotoT[] = JSON.parse(sessionStorage.getItem("photos") || JSON.stringify(defaults.photos));
+    const labels = JSON.parse(sessionStorage.getItem("labels") || JSON.stringify(defaults.labels));
+    const albumPhotos = JSON.parse(sessionStorage.getItem("albumPhotos") || JSON.stringify(defaults.albumPhotos));
 
-    const included = albumPhotos[id]
-    console.log(included)
+    const included = albumPhotos[id];
+    console.log(included);
 
-    photos = photos.filter(p => included.includes(p.id))
-    console.log(searchTerm)
+    photos = photos.filter((p) => included.includes(p.id));
+    console.log(searchTerm);
     if (searchTerm && searchTerm !== "") {
-        photos = photos.filter(p => {
-            if (p.name.includes(searchTerm))
-                return true;
+        photos = photos.filter((p) => {
+            if (p.name.includes(searchTerm)) return true;
+
+            if (labels[p.id] && labels[p.id].includes(searchTerm)) return true;
 
             return false;
-        })
+        });
     }
 
-    delay(200)
-    return { status: 200, data: photos }
+    delay(200);
+    return { status: 200, data: photos };
 }
