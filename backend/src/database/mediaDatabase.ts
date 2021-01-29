@@ -2,11 +2,11 @@ import { DatabaseError, requireTable, transaction } from './databaseHelper'
 import { labelTable } from './labelDatabase';
 
 export const photo = 'photo'
-export const media = requireTable('media', `(${photo} varchar, UNIQUE(oid), h integer, w integer, labeled boolean default false) WITH OIDS`)
+export const media = requireTable('media', `(${photo} varchar, UNIQUE(oid), h integer, w integer, labeled boolean default false, date integer) WITH OIDS`)
 
 export async function getMedia(searchTerm: string, label: string): Promise<unknown[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width FROM ${await media} WHERE         
+        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width, date as date FROM ${await media} WHERE         
         (
             ${photo} like $1::text
             OR
@@ -17,14 +17,15 @@ export async function getMedia(searchTerm: string, label: string): Promise<unkno
                 WHERE label = $2::text
             )
         )
+        ORDER BY date DESC
         ;`, [searchTerm, label]);
         return result.rows;
     });
 }
 
-export async function addMedia(name: string, heigth: number, width: number): Promise<string> {
+export async function addMedia(name: string, heigth: number, width: number, date: number): Promise<string> {
     return transaction(async (client) => {
-        const res = await client.query(`INSERT INTO ${await media} VALUES ($1::text, $2::integer, $3::integer);`, [name, heigth, width])
+        const res = await client.query(`INSERT INTO ${await media} VALUES ($1::text, $2::integer, $3::integer, false, $4::integer);`, [name, heigth, width, Math.floor(date / 1000)])
         return res.oid.toString();
     });
 }

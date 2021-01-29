@@ -6,6 +6,7 @@ import { addMedia, removeMedia, getMedia } from '../database/mediaDatabase'
 import sizeOf from 'image-size';
 import sharp from 'sharp';
 import { ISizeCalculationResult } from 'image-size/dist/types/interface';
+import exifr from 'exifr'
 
 export const router = express.Router();
 
@@ -88,7 +89,10 @@ router.post('/add', async (req, res) => {
                     dims.height = dims.width;
                     dims.width = tmp;
                 }
-                const oid = await addMedia(f.originalname, dims.height, dims.width)
+
+                const date = Date.parse((await exifr.parse(dir + f.filename))?.CreateDate)
+
+                const oid = await addMedia(f.originalname, dims.height, dims.width, (date.toString() === 'NaN') ? Date.now() : date)
                 await fsPromises.rename(dir + f.filename, dir + oid);
                 await sharp(dir + oid, { failOnError: false }).resize({ width: Math.ceil(dims.width / dims.height * 300), height: 300 }).rotate().toFile(dir + "thumb_" + oid)
 
