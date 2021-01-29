@@ -4,8 +4,8 @@ services:
         build: frontend
         ports:
             - "3000:3000"
-        args:
-            REACT_APP_BACKEND: http://localhost:4000
+       # args:
+       #     REACT_APP_BACKEND: http://localhost:4000
     backend:
         build: backend
         ports:

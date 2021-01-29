@@ -4,8 +4,8 @@ services:
         image: imagestored/frontend
         ports:
             - "3000:3000" # This is the post the frontend will be accessible
-        args:
-            REACT_APP_BACKEND: http://localhost:4000 # This needs to be set to the URL the backend will be accessible on
+        #args:
+        #    REACT_APP_BACKEND: http://localhost:4000 # This needs to be set to the URL the backend will be accessible on
     backend:
         image: imagestored/backend
         ports:
