@@ -8,7 +8,7 @@
 
 ### Instructions:
 
-Download the docker-compose.yml: ```wget https://github.com/gregordr/ImageStore/blob/main/docker-compose.yml```.
+Download the docker-compose.yml: ```wget https://raw.githubusercontent.com/gregordr/ImageStore/main/docker-compose.yml```.
 
 Edit it according to your liking, then run ```docker-compose up```. Note that you need to comment in one of the two labelers, in case you want automatic image labeling.
 
