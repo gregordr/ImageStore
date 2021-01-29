@@ -1,16 +1,15 @@
 # ImageStore
 
-Instructions:
+### Requirements:
 
-Clone this repo
+ - x86 CPU
+ - Docker
+ - Docker-compose
 
-### With docker:
+### Instructions:
 
-run ```docker-compose up```
+Download the docker-compose.yml: ```wget https://github.com/gregordr/ImageStore/blob/main/docker-compose.yml```.
 
-Go to http://localhost:3000
+Edit it according to your liking, then run ```docker-compose up```. Note that you need to comment in one of the two labelers, in case you want automatic image labeling.
 
-### Without docker:
-
-WIP
- 
+Go to http://localhost:3000, or whichever port you have chosen to use.

@@ -1,29 +1,32 @@
 version: "3.9"
 services:
     frontend:
-        build: frontend
+        image: imagestored/frontend
         ports:
-            - "3000:3000"
+            - "3000:3000" # This is the post the frontend will be accessible
+        args:
+            REACT_APP_BACKEND: http://localhost:4000 # This needs to be set to the URL the backend will be accessible on
     backend:
-        build: backend
+        image: imagestored/backend
         ports:
-            - "4000:4000"
+            - "4000:4000" # This is the post the backend will be accessible
         environment:
-            PGSTRING: postgres://postgres:example@db:5432/postgres
+            PGSTRING: postgres://postgres:example@db:5432/postgres # This string has to resolve to a Postgres database on version 11
 
     db:
         image: postgres:11
         restart: always
         environment:
             POSTGRES_PASSWORD: example
+            
+    # detectron2: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very leigthweight. Check yourself how much load detectron2 puts on your device, and if it's too much, switch to yolo. Comment out the model you want to use back in, but never comment out both. 
+    #     image: imagestored/detectron2
+    #     environment:
+    #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
+    #         FETCH_INTERVAL: 10 # This is the interval the labeler will poll for new images in seconds
 
-    detectron2:
-        build: detectron2
-        environment:
-            BASE_ADDRESS: backend:4000
-            FETCH_INTERVAL: 10
-    yolo:
-        build: yolo
-        environment:
-            BASE_ADDRESS: backend:4000
-            FETCH_INTERVAL: 10
+    # yolo: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very leigthweight. Check yourself how much load detectron2 puts on your device, and if it's too much, switch to yolo. Comment out the model you want to use back in, but never comment out both. 
+    #     image: imagestored/yolo
+    #     environment:
+    #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
+    #         FETCH_INTERVAL: 10 # This is the interval the labeler will poll for new images in seconds
