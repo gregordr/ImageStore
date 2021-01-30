@@ -2,7 +2,7 @@
 
 ### Requirements:
 
- - x86 CPU
+ - x86_64 CPU (also known as x64, x86_64, AMD64 and Intel 64)
  - Docker
  - Docker-compose
 
