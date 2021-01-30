@@ -1,8 +1,6 @@
 # ImageStore
 
-### Online demo:
-
-https://gregordr.github.io/ImageStore/
+[Online demo](https://gregordr.github.io/ImageStore/)
 
 This shows off all currently available features - the only restriction is that you cannot upload your own images.
 
