@@ -1,5 +1,11 @@
 # ImageStore
 
+### Online demo:
+
+https://gregordr.github.io/ImageStore/
+
+This shows off all currently available features - the only restriction is that you cannot upload your own images.
+
 ### Requirements:
 
  - x86_64 CPU (also known as x64, x86_64, AMD64 and Intel 64)
