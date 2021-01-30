@@ -1,4 +1,5 @@
 import { Pool, PoolClient } from 'pg';
+import { exit } from 'process';
 const connectionString = process.env.PGSTRING;
 const pool = new Pool({ connectionString, max: 5 });
 
@@ -9,10 +10,22 @@ export class DatabaseError extends Error {
     }
 }
 
+function sleep(millis: number) {
+    return new Promise(resolve => setTimeout(resolve, millis));
+}
+
 export async function transaction<T>(query: (arg0: PoolClient) => Promise<T>, useTransaction = true): Promise<T> {
     let client = null;
     try {
-        client = await pool.connect();
+
+        try {
+            client = await pool.connect();
+        } catch (err) {
+            console.log("Could not connect to database - restarting in 5 seconds")
+            await sleep(5000)
+            exit()
+        }
+
         if (useTransaction)
             await client.query('BEGIN');
         const val = await query(client);

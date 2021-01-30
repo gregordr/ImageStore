@@ -1,17 +1,25 @@
 version: "3.9"
 services:
     frontend:
-        build: frontend
+        build:
+            context: frontend
+            # args:
+            #     REACT_APP_BACKEND: http://localhost:4000
         ports:
             - "3000:3000"
-       # args:
-       #     REACT_APP_BACKEND: http://localhost:4000
+        depends_on:
+            - backend
+
     backend:
-        build: backend
+        build:
+            context: backend
+        restart: always
         ports:
             - "4000:4000"
         environment:
             PGSTRING: postgres://postgres:example@db:5432/postgres
+        depends_on:
+            - db
 
     db:
         image: postgres:11
@@ -19,13 +27,13 @@ services:
         environment:
             POSTGRES_PASSWORD: example
 
-    detectron2:
-        build: detectron2
-        environment:
-            BASE_ADDRESS: backend:4000
-            FETCH_INTERVAL: 10
-    yolo:
-        build: yolo
-        environment:
-            BASE_ADDRESS: backend:4000
-            FETCH_INTERVAL: 10
+    # detectron2:
+    #     build:
+    #     environment:
+    #         BASE_ADDRESS: backend:4000
+    #         FETCH_INTERVAL: 10
+    # yolo:
+    #     build: yolo
+    #     environment:
+    #         BASE_ADDRESS: backend:4000
+    #         FETCH_INTERVAL: 10
