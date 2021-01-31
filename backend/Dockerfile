@@ -5,7 +5,7 @@ RUN apt install nodejs npm -y
 WORKDIR /code
 EXPOSE 4000
 COPY package*.json ./
-RUN npm i
+RUN npm i --unsafe-perm
 COPY . .
 VOLUME /code/media
 CMD "npm" "start"
