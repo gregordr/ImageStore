@@ -5,6 +5,8 @@ services:
             context: nginx
         ports:
             - "3000:8080"
+        depends_on:
+            - frontend
 
     frontend:
         build:
