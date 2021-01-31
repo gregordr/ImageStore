@@ -1,4 +1,4 @@
-FROM node
+FROM node:current-buster
 WORKDIR /code
 EXPOSE 4000
 COPY package*.json ./
