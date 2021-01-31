@@ -1,9 +1,9 @@
-FROM ubuntu:latest
+FROM debian:latest
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update
 RUN apt install nodejs npm -y
 RUN apt install ca-certificates -y
-RUN update-ca-certificates --fresh 
+RUN update-ca-certificates --fresh
 RUN npm install -g npm@latest
 WORKDIR /code
 EXPOSE 4000
