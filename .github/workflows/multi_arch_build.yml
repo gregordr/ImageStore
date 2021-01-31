@@ -30,7 +30,7 @@ jobs:
           context: frontend
           push: true
           tags: imagestored/frontend:latest
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64,linux/arm/v7l
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -58,7 +58,7 @@ jobs:
           push: true
           tags: imagestored/detectron2:latest
           context: detectron2
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64,linux/arm/v7l
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -87,7 +87,7 @@ jobs:
           push: true
           tags: imagestored/yolo:latest
           file: ./yolo/Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64,linux/arm/v7l
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -116,7 +116,7 @@ jobs:
           tags: imagestored/backend:latest
           context: backend
           file: ./backend/Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64,linux/arm/v7l
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
