@@ -1,4 +1,7 @@
-FROM node:current-buster
+FROM ubuntu:latest
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update
+RUN apt install nodejs npm -y
 WORKDIR /code
 EXPOSE 4000
 COPY package*.json ./
