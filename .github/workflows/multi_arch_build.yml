@@ -26,7 +26,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
-          file: ./frontend/Dockerfile
+          #file: ./frontend/Dockerfile
           context: ./frontend
           push: false
           tags: imagestored/frontend:latest
@@ -56,7 +56,8 @@ jobs:
         with:
           push: false
           tags: imagestored/detectron2:latest
-          file: ./detectron2/Dockerfile
+          context: detectron2
+          #file: ./detectron2/Dockerfile
           platforms: linux/amd64,linux/arm64
       -
         name: Image digest
@@ -81,6 +82,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
+          context: yolo
           push: false
           tags: imagestored/yolo:latest
           file: ./yolo/Dockerfile
