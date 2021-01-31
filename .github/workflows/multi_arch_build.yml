@@ -29,7 +29,6 @@ jobs:
           push: true
           tags: imagestored/frontend:latest
           file: ./frontend/Dockerfile
-          context: ./frontend
           platforms: linux/amd64,linux/arm64
       -
         name: Image digest
