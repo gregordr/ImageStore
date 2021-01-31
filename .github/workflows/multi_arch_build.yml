@@ -24,10 +24,10 @@ jobs:
       -
         name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v1
         with:
           #file: ./frontend/Dockerfile
-          context: /frontend
+          context: frontend
           push: false
           tags: imagestored/frontend:latest
           platforms: linux/amd64,linux/arm64
