@@ -1,12 +1,14 @@
 version: "3.9"
 services:
+    nginx:
+        build:
+            context: nginx
+        ports:
+            - "3000:8080"
+
     frontend:
         build:
             context: frontend
-            # args:
-            #     REACT_APP_BACKEND: http://localhost:4000
-        ports:
-            - "3000:3000"
         depends_on:
             - backend
 
@@ -14,8 +16,6 @@ services:
         build:
             context: backend
         restart: always
-        ports:
-            - "4000:4000"
         environment:
             PGSTRING: postgres://postgres:example@db:5432/postgres
         depends_on:

@@ -10,9 +10,8 @@ import { DownloadSnackbar } from "./Components/Snackbars/DownloadSnackbar";
 import { RemovePhotosSnackbar } from "./Components/Snackbars/RemovePhotosSnackbar";
 import { AlbumT, PhotoT } from "./Interfaces";
 
-const port = 4000
-
-export const baseURL = window.location.protocol + "//" + window.location.hostname + (port ? ":" : "") + port + process.env.PUBLIC_URL
+const port = window.location.port;
+export const baseURL = window.location.protocol + "//" + window.location.hostname + (port ? ":" : "") + port + process.env.PUBLIC_URL + "/api";
 
 axios.defaults.baseURL = baseURL;
 
@@ -169,7 +168,6 @@ export async function download(
         snackbar?.end([], [error]);
     }
 }
-
 
 export async function removeLabel(id: string, label: string) {
     const requestBody = {

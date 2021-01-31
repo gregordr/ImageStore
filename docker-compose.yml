@@ -1,17 +1,18 @@
 version: "3.9"
 services:
+    nginx:
+        image: imagestored/nginx
+        ports:
+            - "3000:8080" #Change to X:8080 to access on port X
+
     frontend:
         image: imagestored/frontend
-        ports:
-            - "3000:3000" # This is the port the frontend will be accessible - feel free to change it to X:3000, where X is your desired port.
         depends_on:
             - backend
 
     backend:
         image: imagestored/backend
         restart: always
-        ports:
-            - "4000:4000" # This is the port the backend will be accessible - do not change
         environment:
             PGSTRING: postgres://postgres:example@db:5432/postgres # This string has to resolve to a Postgres database on version 11
         depends_on:
