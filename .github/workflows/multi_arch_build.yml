@@ -26,9 +26,10 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
+          file: ./frontend/Dockerfile
+          context: ./frontend
           push: false
           tags: imagestored/frontend:latest
-          context: ./frontend
           platforms: linux/amd64,linux/arm64
       -
         name: Image digest
