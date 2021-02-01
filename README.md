@@ -4,11 +4,15 @@
 
 This shows off all currently available features - the only restriction is that you cannot upload your own images.
 
+![preview](https://imgur.com/0yZQ7c7.jpg)
+
 ### Requirements:
 
  - x86_64 CPU (also known as x64, x86_64, AMD64 and Intel 64)
  - Docker
  - Docker-compose
+ 
+ If you want to run it on a different architecture, you will have to build the docker images by yourself. We are currently looking for a good fix for that.
 
 ### Instructions:
 
@@ -17,3 +21,5 @@ Download the docker-compose.yml: ```wget https://raw.githubusercontent.com/grego
 Edit it according to your liking, then run ```docker-compose up```. Note that you need to comment in one of the two labelers, in case you want automatic image labeling.
 
 Go to http://localhost:3000, or whichever port you have chosen to use.
+
+If you want to build yourself, for example because you are not on x86_64, then clone this repo and run ```docker-compose -f docker-compose-build.yml up```
