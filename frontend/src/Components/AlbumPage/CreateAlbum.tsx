@@ -27,7 +27,7 @@ export default function CreateAlbum(props: { cb: (arg0: string) => any; setOpen:
     return (
         <div>
             <Dialog fullWidth fullScreen={fullScreen} open={props.open} onClose={handleClose(false)} aria-labelledby="responsive-dialog-title">
-                <DialogTitle id="responsive-dialog-title">Add to Album</DialogTitle>
+                <DialogTitle id="responsive-dialog-title">Create new Album</DialogTitle>
                 <DialogContent>
                     <TextField label="Name your album" placeholder="My new album" variant="filled" value={value} onChange={handleChange} fullWidth autoFocus margin="dense" />
                 </DialogContent>
