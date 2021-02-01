@@ -30,7 +30,7 @@ If you want to build yourself, for example because you are not on x86_64, then c
 
 #### Without docker
 
-This is a bit more complicated. Start by spinning up a postgreSQL v11 database, and put the URI to it into a ```.env``` file, like this: ```PGSTRING=postgres://user-pass@location:port/db```
+This is a bit more complicated. Start by spinning up a postgreSQL v11 database, and put the URI to it into a ```.env``` file inside of the ```backend``` folder, like this: ```PGSTRING=postgres://user-pass@location:port/db```
 
 After that, you can go into the frontend and backend folders, and run ```npm i``` in both, then ```npm start```. This should make them serve content.
 
