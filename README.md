@@ -6,9 +6,9 @@ This shows off all currently available features - the only restriction is that y
 
 ![preview](https://imgur.com/0yZQ7c7.jpg)
 
-### Instructions:
+## Instructions:
 
-#### Docker prebuilt images
+### Docker prebuilt images
 
 Requirements:
 
@@ -22,7 +22,7 @@ Edit it according to your liking, then run ```docker-compose up```. Note that yo
 
 Go to http://localhost:3000, or whichever port you have chosen to use.
 
-#### Docker build images yourself
+### Docker build images yourself
 
 Requirements:
  - Docker
@@ -30,7 +30,7 @@ Requirements:
 
 If you want to build yourself, for example because you are not on x86_64, then clone this repo and run ```docker-compose -f docker-compose-build.yml up```
 
-#### Without docker
+### Without docker
 
 Requirements:
  - npm
