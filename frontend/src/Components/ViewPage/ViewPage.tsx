@@ -376,14 +376,6 @@ function LabelInputChip(props: any) {
                     }}
                 />
             }
-            onKeyPress={(ev) => {
-                console.log(`Pressed keyCode ${ev.key}`);
-                if (ev.key === "Enter") {
-                    // Do code here
-                    //TODO::IMPORTANT!
-                    ev.preventDefault();
-                }
-            }}
             onDelete={handleAdd}
             className={classes.chip}
             deleteIcon={added ? <CircularProgress style={{ height: 20, width: 20, padding: 1.5, marginRight: 7 }} /> : <AddCircle style={{ transform: "rotate(0deg)" }} />}
