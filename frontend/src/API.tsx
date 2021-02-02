@@ -64,7 +64,7 @@ export async function clearCover(albumId: string) {
 }
 
 export async function createAlbum(name: string) {
-    await axios.post("/albums/new/" + name);
+    return (await axios.post("/albums/new/" + name)).data;
 }
 
 export async function deleteAlbum(albumId: string) {
