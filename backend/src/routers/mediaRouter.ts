@@ -94,7 +94,10 @@ router.post('/add', async (req, res) => {
 
                 const oid = await addMedia(f.originalname, dims.height, dims.width, (date.toString() === 'NaN') ? Date.now() : date)
                 await fsPromises.rename(dir + f.filename, dir + oid);
-                await sharp(dir + oid, { failOnError: false }).resize({ width: Math.ceil(dims.width / dims.height * 300), height: 300 }).rotate().toFile(dir + "thumb_" + oid)
+                if (dims.height > dims.width / 5) //Default case, but incase the width is over 5 times the height, we cap the width at 1500
+                    await sharp(dir + oid, { failOnError: false }).resize({ width: Math.ceil(dims.width / dims.height * 300), height: 300 }).rotate().toFile(dir + "thumb_" + oid)
+                else
+                    await sharp(dir + oid, { failOnError: false }).resize({ width: 1500, height: Math.ceil(dims.height / dims.width * 1500) }).rotate().toFile(dir + "thumb_" + oid)
 
                 oids.push(oid)
 

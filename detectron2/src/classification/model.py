@@ -41,44 +41,45 @@ class ImageClassifier:
                 self._classes.append(object.split(',')[0].lower().strip())
 
     def predict(self, image):
-        print('predicting', flush=True)
-        # convert image to opencv format
-        x = np.array(image)
-        x = x[:, :, ::-1].copy() 
+        try:
+            # convert image to opencv format
+            x = np.array(image)
+            x = x[:, :, ::-1].copy() 
 
-        dataset_dict = get_image_blob(x, self._cfg.MODEL.PIXEL_MEAN)
+            dataset_dict = get_image_blob(x, self._cfg.MODEL.PIXEL_MEAN)
 
-        with torch.set_grad_enabled(False):
-            boxes, scores, features_pooled, attr_scores = self._model([dataset_dict])
+            with torch.set_grad_enabled(False):
+                boxes, scores, features_pooled, attr_scores = self._model([dataset_dict])
 
-        dets = boxes[0].tensor.cpu() / dataset_dict['im_scale']
-        scores = scores[0].cpu()
-        feats = features_pooled[0].cpu()
-        attr_scores = attr_scores[0].cpu()
+            dets = boxes[0].tensor.cpu() / dataset_dict['im_scale']
+            scores = scores[0].cpu()
+            feats = features_pooled[0].cpu()
+            attr_scores = attr_scores[0].cpu()
 
-        max_conf = torch.zeros((scores.shape[0])).to(scores.device)
-        for cls_ind in range(1, scores.shape[1]):
-            cls_scores = scores[:, cls_ind]
-            keep = nms(dets, cls_scores, 0.3)
-            max_conf[keep] = torch.where(cls_scores[keep] > max_conf[keep], cls_scores[keep], max_conf[keep])
-                    
-        keep_boxes = torch.nonzero(max_conf >= self._threshold).flatten()
-        if len(keep_boxes) < self._min_boxes:
-            keep_boxes = torch.argsort(max_conf, descending=True)[:self._min_boxes]
-        elif len(keep_boxes) > self._max_boxes:
-            keep_boxes = torch.argsort(max_conf, descending=True)[:self._max_boxes]
+            max_conf = torch.zeros((scores.shape[0])).to(scores.device)
+            for cls_ind in range(1, scores.shape[1]):
+                cls_scores = scores[:, cls_ind]
+                keep = nms(dets, cls_scores, 0.3)
+                max_conf[keep] = torch.where(cls_scores[keep] > max_conf[keep], cls_scores[keep], max_conf[keep])
+                        
+            keep_boxes = torch.nonzero(max_conf >= self._threshold).flatten()
+            if len(keep_boxes) < self._min_boxes:
+                keep_boxes = torch.argsort(max_conf, descending=True)[:self._min_boxes]
+            elif len(keep_boxes) > self._max_boxes:
+                keep_boxes = torch.argsort(max_conf, descending=True)[:self._max_boxes]
 
-        boxes = dets[keep_boxes].numpy()
-        objects = np.argmax(scores[keep_boxes].numpy()[:,1:], axis=1)
-        attr = np.argmax(attr_scores[keep_boxes].numpy()[:,1:], axis=1)
-        attr_conf = np.max(attr_scores[keep_boxes].numpy()[:,1:], axis=1)
+            boxes = dets[keep_boxes].numpy()
+            objects = np.argmax(scores[keep_boxes].numpy()[:,1:], axis=1)
+            attr = np.argmax(attr_scores[keep_boxes].numpy()[:,1:], axis=1)
+            attr_conf = np.max(attr_scores[keep_boxes].numpy()[:,1:], axis=1)
 
-        outputs = []
-        for i in range(len(keep_boxes)):
-            # if attr_conf[i] > attr_thresh:
-            #     cls = attributes[attr[i]+1] + " " + cls
-            outputs.append(self._classes[objects[i]+1])
+            outputs = []
+            for i in range(len(keep_boxes)):
+                # if attr_conf[i] > attr_thresh:
+                #     cls = attributes[attr[i]+1] + " " + cls
+                outputs.append(self._classes[objects[i]+1])
 
-        print(outputs, flush=True)
-
-        return outputs
+            return outputs        
+        except Exception as e:
+            print(e, flush=True)
+            return []

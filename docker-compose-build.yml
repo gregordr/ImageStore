@@ -30,12 +30,16 @@ services:
             POSTGRES_PASSWORD: example
 
     # detectron2:
-    #     build:
+    #     build: detectron2
     #     environment:
     #         BASE_ADDRESS: backend:4000
     #         FETCH_INTERVAL: 10
+    #     depends_on:
+    #         - backend
     # yolo:
     #     build: yolo
     #     environment:
     #         BASE_ADDRESS: backend:4000
     #         FETCH_INTERVAL: 10
+    #     depends_on:
+    #       - backend
