@@ -2,7 +2,7 @@ import express from 'express'
 import fs, { promises as fsPromises } from "fs";
 import { upload } from '../middleware/upload'
 import multer, { MulterError } from "multer";
-import { addMedia, removeMedia, getMedia } from '../database/mediaDatabase'
+import { addMedia, removeMedia, getMedia, editMedia } from '../database/mediaDatabase'
 import sizeOf from 'image-size';
 import sharp from 'sharp';
 import { ISizeCalculationResult } from 'image-size/dist/types/interface';
@@ -110,12 +110,21 @@ router.post('/add', async (req, res) => {
     })
 });
 
-router.post('/delete/:name', async (req, res) => {
+router.post('/edit/:id', async (req, res) => {
     try {
-        const name = await removeMedia(req.params.name);
+        await editMedia(req.params.id, req.body.name, req.body.date);
+        res.status(200).send();
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
+router.post('/delete/:id', async (req, res) => {
+    try {
+        const id = await removeMedia(req.params.id);
         try {
-            await fsPromises.unlink('media/' + name)
-            await fsPromises.unlink('media/thumb_' + name)
+            await fsPromises.unlink('media/' + id)
+            await fsPromises.unlink('media/thumb_' + id)
         } catch (err) {
             console.log(err)
         }

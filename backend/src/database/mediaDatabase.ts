@@ -30,6 +30,12 @@ export async function addMedia(name: string, heigth: number, width: number, date
     });
 }
 
+export async function editMedia(oid: string, name: string, date: number): Promise<void> {
+    return await transaction(async (client) => {
+        (await client.query(`UPDATE ${await media} SET photo=$2::text, date=$3::integer WHERE OID = $1::OID;`, [oid, name, date]));
+    })
+}
+
 export async function removeMedia(oid: string): Promise<number> {
     return transaction(async (client) => {
         const result = await client.query(`SELECT OID FROM ${await media} WHERE oid = $1::oid;`, [oid]);
