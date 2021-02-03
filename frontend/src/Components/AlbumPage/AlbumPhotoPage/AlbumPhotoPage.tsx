@@ -8,7 +8,7 @@ import ViewPage from "../../ViewPage/ViewPage";
 import AddToAlbum from "../../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../../Interfaces";
 import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
-import { addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosInAlbum, removePhotosFromAlbum, setCover } from "../../../API";
+import { addLabel, addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosInAlbum, removePhotosFromAlbum, setCover } from "../../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
@@ -17,6 +17,7 @@ import { FileRejection, useDropzone } from "react-dropzone";
 import { UploadErrorSnackbar } from "../../Snackbars/UploadErrorSnackbar";
 import { CloudUpload } from "@material-ui/icons";
 import AutocompleteSearchBar from "../../Shared/SearchBar";
+import AddLabels from "../../Shared/AddLabels";
 
 const maxSize = parseInt(process.env.MAX_SIZE || (50 * 1024 * 1024).toString());
 const drawerWidth = 240;
@@ -81,13 +82,14 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const classes = useStyles();
 
     const history = useHistory();
-    const id = window.location.pathname.split("/")[2 + process.env.PUBLIC_URL.split('/').length];
+    const id = window.location.pathname.split("/")[2 + process.env.PUBLIC_URL.split("/").length];
 
     const [photos, setPhotos] = useState<PhotoT[]>([]);
     const [albums, setAlbums] = useState<AlbumT[]>([]);
     const [selected, setSelected] = useState<string[]>([]);
     const [selectable, setSelectable] = useState(false);
-    const [open, setOpen] = useState(false);
+    const [albumDialogOpen, setAlbumDialogOpen] = useState(false);
+    const [labelDialogOpen, setLabelDialogOpen] = useState(false);
     const [showLoadingBar, setShowLoadingBar] = useState(true);
     const [viewId, setViewId] = useState("");
 
@@ -99,23 +101,22 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     useEffect(() => {
         (async () => {
-            if (photos.length === 0)
-                setAutocompleteOptions([])
-            else
-                setAutocompleteOptions((await getPhotoLabels(photos.map(photo => photo.id))).data)
-
-        })()
-    }, [photos])
+            if (photos.length === 0) setAutocompleteOptions([]);
+            else setAutocompleteOptions((await getPhotoLabels(photos.map((photo) => photo.id))).data);
+        })();
+    }, [photos]);
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
     const { getRootProps, open: openM, getInputProps, acceptedFiles, fileRejections, isDragActive } = useDropzone({
         // Disable click and keydown behavior
         noClick: true,
         noKeyboard: true,
-        accept: 'image/jpeg, image/png',
-    })
+        accept: "image/jpeg, image/png",
+    });
 
-    useEffect(() => { upload(acceptedFiles, fileRejections) }, [acceptedFiles, fileRejections])
+    useEffect(() => {
+        upload(acceptedFiles, fileRejections);
+    }, [acceptedFiles, fileRejections]);
 
     const fetchPhotos = async () => {
         setShowLoadingBar(true);
@@ -129,7 +130,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     };
 
     const fetchAlbums = async () => {
-        const resp = await getAlbums("")
+        const resp = await getAlbums("");
         if (resp.status === 200) {
             setAlbums(resp.data);
         } else {
@@ -145,10 +146,15 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     //#region API
 
-    const cb = async (albumIds: string[]) => {
+    const albumDialogCallback = async (albumIds: string[]) => {
         topBarButtonFunctions.unselect();
         await addPhotosToAlbums(selected, albumIds, enqueueSnackbar, closeSnackbar);
         await props.refresh();
+    };
+
+    const labelDialogCallback = async (labels: any) => {
+        topBarButtonFunctions.unselect();
+        await addLabel(selected, labels);
     };
 
     const deletePhoto = async (pid: string) => {
@@ -167,14 +173,14 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         const formData = new FormData();
         files.forEach((file) => {
             if (file.size > maxSize) {
-                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize} bytes`, code: "file-too-large" }] })
+                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize} bytes`, code: "file-too-large" }] });
             } else {
                 formData.append("file", file);
             }
         });
 
         const snackbar = UploadErrorSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
-        snackbar?.begin(fileRejections)
+        snackbar?.begin(fileRejections);
 
         if (formData.getAll("file").length === 0) return;
         const data = await addPhotos(formData, enqueueSnackbar, closeSnackbar, albums);
@@ -223,7 +229,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         },
         addToAlbum: (id: string) => {
             setSelected([id]);
-            setOpen(true);
+            setAlbumDialogOpen(true);
         },
         setCover: async (photoID: string) => {
             await setCover(id, photoID);
@@ -263,7 +269,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             setSelectable(false);
         },
         upload: () => {
-            openM()
+            openM();
         },
         settings: () => {
             //Nav to settings page
@@ -272,7 +278,10 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             setSelectable(!selectable);
         },
         addToAlbum: () => {
-            setOpen(true);
+            setAlbumDialogOpen(true);
+        },
+        label: () => {
+            setLabelDialogOpen(true);
         },
         download: async () => {
             topBarButtonFunctions.unselect();
@@ -315,11 +324,15 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                     <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
                 </Route>
                 <Route path="/">
-                    <div  {...getRootProps({ className: 'dropzone' })} className={classes.root} >
-                        <Backdrop open={isDragActive} transitionDuration={150} style={{
-                            zIndex: 1201,
-                            backgroundColor: "#00006666",
-                        }}>
+                    <div {...getRootProps({ className: "dropzone" })} className={classes.root}>
+                        <Backdrop
+                            open={isDragActive}
+                            transitionDuration={150}
+                            style={{
+                                zIndex: 1201,
+                                backgroundColor: "#00006666",
+                            }}
+                        >
                             <div>
                                 <CloudUpload style={{ fontSize: 200, color: "#1976d2aa" }}></CloudUpload>
                             </div>
@@ -333,7 +346,15 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar searchBarText={searchBarText} setSearchBarText={setSearchBarText} autocompleteOptions={autocompleteOptions} anySelected={anySelected} buttonFunctions={topBarButtonFunctions} numSelected={() => selected.length} show={showLoadingBar} />
+                                <TopBar
+                                    searchBarText={searchBarText}
+                                    setSearchBarText={setSearchBarText}
+                                    autocompleteOptions={autocompleteOptions}
+                                    anySelected={anySelected}
+                                    buttonFunctions={topBarButtonFunctions}
+                                    numSelected={() => selected.length}
+                                    show={showLoadingBar}
+                                />
                             </Toolbar>
                         </AppBar>
 
@@ -375,7 +396,8 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                     </div>
                 </Route>
             </Switch>
-            <AddToAlbum albums={albums} open={open} setOpen={setOpen} cb={cb}></AddToAlbum>
+            <AddToAlbum albums={albums} open={albumDialogOpen} setOpen={setAlbumDialogOpen} cb={albumDialogCallback}></AddToAlbum>
+            <AddLabels open={labelDialogOpen} setOpen={setLabelDialogOpen} cb={labelDialogCallback}></AddLabels>
         </div>
     );
 }
