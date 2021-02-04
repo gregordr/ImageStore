@@ -4,6 +4,8 @@ import { PhotoT } from "../../Interfaces";
 import { VariableSizeList as List } from "react-window";
 import { Scrollbars } from "react-custom-scrollbars";
 import { baseURL } from "../../API";
+import { IconButton } from "@material-ui/core";
+import { PlayArrow, VideoCall } from "@material-ui/icons";
 
 const useStyles = makeStyles({
     photoDiv: {
@@ -15,6 +17,7 @@ const useStyles = makeStyles({
         transition: "0.05s linear",
     },
     photoBox: { transition: "0.05s linear", position: "absolute", left: 15, top: 15, height: 20, width: 20 },
+    videoIcon: { position: "absolute", left: 40, top: 15, height: 20, width: 20, color: "#666666" },
 });
 
 function Photo(props: any) {
@@ -88,6 +91,11 @@ function Photo(props: any) {
                 </div>
             </div>
             {(vis || props.anySelected() || true) && <input className={classes.photoBox} style={{ opacity: opacity }} readOnly={true} checked={props.selected} type="checkbox" onClick={props.click} />}
+            {props.type === "video" && !play && (
+                <IconButton className={classes.videoIcon}>
+                    <PlayArrow style={{ fontSize: "28" }}></PlayArrow>
+                </IconButton>
+            )}
         </div>
     );
 }
