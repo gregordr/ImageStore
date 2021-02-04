@@ -62,3 +62,11 @@ export async function requireTable(name: string, schema: string): Promise<string
         }
     });
 }
+
+export async function addColumn(tableName: string, columnName: string, type: string, notNull: boolean, defaultValue: unknown, withValue: boolean) {
+    return transaction(async (client) => {
+        try {
+            await client.query(`ALTER TABLE ${tableName} ADD ${columnName} ${type} ${notNull ? "NOT NULL" : "NULL"} DEFAULT('${defaultValue}') ${withValue ? " WITH VALUES" : ""}`);
+        } catch { }
+    });
+}

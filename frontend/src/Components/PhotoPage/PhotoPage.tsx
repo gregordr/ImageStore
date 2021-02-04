@@ -93,7 +93,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         // Disable click and keydown behavior
         noClick: true,
         noKeyboard: true,
-        accept: "image/jpeg, image/png",
+        accept: "image/*, video/*",
     });
 
     useEffect(() => {

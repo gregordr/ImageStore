@@ -11,4 +11,5 @@ export interface PhotoT {
     height: number;
     width: number;
     date: number;
+    type: "photo" | "video";
 }

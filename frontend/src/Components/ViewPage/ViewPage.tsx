@@ -1,3 +1,6 @@
+// get better controlls/be able to click them
+//make it visible that there is autoplay if you hover
+
 import React, { useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import "./ViewPage.css";
@@ -7,6 +10,7 @@ import TopLeftBar from "./TopLeftBar";
 import {
     Chip,
     CircularProgress,
+    ClickAwayListener,
     createMuiTheme,
     createStyles,
     CssBaseline,
@@ -36,6 +40,7 @@ import SwiperCore, { Virtual, Navigation } from "swiper";
 import "swiper/swiper.min.css";
 import moment from "moment";
 import EditPropsDialog from "./EditPropsDialog";
+import zIndex from "@material-ui/core/styles/zIndex";
 SwiperCore.use([Virtual, Navigation]);
 
 const theme = createMuiTheme({
@@ -398,17 +403,38 @@ function LabelInputChip(props: any) {
 function makeSlides(photos: PhotoT[]): any[] {
     return photos.map((photo: PhotoT, index: number) => {
         return (
-            <SwiperSlide key={photo.id} virtualIndex={index} style={{ alignSelf: "center", justifySelf: "center" }}>
-                <img
-                    className="display"
-                    alt={photo.id}
-                    style={{
-                        objectFit: "scale-down",
-                        height: "100vh",
-                        width: `100%`,
-                    }}
-                    src={baseURL + "/media/" + photo.id}
-                />
+            <SwiperSlide
+                key={photo.id}
+                virtualIndex={index}
+                style={{ alignSelf: "center", justifySelf: "center" }}
+                onKeyDown={(e) => {
+                    console.log(e);
+                }}
+            >
+                {photo.type === "photo" ? (
+                    <img
+                        className="display"
+                        alt={photo.id}
+                        style={{
+                            objectFit: "scale-down",
+                            height: "100vh",
+                            width: `100%`,
+                        }}
+                        src={baseURL + "/media/" + photo.id}
+                    />
+                ) : (
+                    <video
+                        className="display"
+                        style={{
+                            objectFit: "scale-down",
+                            height: "100vh",
+                            width: `100%`,
+                        }}
+                        controls
+                    >
+                        <source src={baseURL + "/media/" + photo.id} type="video/mp4" />
+                    </video>
+                )}
             </SwiperSlide>
         );
     });
@@ -451,6 +477,13 @@ const Carousel = (props: any) => {
             }}
             onSlideChange={(e) => {
                 props.slideChange(e.activeIndex);
+
+                e.slides.forEach((el) => {
+                    if (el.firstChild instanceof HTMLVideoElement) {
+                        el.firstChild.pause();
+                        el.firstChild.currentTime = 0;
+                    }
+                });
             }}
         >
             {makeSlides(props.photos)}

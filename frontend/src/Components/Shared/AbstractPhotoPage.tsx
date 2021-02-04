@@ -18,21 +18,23 @@ const useStyles = makeStyles({
 });
 
 function Photo(props: any) {
-    const realUrl = baseURL + "/media/thumb_" + props.id
+    const realUrl = baseURL + "/media/thumb_" + props.id;
     const [url, setUrl] = useState("");
+    const [play, setPlay] = useState(false);
     useEffect(() => {
         const timeout = setTimeout(() => setUrl(baseURL + "/media/thumb_" + props.id), 500);
-        return () => clearTimeout(timeout)
-    }, [props.id])
+        return () => clearTimeout(timeout);
+    }, [props.id]);
     useEffect(() => {
-        if (!props.isScrolling)
-            setUrl(realUrl)
-    })
+        if (!props.isScrolling) setUrl(realUrl);
+    });
     const padding = props.selected ? 0.9 : 1.0;
     const [vis, setVis] = useState(0);
     const opacity = props.anySelected() ? 255 : vis;
 
     const classes = useStyles();
+    const vidRef = useRef<HTMLVideoElement>(null);
+
     return (
         <div
             className={classes.photoDiv}
@@ -40,12 +42,49 @@ function Photo(props: any) {
                 height: props.y,
                 width: props.x,
             }}
-            onMouseEnter={() => setVis(0.4)}
-            onMouseLeave={() => setVis(0)}
+            onMouseEnter={() => {
+                setVis(0.4);
+                setPlay(true);
+                vidRef.current?.play();
+            }}
+            onMouseLeave={() => {
+                setVis(0);
+                setPlay(false);
+                vidRef.current?.pause();
+                if (vidRef.current) vidRef.current.currentTime = 0;
+            }}
         >
             <div onClick={props.imageClick}>
                 <div style={{ backgroundColor: "#eeeeee", height: props.y - 5, width: props.x - 5 }}>
-                    <div style={{ transition: "0.05s linear", transform: `scale(${padding})`, backgroundImage: url === "" ? "none" : `url(${url})`, height: props.y - 5, width: props.x - 5, backgroundSize: "100% 100%" }} />
+                    {props.type === "photo" ? (
+                        <div
+                            style={{
+                                transition: "0.05s linear",
+                                transform: `scale(${padding})`,
+                                backgroundImage: url === "" ? "none" : `url(${url})`,
+                                height: props.y - 5,
+                                width: props.x - 5,
+                                backgroundSize: "100% 100%",
+                            }}
+                        />
+                    ) : (
+                        <video
+                            style={{
+                                transition: "0.05s linear",
+                                transform: `scale(${padding})`,
+                                backgroundImage: url === "" ? "none" : `url(${url})`,
+                                height: props.y - 5,
+                                width: props.x - 5,
+                                backgroundSize: "100% 100%",
+                            }}
+                            autoPlay
+                            muted
+                            loop
+                            ref={vidRef}
+                        >
+                            {play && <source src={baseURL + "/media/prev_" + props.id} type="video/mp4" />}
+                        </video>
+                    )}
                 </div>
             </div>
             {(vis || props.anySelected() || true) && <input className={classes.photoBox} style={{ opacity: opacity }} readOnly={true} checked={props.selected} type="checkbox" onClick={props.click} />}
@@ -64,6 +103,7 @@ const makePhoto = (photo: PhotoT, realH: number, props: any, isScrolling: boolea
         anySelected={props.anySelected}
         outZoom={0.9}
         isScrolling={isScrolling}
+        type={photo.type}
     />
 );
 
@@ -103,8 +143,8 @@ const Row = (altprops: any) =>
             {altprops.data.rowPics[altprops.index].map((p: PhotoT) => makePhoto(p, altprops.data.rowH[altprops.index], altprops.data.props, altprops.isScrolling))}
         </div>
     ) : (
-            <div>{altprops.data.rowPics[altprops.index]}</div>
-        );
+        <div>{altprops.data.rowPics[altprops.index]}</div>
+    );
 
 const CustomScrollbars = ({ onScroll, forwardedRef, style, children }: any) => {
     const refSetter = useCallback(
