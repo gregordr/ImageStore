@@ -1,5 +1,4 @@
 // get better controlls/be able to click them
-//make it visible that there is autoplay if you hover
 
 import React, { useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";

@@ -111,7 +111,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         // Disable click and keydown behavior
         noClick: true,
         noKeyboard: true,
-        accept: "image/jpeg, image/png",
+        accept: "image/*, video/*",
     });
 
     useEffect(() => {
