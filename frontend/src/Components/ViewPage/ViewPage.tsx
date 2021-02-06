@@ -1,5 +1,3 @@
-// get better controlls/be able to click them
-
 import React, { useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import "./ViewPage.css";
@@ -32,14 +30,12 @@ import {
 import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, HighlightOff, Edit } from "@material-ui/icons";
 import clsx from "clsx";
 import { PhotoT } from "../../Interfaces";
-import { useSwipeable } from "react-swipeable";
 import { addLabel, baseURL, editMedia, getPhotoLabels, removeLabel } from "../../API";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore, { Virtual, Navigation } from "swiper";
 import "swiper/swiper.min.css";
 import moment from "moment";
 import EditPropsDialog from "./EditPropsDialog";
-import zIndex from "@material-ui/core/styles/zIndex";
 SwiperCore.use([Virtual, Navigation]);
 
 const theme = createMuiTheme({
@@ -214,9 +210,20 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                                 easing: theme.transitions.easing.sharp,
                                 duration: theme.transitions.duration.leavingScreen,
                             }),
+                            height: `calc(100% - ${photo?.type === "video" ? 120 : 0}px)`,
+                            pointerEvents: "none",
                         }}
                     >
-                        <div ref={prevRef} className="leftIm" onMouseEnter={mouseLeft} onMouseMove={mouseLeft}>
+                        <div
+                            ref={prevRef}
+                            className="leftIm"
+                            onMouseEnter={mouseLeft}
+                            onMouseMove={mouseLeft}
+                            onMouseLeave={mouseCenter}
+                            style={{
+                                pointerEvents: "auto",
+                            }}
+                        >
                             <IconButton
                                 style={{
                                     transition: "0.01s linear",
@@ -236,8 +243,25 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                                 <ChevronLeft style={{ height: "64px", width: "64px" }} />
                             </IconButton>
                         </div>
-                        <div className="center" onClick={() => history.goBack()} onMouseEnter={mouseCenter}></div>
-                        <div ref={nextRef} className="rightIm" onMouseEnter={mouseRight} onMouseMove={mouseRight}>
+                        <div
+                            className="center"
+                            onClick={(ev) => {
+                                history.goBack();
+                                ev.stopPropagation();
+                            }}
+                            onMouseEnter={mouseCenter}
+                            style={{ pointerEvents: photo?.type === "video" ? "none" : "stroke" }}
+                        ></div>
+                        <div
+                            ref={nextRef}
+                            className="rightIm"
+                            onMouseEnter={mouseRight}
+                            onMouseMove={mouseRight}
+                            onMouseLeave={mouseCenter}
+                            style={{
+                                pointerEvents: "auto",
+                            }}
+                        >
                             <IconButton
                                 style={{
                                     transition: "0.01s linear",
@@ -258,7 +282,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                             </IconButton>
                         </div>
                     </div>
-                    <Carousel slideChange={slideChange} index={index} photos={props.photos} open={drawerOpen} swiperRef={swiperRef} prevRef={prevRef} nextRef={nextRef} />
+                    <Carousel slideChange={slideChange} index={index} photos={props.photos} open={drawerOpen} swiperRef={swiperRef} prevRef={prevRef} nextRef={nextRef} hideArrows={hideArrows} />
                     <div
                         className="rootTop"
                         style={{
@@ -444,10 +468,11 @@ const Carousel = (props: any) => {
 
     useEffect(() => {
         setKey(key + 1);
-    }, [props.photos, props.open]);
+    }, [props.photos, props.open]); //add props.hideArrows if you want swiping to be disabled when screen size changes
 
     return props.photos.length === 0 ? null : (
         <Swiper
+            allowTouchMove={props.hideArrows}
             key={key}
             className="imageHolder"
             spaceBetween={50}

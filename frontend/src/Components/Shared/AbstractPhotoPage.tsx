@@ -45,10 +45,12 @@ function Photo(props: any) {
                 height: props.y,
                 width: props.x,
             }}
-            onMouseEnter={() => {
+            onMouseEnter={async () => {
                 setVis(0.4);
                 setPlay(true);
-                vidRef.current?.play();
+                if (vidRef.current) {
+                    setTimeout(() => vidRef.current?.play(), 50);
+                }
             }}
             onMouseLeave={() => {
                 setVis(0);
@@ -85,7 +87,7 @@ function Photo(props: any) {
                             loop
                             ref={vidRef}
                         >
-                            {play && <source src={baseURL + "/media/prev_" + props.id} type="video/mp4" />}
+                            {play && <source src={url === "" ? "" : baseURL + "/media/prev_" + props.id} type="video/mp4" />}
                         </video>
                     )}
                 </div>
