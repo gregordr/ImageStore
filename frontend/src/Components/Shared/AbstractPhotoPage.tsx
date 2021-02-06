@@ -55,8 +55,12 @@ function Photo(props: any) {
             onMouseLeave={() => {
                 setVis(0);
                 setPlay(false);
-                vidRef.current?.pause();
-                if (vidRef.current) vidRef.current.currentTime = 0;
+                if (vidRef.current) {
+                    setTimeout(() => {
+                        vidRef.current?.pause();
+                        if (vidRef.current) vidRef.current.currentTime = 0;
+                    }, 50);
+                }
             }}
         >
             <div onClick={props.imageClick}>
@@ -140,8 +144,13 @@ const calculate = (photos: PhotoT[], width: number) => {
         }
 
         rowPics.push(curPics);
-        if (ptr !== photos.length || width < curWidth) rowH.push((targetHeight * width) / curWidth);
-        else rowH.push(targetHeight);
+        if (ptr !== photos.length || width < curWidth) {
+            if (!((targetHeight * width) / curWidth)) {
+                console.log(curPics);
+                rowH.push(1);
+            }
+            rowH.push((targetHeight * width) / curWidth);
+        } else rowH.push(targetHeight);
     }
 
     return { rowH, rowPics };

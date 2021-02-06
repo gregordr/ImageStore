@@ -115,7 +115,19 @@ router.post('/add', async (req, res) => {
                             date = NaN
                         }
 
-                        const dims = { height: data.streams[0].height, width: data.streams[0].width }
+
+                        let dims = { height: data.streams[0].height, width: data.streams[0].width }
+                        for (const stream of data.streams) {
+                            if (dims && dims.height && dims.width)
+                                break;
+                            dims.height = stream.height;
+                            dims.width = stream.width;
+                        }
+
+                        if (!dims || !dims.height || !dims.width) {
+                            errors.push("Invalid dimensions:" + dims + " in " + f.originalname)
+                            return
+                        }
 
                         const oid = await addMedia(f.originalname, dims.height, dims.width, (date.toString() === 'NaN') ? Date.now() : date, "video")
 
