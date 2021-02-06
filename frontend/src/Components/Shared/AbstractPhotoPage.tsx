@@ -146,7 +146,6 @@ const calculate = (photos: PhotoT[], width: number) => {
         rowPics.push(curPics);
         if (ptr !== photos.length || width < curWidth) {
             if (!((targetHeight * width) / curWidth)) {
-                console.log(curPics);
                 rowH.push(1);
             }
             rowH.push((targetHeight * width) / curWidth);

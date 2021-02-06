@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import "./ViewPage.css";
 import { useHistory } from "react-router-dom";
@@ -36,6 +36,7 @@ import SwiperCore, { Virtual, Navigation } from "swiper";
 import "swiper/swiper.min.css";
 import moment from "moment";
 import EditPropsDialog from "./EditPropsDialog";
+import { timeStamp } from "console";
 SwiperCore.use([Virtual, Navigation]);
 
 const theme = createMuiTheme({
@@ -141,8 +142,13 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const slideChange = (index: number) => {
         const photos = props.photos;
         const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
-        history.replace(`${afterWithout}${photos[index].id}`);
-        setId(photos[index].id);
+        const id = photos[index].id;
+        console.time("a");
+        (async () => history.replace(`${afterWithout}${id}`))();
+        console.timeEnd("a");
+        console.time("a");
+        setId(id);
+        console.timeEnd("a");
     };
 
     const mouseRight = () => {
@@ -424,16 +430,9 @@ function LabelInputChip(props: any) {
 }
 
 function makeSlides(photos: PhotoT[]): any[] {
-    return photos.map((photo: PhotoT, index: number) => {
+    const f = photos.map((photo: PhotoT, index: number) => {
         return (
-            <SwiperSlide
-                key={photo.id}
-                virtualIndex={index}
-                style={{ alignSelf: "center", justifySelf: "center" }}
-                onKeyDown={(e) => {
-                    console.log(e);
-                }}
-            >
+            <SwiperSlide key={photo.id} virtualIndex={index} style={{ alignSelf: "center", justifySelf: "center" }}>
                 {photo.type === "photo" ? (
                     <img
                         className="display"
@@ -461,10 +460,12 @@ function makeSlides(photos: PhotoT[]): any[] {
             </SwiperSlide>
         );
     });
+    return f;
 }
 
 const Carousel = (props: any) => {
     const [key, setKey] = useState(1);
+    const slides: any[] = useMemo(() => makeSlides(props.photos), [props.photos]);
 
     useEffect(() => {
         setKey(key + 1);
@@ -510,7 +511,7 @@ const Carousel = (props: any) => {
                 });
             }}
         >
-            {makeSlides(props.photos)}
+            {slides}
         </Swiper>
     );
 };
