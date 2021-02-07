@@ -459,7 +459,7 @@ function makeSlides(photos: PhotoT[]): any[] {
 }
 
 const Carousel = (props: any) => {
-    const RANGE = 10;
+    const RANGE = 100;
     const [key, setKey] = useState(1);
     const [key2, setKey2] = useState(1);
     const [index, setIndex] = useState(props.index);
