@@ -2,11 +2,14 @@ import express from 'express'
 import fs, { promises as fsPromises } from "fs";
 import { upload } from '../middleware/upload'
 import multer, { MulterError } from "multer";
-import { addMedia, removeMedia, getMedia } from '../database/mediaDatabase'
-import sizeOf from 'image-size';
+import { addMedia, removeMedia, getMedia, editMedia } from '../database/mediaDatabase'
 import sharp from 'sharp';
-import { ISizeCalculationResult } from 'image-size/dist/types/interface';
 import exifr from 'exifr'
+import ffmpeg from 'fluent-ffmpeg'
+import ffmpegV from 'ffmpeg'
+import { parseISO } from "date-fns";
+import Filetype from 'file-type'
+sharp.cache({ files: 0 });
 
 export const router = express.Router();
 
@@ -66,56 +69,127 @@ router.post('/add', async (req, res) => {
                     return
                 }
 
-                let dims: ISizeCalculationResult;
-                try {
-                    dims = sizeOf(dir + f.filename)
-                } catch (error) {
-                    if (error instanceof TypeError) {
-                        errors.push("Invalid type in " + f.originalname)
-                        await fsPromises.unlink(dir + f.filename)
+                const type = (await Filetype.fromFile(dir + f.filename))?.mime
+
+                if (type?.startsWith("image")) {
+                    const meta = await sharp(dir + f.filename).metadata()
+                    const dims = { width: meta.width, height: meta.height, orientation: meta.orientation }
+
+
+                    if (!dims || !dims.height || !dims.width) {
+                        errors.push("Invalid dimensions:" + dims + " in " + f.originalname)
                         return
-                    } else {
-                        throw error
                     }
+
+                    if (dims.orientation && dims.orientation % 2 === 0) {
+                        const tmp = dims.height;
+                        dims.height = dims.width;
+                        dims.width = tmp;
+                    }
+
+                    let date;
+                    try {
+                        date = Date.parse((await exifr.parse(dir + f.filename))?.CreateDate)
+                    } catch (e) {
+                        date = NaN
+                    }
+
+
+                    const oid = await addMedia(f.originalname, dims.height, dims.width, (date.toString() === 'NaN') ? Date.now() : date, "photo")
+
+                    await fsPromises.rename(dir + f.filename, dir + oid);
+
+                    if (dims.height > dims.width / 5) //Default case, but incase the width is over 5 times the height, we cap the width at 1500
+                        await sharp(dir + oid, { failOnError: false }).resize({ width: Math.ceil(dims.width / dims.height * 300), height: 300 }).rotate().jpeg({ quality: 85 }).toFile(dir + "thumb_" + oid)
+                    else
+                        await sharp(dir + oid, { failOnError: false }).resize({ width: 1500, height: Math.ceil(dims.height / dims.width * 1500) }).rotate().jpeg({ quality: 85 }).toFile(dir + "thumb_" + oid)
+                    oids.push(oid)
+                } else if (type?.startsWith("video")) {
+                    try {
+                        const data = await new Promise<any>((resolve) => ffmpeg.ffprobe(dir + f.filename, (err, data) => { resolve(data) }));
+
+                        let date;
+                        try {
+                            date = parseISO(data.format.tags.creation_time).getTime()
+                        } catch (e) {
+                            date = NaN
+                        }
+
+
+                        let dims = { height: data.streams[0].height, width: data.streams[0].width }
+                        for (const stream of data.streams) {
+                            if (dims && dims.height && dims.width)
+                                break;
+                            dims.height = stream.height;
+                            dims.width = stream.width;
+                        }
+
+                        if (!dims || !dims.height || !dims.width) {
+                            errors.push("Invalid dimensions:" + dims + " in " + f.originalname)
+                            return
+                        }
+
+                        const oid = await addMedia(f.originalname, dims.height, dims.width, (date.toString() === 'NaN') ? Date.now() : date, "video")
+
+
+                        let dimsS: string;
+                        if (dims.height > dims.width / 5) //Default case, but incase the width is over 5 times the height, we cap the width at 1500
+                            dimsS = "?x300"
+                        else
+                            dimsS = "1500x?"
+
+                        var process = new ffmpegV(dir + f.filename);
+                        await process.then(async function (video) {
+                            const thumbName = await video.fnExtractFrameToJPG(dir, { number: 1, size: dimsS, file_name: "thumb_" + oid })
+                            await fsPromises.rename(dir + "thumb_" + oid + "_1.jpg", dir + "thumb_" + oid);
+
+                            try {
+                                const prev = await video.setDisableAudio().setVideoFrameRate(30).setVideoSize(dimsS, true, true).setVideoDuration(10).save(dir + "prev_" + oid + ".mp4")
+                                await fsPromises.rename(prev, dir + "prev_" + oid);
+                            } catch (e) {
+                                console.log(e)
+                                console.trace(e)
+                            }
+
+                            await fsPromises.rename(dir + f.filename, dir + oid);
+
+                            oids.push(oid)
+                        }, function (err) {
+                            console.log('Error: ' + err);
+                        });
+                    } catch (e) {
+                        console.log("ERROR: " + e.code);
+                        console.log("ERROR: " + e.msg);
+                    }
+                } else {
+                    errors.push("Invalid type in " + f.originalname)
                 }
-
-                if (!dims || !dims.height || !dims.width) {
-                    errors.push("Invalid dimensions:" + dims + " in " + f.originalname)
-                    return
-                }
-
-                if (dims.orientation && dims.orientation % 2 === 0) {
-                    const tmp = dims.height;
-                    dims.height = dims.width;
-                    dims.width = tmp;
-                }
-
-                const date = Date.parse((await exifr.parse(dir + f.filename))?.CreateDate)
-
-                const oid = await addMedia(f.originalname, dims.height, dims.width, (date.toString() === 'NaN') ? Date.now() : date)
-                await fsPromises.rename(dir + f.filename, dir + oid);
-                if (dims.height > dims.width / 5) //Default case, but incase the width is over 5 times the height, we cap the width at 1500
-                    await sharp(dir + oid, { failOnError: false }).resize({ width: Math.ceil(dims.width / dims.height * 300), height: 300 }).rotate().toFile(dir + "thumb_" + oid)
-                else
-                    await sharp(dir + oid, { failOnError: false }).resize({ width: 1500, height: Math.ceil(dims.height / dims.width * 1500) }).rotate().toFile(dir + "thumb_" + oid)
-
-                oids.push(oid)
 
             } catch (e) {
                 errors.push("Unknown error happened and logged in " + f.originalname)
                 console.log(e.toString())
             }
         }))
+
         res.status(200).send({ success: oids, errors })
     })
 });
 
-router.post('/delete/:name', async (req, res) => {
+router.post('/edit/:id', async (req, res) => {
     try {
-        const name = await removeMedia(req.params.name);
+        await editMedia(req.params.id, req.body.name, req.body.date);
+        res.status(200).send();
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
+router.post('/delete/:id', async (req, res) => {
+    try {
+        const id = await removeMedia(req.params.id);
         try {
-            await fsPromises.unlink('media/' + name)
-            await fsPromises.unlink('media/thumb_' + name)
+            await fsPromises.unlink('media/' + id)
+            await fsPromises.unlink('media/thumb_' + id)
         } catch (err) {
             console.log(err)
         }
