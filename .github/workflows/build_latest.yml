@@ -1,4 +1,4 @@
-name: build&push
+name: build_latest
 
 on:  
   push:
@@ -58,7 +58,7 @@ jobs:
           push: true
           tags: imagestored/detectron2:latest
           context: detectron2
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -87,7 +87,7 @@ jobs:
           push: true
           tags: imagestored/yolo:latest
           file: ./yolo/Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
