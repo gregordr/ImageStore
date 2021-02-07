@@ -107,7 +107,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any) => React.ReactNode }) {
     const history = useHistory();
-    const [id, setId] = useState(window.location.pathname.split("/").slice(-1)[0]);
+    const id = window.location.pathname.split("/").slice(-1)[0];
     const [opacityRight, setOpacityRight] = useState(0);
     const [opacityLeft, setOpacityLeft] = useState(0);
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -143,12 +143,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
         const photos = props.photos;
         const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
         const id = photos[index].id;
-        console.time("a");
-        (async () => history.replace(`${afterWithout}${id}`))();
-        console.timeEnd("a");
-        console.time("a");
-        setId(id);
-        console.timeEnd("a");
+        history.replace(`${afterWithout}${id}`);
     };
 
     const mouseRight = () => {
@@ -464,12 +459,16 @@ function makeSlides(photos: PhotoT[]): any[] {
 }
 
 const Carousel = (props: any) => {
+    const RANGE = 10;
     const [key, setKey] = useState(1);
-    const slides: any[] = useMemo(() => makeSlides(props.photos), [props.photos]);
+    const [key2, setKey2] = useState(1);
+    const [index, setIndex] = useState(props.index);
+    const slide = useMemo(() => makeSlides(props.photos.slice(Math.max(0, props.index - RANGE), Math.min(props.index + RANGE, props.photos.length))), [props.photos, props.open, key]);
 
     useEffect(() => {
+        setIndex(props.index);
         setKey(key + 1);
-    }, [props.photos, props.open]); //add props.hideArrows if you want swiping to be disabled when screen size changes
+    }, [props.photos, props.open, key2]); //add props.hideArrows if you want swiping to be disabled when screen size changes
 
     return props.photos.length === 0 ? null : (
         <Swiper
@@ -488,7 +487,7 @@ const Carousel = (props: any) => {
                 prevEl: props.prevRef.current ? props.prevRef.current : undefined,
                 nextEl: props.nextRef.current ? props.nextRef.current : undefined,
             }}
-            initialSlide={props.index >= props.photos.length ? props.photos.length - 1 : props.index}
+            initialSlide={Math.min(RANGE, index)}
             onInit={(swiper) => {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
@@ -501,8 +500,7 @@ const Carousel = (props: any) => {
                 swiper.navigation.update();
             }}
             onSlideChange={(e) => {
-                props.slideChange(e.activeIndex);
-
+                props.slideChange(e.activeIndex + Math.max(0, index - RANGE));
                 e.slides.forEach((el) => {
                     if (el.firstChild instanceof HTMLVideoElement) {
                         el.firstChild.pause();
@@ -510,8 +508,15 @@ const Carousel = (props: any) => {
                     }
                 });
             }}
+            onTransitionEnd={(e) => {
+                console.log(e.activeIndex);
+                console.log(index);
+                if ((e.activeIndex == 0 && index > RANGE) || e.activeIndex - Math.min(index, RANGE) == RANGE - 1) {
+                    setKey2(key2 + 1);
+                }
+            }}
         >
-            {slides}
+            {slide}
         </Swiper>
     );
 };
