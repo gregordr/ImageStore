@@ -6,7 +6,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
-import { ListItem, ListItemText, Checkbox } from "@material-ui/core";
+import { ListItem, ListItemText, Checkbox, Typography } from "@material-ui/core";
 import { AlbumT } from "../../Interfaces";
 import CreateAlbum from "../AlbumPage/CreateAlbum";
 import { createAlbum } from "../../API";
@@ -72,12 +72,13 @@ export default function AddToAlbum(props: { cb: (arg0: string[]) => any; setOpen
                     {albums.map((album: any) => (
                         <Element album={album} add={add} remove={remove} key={album.id} />
                     ))}
+                    {albums.length === 0 && <Typography variant="subtitle1">There are no albums</Typography>}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenCreateAlbum(true)} color="primary">
                         Create new album
                     </Button>
-                    <Button onClick={handleClose(true)} color="primary" autoFocus>
+                    <Button onClick={handleClose(true)} color="primary" disabled={albums.length === 0} autoFocus>
                         Add
                     </Button>
                 </DialogActions>
