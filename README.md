@@ -43,3 +43,9 @@ This is a bit more complicated. Start by spinning up a postgreSQL v11 database, 
 After that, you can go into the frontend and backend folders, and run ```npm i``` in both, then ```npm start```. This should make them serve content.
 
 Last, spin up a NGINX instance, with the configuration file found in ```./nginx```. Now, you should be ready to go.
+
+## Contributing:
+
+Accepted feature requests can be seen under projects/ToDOs. If you have a new feature request, feel free to open an issue.
+
+If you would like to implement a feature, please create a PR to the ```test``` branch.
