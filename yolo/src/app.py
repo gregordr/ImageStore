@@ -34,8 +34,14 @@ if __name__ == "__main__":
         time.sleep(args.fetch_interval)
         new_media_list = get_new_media(backend_address + '/labels/getBatch')
         for media in new_media_list:
-            im = get_image(backend_address + '/media/thumb_' + media['id'])
-            im = rotate_exif(im)
-            prediction = im_clf.predict(im)
+            prediction = []
+
+            try:
+                im = get_image(backend_address + '/media/thumb_' + media['id'])
+                im = rotate_exif(im)
+                prediction = im_clf.predict(im)
+            except Exception as e:
+                print(e, flush=True)
+
             post_image_labels(backend_address + '/labels/labelAuto', media['id'], prediction)
             
