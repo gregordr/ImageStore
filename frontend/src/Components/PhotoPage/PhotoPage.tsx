@@ -8,7 +8,7 @@ import ViewPage from "../ViewPage/ViewPage";
 import AddToAlbum from "../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
-import { addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotos } from "../../API";
+import { addLabel, addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotos } from "../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { useSnackbar } from "notistack";
@@ -16,6 +16,7 @@ import { useDropzone, FileRejection } from "react-dropzone";
 import { UploadErrorSnackbar } from "../Snackbars/UploadErrorSnackbar";
 import { CloudUpload } from "@material-ui/icons";
 import AutocompleteSearchBar from "../Shared/SearchBar";
+import AddLabels from "../Shared/AddLabels";
 
 const maxSize = parseInt(process.env.MAX_SIZE || (50 * 1024 * 1024).toString());
 const drawerWidth = 240;
@@ -82,7 +83,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [albums, setAlbums] = useState<AlbumT[]>([]);
     const [selected, setSelected] = useState<string[]>([]);
     const [selectable, setSelectable] = useState(false);
-    const [open, setOpen] = useState(false);
+    const [albumDialogOpen, setAlbumDialogOpen] = useState(false);
+    const [labelDialogOpen, setLabelDialogOpen] = useState(false);
     const [showLoadingBar, setShowLoadingBar] = useState(true);
     const [viewId, setViewId] = useState("");
 
@@ -91,10 +93,12 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         // Disable click and keydown behavior
         noClick: true,
         noKeyboard: true,
-        accept: 'image/jpeg, image/png',
-    })
+        accept: "image/*, video/*",
+    });
 
-    useEffect(() => { upload(acceptedFiles, fileRejections) }, [acceptedFiles, fileRejections])
+    useEffect(() => {
+        upload(acceptedFiles, fileRejections);
+    }, [acceptedFiles, fileRejections]);
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
@@ -104,13 +108,10 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     useEffect(() => {
         (async () => {
-            if (photos.length === 0)
-                setAutocompleteOptions([])
-            else
-                setAutocompleteOptions((await getPhotoLabels(photos.map(photo => photo.id))).data)
-
-        })()
-    }, [photos])
+            if (photos.length === 0) setAutocompleteOptions([]);
+            else setAutocompleteOptions((await getPhotoLabels(photos.map((photo) => photo.id))).data);
+        })();
+    }, [photos]);
 
     const fetchPhotos = async () => {
         setShowLoadingBar(true);
@@ -161,9 +162,14 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         return selected.length !== 0 || selectable;
     };
 
-    const cb = async (albumIds: any) => {
+    const albumDialogCallback = async (albumIds: any) => {
         topBarButtonFunctions.unselect();
         await addPhotosToAlbums(selected, albumIds, enqueueSnackbar, closeSnackbar);
+    };
+
+    const labelDialogCallback = async (labels: any) => {
+        topBarButtonFunctions.unselect();
+        await addLabel(selected, labels);
     };
 
     const viewButtonFunctions = {
@@ -172,7 +178,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         },
         addToAlbum: (id: string) => {
             setSelected([id]);
-            setOpen(true);
+            setAlbumDialogOpen(true);
         },
         download: async (id: string) => {
             await download(
@@ -200,7 +206,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setSelectable(false);
         },
         upload: () => {
-            openM()
+            openM();
         },
         settings: () => {
             //Nav to settings page
@@ -209,7 +215,10 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setSelectable(!selectable);
         },
         addToAlbum: () => {
-            setOpen(true);
+            setAlbumDialogOpen(true);
+        },
+        label: () => {
+            setLabelDialogOpen(true);
         },
         download: async () => {
             topBarButtonFunctions.unselect();
@@ -232,14 +241,14 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         const formData = new FormData();
         files.forEach((file) => {
             if (file.size > maxSize) {
-                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize} bytes`, code: "file-too-large" }] })
+                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize} bytes`, code: "file-too-large" }] });
             } else {
                 formData.append("file", file);
             }
         });
 
         const snackbar = UploadErrorSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
-        snackbar?.begin(fileRejections)
+        snackbar?.begin(fileRejections);
 
         if (formData.getAll("file").length === 0) return;
 
@@ -267,12 +276,15 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                     <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions}></ViewPage>
                 </Route>
                 <Route path="/">
-                    <div  {...getRootProps({ className: 'dropzone' })} className={classes.root} >
-
-                        <Backdrop open={isDragActive} transitionDuration={150} style={{
-                            zIndex: 1201,
-                            backgroundColor: "#00006666",
-                        }}>
+                    <div {...getRootProps({ className: "dropzone" })} className={classes.root}>
+                        <Backdrop
+                            open={isDragActive}
+                            transitionDuration={150}
+                            style={{
+                                zIndex: 1201,
+                                backgroundColor: "#00006666",
+                            }}
+                        >
                             <div>
                                 <CloudUpload style={{ fontSize: 200, color: "#1976d2aa" }}></CloudUpload>
                             </div>
@@ -285,7 +297,15 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar searchBarText={searchBarText} setSearchBarText={setSearchBarText} autocompleteOptions={autocompleteOptions} anySelected={anySelected} buttonFunctions={topBarButtonFunctions} numSelected={() => selected.length} show={showLoadingBar} />
+                                <TopBar
+                                    searchBarText={searchBarText}
+                                    setSearchBarText={setSearchBarText}
+                                    autocompleteOptions={autocompleteOptions}
+                                    anySelected={anySelected}
+                                    buttonFunctions={topBarButtonFunctions}
+                                    numSelected={() => selected.length}
+                                    show={showLoadingBar}
+                                />
                             </Toolbar>
                         </AppBar>
 
@@ -327,7 +347,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                     </div>
                 </Route>
             </Switch>
-            <AddToAlbum albums={albums} open={open} setOpen={setOpen} cb={cb} />
+            <AddToAlbum albums={albums} open={albumDialogOpen} setOpen={setAlbumDialogOpen} cb={albumDialogCallback} />
+            <AddLabels open={labelDialogOpen} setOpen={setLabelDialogOpen} cb={labelDialogCallback}></AddLabels>
         </div>
     );
 }

@@ -177,6 +177,14 @@ export async function removeLabel(id: string, label: string) {
     await axios.post("/labels/remove", qs.stringify(requestBody));
 }
 
+export async function editMedia(id: string, name: string, date: number) {
+    const requestBody = {
+        name,
+        date,
+    };
+    await axios.post("/media/edit/" + id, qs.stringify(requestBody));
+}
+
 export async function addLabel(ids: string[], labels: string[]) {
     const requestBody = {
         ids,

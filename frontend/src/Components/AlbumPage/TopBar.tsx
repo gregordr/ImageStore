@@ -3,7 +3,7 @@ import IconButton from "@material-ui/core/IconButton";
 import { Search, CreateNewFolder } from "@material-ui/icons";
 import SearchBar from "material-ui-search-bar";
 import TopBarStyle from "../Shared/TopBarStyle";
-import { LinearProgress } from "@material-ui/core";
+import { LinearProgress, Tooltip } from "@material-ui/core";
 import AutocompleteSearchBar from "../Shared/SearchBar";
 
 export default function TopBar(props: any) {
@@ -26,9 +26,12 @@ export default function TopBar(props: any) {
                     <IconButton className={classes.onlyMobile} color="primary" aria-label="search" onClick={props.buttonFunctions.mobileSearch}>
                         <Search />
                     </IconButton>
-                    <IconButton className="IconButton" color="primary" aria-label="add" onClick={props.buttonFunctions.add}>
-                        <CreateNewFolder />
-                    </IconButton>
+
+                    <Tooltip title="Create new album">
+                        <IconButton className="IconButton" color="primary" aria-label="add" onClick={props.buttonFunctions.add}>
+                            <CreateNewFolder />
+                        </IconButton>
+                    </Tooltip>
                 </div>
             </div>
             <LinearProgress

@@ -26,37 +26,31 @@ class ImageClassifier:
             self._model.half()  # to FP16
 
     def predict(self, image):
-        try:
-            t0 = time.time()
-            
-            img = np.array(image)[:, :, :3].copy()
+        img = np.array(image)[:, :, :3].copy()
 
-            # padded resize
-            img = letterbox(img, new_shape=self._img_size)[0]
+        # padded resize
+        img = letterbox(img, new_shape=self._img_size)[0]
 
-            # convert
-            img = img.transpose(2, 0, 1)  # to 3xWxH
-            img = np.ascontiguousarray(img)
-            img = torch.from_numpy(img).to(self._device)
+        # convert
+        img = img.transpose(2, 0, 1)  # to 3xWxH
+        img = np.ascontiguousarray(img)
+        img = torch.from_numpy(img).to(self._device)
 
-            img = img.half() if self._half else img.float()  # uint8 to fp16/32
-            img /= 255.0  # 0 - 255 to 0.0 - 1.0
-            if img.ndimension() == 3:
-                img = img.unsqueeze(0)
+        img = img.half() if self._half else img.float()  # uint8 to fp16/32
+        img /= 255.0  # 0 - 255 to 0.0 - 1.0
+        if img.ndimension() == 3:
+            img = img.unsqueeze(0)
 
-            # Inference
-            pred = self._model(img, augment=self._args.augment)[0]
+        # Inference
+        pred = self._model(img, augment=self._args.augment)[0]
 
-            # Apply NMS
-            pred = non_max_suppression(pred, self._args.conf_thres, self._args.iou_thres, classes=self._args.classes, agnostic=self._args.agnostic_nms)
+        # Apply NMS
+        pred = non_max_suppression(pred, self._args.conf_thres, self._args.iou_thres, classes=self._args.classes, agnostic=self._args.agnostic_nms)
 
-            det = pred[0]
+        det = pred[0]
 
-            outputs = []
-            for c in det[:, -1].unique():
-                outputs.append(self._names[int(c)])
+        outputs = []
+        for c in det[:, -1].unique():
+            outputs.append(self._names[int(c)])
 
-            return outputs
-        except Exception as e:
-            print(e, flush=True)
-            return []
+        return outputs

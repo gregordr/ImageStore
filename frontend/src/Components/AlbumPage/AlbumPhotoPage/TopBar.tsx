@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import IconButton from "@material-ui/core/IconButton";
-import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Search, CheckBox, RemoveCircleOutline, Pages, ArrowBack } from "@material-ui/icons";
+import { CloudDownload, LibraryAdd, Delete, Cancel, CloudUpload, Search, CheckBox, RemoveCircleOutline, Pages, ArrowBack, Label } from "@material-ui/icons";
 import SearchBar from "material-ui-search-bar";
 import { useHistory } from "react-router-dom";
 import TopBarStyle from "../../Shared/TopBarStyle";
-import { LinearProgress } from "@material-ui/core";
+import { LinearProgress, Tooltip } from "@material-ui/core";
 import AutocompleteSearchBar from "../../Shared/SearchBar";
 
 export default function TopBar(props: any) {
@@ -37,45 +37,68 @@ export default function TopBar(props: any) {
                             <Search />
                         </IconButton>
                         {props.numSelected() === 0 && (
-                            <IconButton className={classes.onlyMobile} color="primary" aria-label="select" onClick={props.buttonFunctions.select}>
-                                <CheckBox />
-                            </IconButton>
+                            <Tooltip title="Select images">
+                                <IconButton className={classes.onlyMobile} color="primary" aria-label="select" onClick={props.buttonFunctions.select}>
+                                    <CheckBox />
+                                </IconButton>
+                            </Tooltip>
                         )}
                     </div>
                     {props.numSelected() === 1 && (
-                        <IconButton className="IconButton" color="primary" aria-label="set as cover" onClick={props.buttonFunctions.setCover}>
-                            <Pages />
-                        </IconButton>
+                        <Tooltip title="Set as album cover">
+                            <IconButton className="IconButton" color="primary" aria-label="set as cover" onClick={props.buttonFunctions.setCover}>
+                                <Pages />
+                            </IconButton>
+                        </Tooltip>
                     )}
                     {props.numSelected() === 0 && (
-                        <IconButton className="IconButton" color="primary" aria-label="upload" onClick={props.buttonFunctions.upload}>
-                            <CloudUpload />
-                        </IconButton>
+                        <Tooltip title="Upload images">
+                            <IconButton className="IconButton" color="primary" aria-label="upload" onClick={props.buttonFunctions.upload}>
+                                <CloudUpload />
+                            </IconButton>
+                        </Tooltip>
                     )}
                     {props.numSelected() !== 0 && (
-                        <IconButton className="IconButton" color="primary" aria-label="cancel" onClick={props.buttonFunctions.unselect}>
-                            <Cancel />
-                        </IconButton>
+                        <Tooltip title="Unselect">
+                            <IconButton className="IconButton" color="primary" aria-label="cancel" onClick={props.buttonFunctions.unselect}>
+                                <Cancel />
+                            </IconButton>
+                        </Tooltip>
                     )}
                     {props.numSelected() !== 0 && (
-                        <IconButton className="IconButton" color="primary" aria-label="cloud_download" onClick={props.buttonFunctions.download}>
-                            <CloudDownload />
-                        </IconButton>
+                        <Tooltip title="Download">
+                            <IconButton className="IconButton" color="primary" aria-label="cloud_download" onClick={props.buttonFunctions.download}>
+                                <CloudDownload />
+                            </IconButton>
+                        </Tooltip>
                     )}
                     {props.numSelected() !== 0 && (
-                        <IconButton className="IconButton" color="primary" aria-label="library_add" onClick={props.buttonFunctions.addToAlbum}>
-                            <LibraryAdd />
-                        </IconButton>
+                        <Tooltip title="Add to album">
+                            <IconButton className="IconButton" color="primary" aria-label="library_add" onClick={props.buttonFunctions.addToAlbum}>
+                                <LibraryAdd />
+                            </IconButton>
+                        </Tooltip>
                     )}
                     {props.numSelected() !== 0 && (
-                        <IconButton className="IconButton" color="primary" aria-label="remove" onClick={props.buttonFunctions.remove}>
-                            <RemoveCircleOutline />
-                        </IconButton>
+                        <Tooltip title="Add labels">
+                            <IconButton className="IconButton" color="primary" aria-label="label" onClick={props.buttonFunctions.label}>
+                                <Label />
+                            </IconButton>
+                        </Tooltip>
                     )}
                     {props.numSelected() !== 0 && (
-                        <IconButton className="IconButton" color="primary" aria-label="delete" onClick={props.buttonFunctions.delete}>
-                            <Delete />
-                        </IconButton>
+                        <Tooltip title="Remove from album">
+                            <IconButton className="IconButton" color="primary" aria-label="remove" onClick={props.buttonFunctions.remove}>
+                                <RemoveCircleOutline />
+                            </IconButton>
+                        </Tooltip>
+                    )}
+                    {props.numSelected() !== 0 && (
+                        <Tooltip title="Delete">
+                            <IconButton className="IconButton" color="primary" aria-label="delete" onClick={props.buttonFunctions.delete}>
+                                <Delete />
+                            </IconButton>
+                        </Tooltip>
                     )}
                 </div>
             </div>

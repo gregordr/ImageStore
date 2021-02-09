@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import "./ViewPage.css";
 import { useHistory } from "react-router-dom";
@@ -7,6 +7,7 @@ import TopLeftBar from "./TopLeftBar";
 import {
     Chip,
     CircularProgress,
+    ClickAwayListener,
     createMuiTheme,
     createStyles,
     CssBaseline,
@@ -26,15 +27,16 @@ import {
     useMediaQuery,
     useTheme,
 } from "@material-ui/core";
-import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, HighlightOff } from "@material-ui/icons";
+import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, HighlightOff, Edit } from "@material-ui/icons";
 import clsx from "clsx";
 import { PhotoT } from "../../Interfaces";
-import { useSwipeable } from "react-swipeable";
-import { addLabel, baseURL, getPhotoLabels, removeLabel } from "../../API";
+import { addLabel, baseURL, editMedia, getPhotoLabels, removeLabel } from "../../API";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore, { Virtual, Navigation } from "swiper";
 import "swiper/swiper.min.css";
 import moment from "moment";
+import EditPropsDialog from "./EditPropsDialog";
+import { timeStamp } from "console";
 SwiperCore.use([Virtual, Navigation]);
 
 const theme = createMuiTheme({
@@ -103,19 +105,20 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function ViewPage(props: any) {
+export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any) => React.ReactNode }) {
     const history = useHistory();
-    const [id, setId] = useState(window.location.pathname.split("/").slice(-1)[0]);
+    const id = window.location.pathname.split("/").slice(-1)[0];
     const [opacityRight, setOpacityRight] = useState(0);
     const [opacityLeft, setOpacityLeft] = useState(0);
-    const [open, setOpen] = useState(false);
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [editPropsOpen, setEditPropsOpen] = useState(false);
     const [labels, setLabels] = useState<string[] | "Loading">("Loading");
     const index = props.photos.findIndex((v: PhotoT) => v.id === id);
     const photo = props.photos[index];
 
     useEffect(() => {
         props.setViewId(id);
-    }, [id, props.setViewed]);
+    }, [id]);
 
     useEffect(() => {
         getLabels();
@@ -133,14 +136,14 @@ export default function ViewPage(props: any) {
     const classes = useStyles(useTheme());
 
     const handleDrawerClose = () => {
-        setOpen(false);
+        setDrawerOpen(false);
     };
 
     const slideChange = (index: number) => {
         const photos = props.photos;
         const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
-        history.replace(`${afterWithout}${photos[index].id}`);
-        setId(photos[index].id);
+        const id = photos[index].id;
+        history.replace(`${afterWithout}${id}`);
     };
 
     const mouseRight = () => {
@@ -174,7 +177,7 @@ export default function ViewPage(props: any) {
             await props.buttonFunctions.remove(id);
         },
         info: () => {
-            setOpen(!open);
+            setDrawerOpen(!drawerOpen);
         },
     };
 
@@ -184,12 +187,18 @@ export default function ViewPage(props: any) {
 
     const hideArrows = useMediaQuery(theme.breakpoints.down("sm"));
 
+    const editPropsCb = async (name: string, date: number) => {
+        editMedia(id, name, date);
+        props.photos[index].name = name;
+        props.photos[index].date = date;
+    };
+
     return (
         <div className={classes.root}>
             <CssBaseline />
             <main
                 className={clsx(classes.content, {
-                    [classes.contentShift]: open,
+                    [classes.contentShift]: drawerOpen,
                 })}
             >
                 <ThemeProvider theme={theme}>
@@ -197,14 +206,25 @@ export default function ViewPage(props: any) {
                         className="root"
                         style={{
                             display: `${hideArrows ? "none" : "grid"}`,
-                            width: `calc(100% - ${open ? drawerWidth : 0}px)`,
+                            width: `calc(100% - ${drawerOpen ? drawerWidth : 0}px)`,
                             transition: theme.transitions.create("width", {
                                 easing: theme.transitions.easing.sharp,
                                 duration: theme.transitions.duration.leavingScreen,
                             }),
+                            height: `calc(100% - ${photo?.type === "video" ? 120 : 0}px)`,
+                            pointerEvents: "none",
                         }}
                     >
-                        <div ref={prevRef} className="leftIm" onMouseEnter={mouseLeft} onMouseMove={mouseLeft}>
+                        <div
+                            ref={prevRef}
+                            className="leftIm"
+                            onMouseEnter={mouseLeft}
+                            onMouseMove={mouseLeft}
+                            onMouseLeave={mouseCenter}
+                            style={{
+                                pointerEvents: "auto",
+                            }}
+                        >
                             <IconButton
                                 style={{
                                     transition: "0.01s linear",
@@ -224,8 +244,25 @@ export default function ViewPage(props: any) {
                                 <ChevronLeft style={{ height: "64px", width: "64px" }} />
                             </IconButton>
                         </div>
-                        <div className="center" onClick={() => history.goBack()} onMouseEnter={mouseCenter}></div>
-                        <div ref={nextRef} className="rightIm" onMouseEnter={mouseRight} onMouseMove={mouseRight}>
+                        <div
+                            className="center"
+                            onClick={(ev) => {
+                                history.goBack();
+                                ev.stopPropagation();
+                            }}
+                            onMouseEnter={mouseCenter}
+                            style={{ pointerEvents: photo?.type === "video" ? "none" : "stroke" }}
+                        ></div>
+                        <div
+                            ref={nextRef}
+                            className="rightIm"
+                            onMouseEnter={mouseRight}
+                            onMouseMove={mouseRight}
+                            onMouseLeave={mouseCenter}
+                            style={{
+                                pointerEvents: "auto",
+                            }}
+                        >
                             <IconButton
                                 style={{
                                     transition: "0.01s linear",
@@ -246,13 +283,13 @@ export default function ViewPage(props: any) {
                             </IconButton>
                         </div>
                     </div>
-                    <Carousel slideChange={slideChange} index={index} photos={props.photos} open={open} swiperRef={swiperRef} prevRef={prevRef} nextRef={nextRef} />
+                    <Carousel slideChange={slideChange} index={index} photos={props.photos} open={drawerOpen} swiperRef={swiperRef} prevRef={prevRef} nextRef={nextRef} hideArrows={hideArrows} />
                     <div
                         className="rootTop"
                         style={{
                             display: "flex",
                             justifyContent: "space-between",
-                            width: `calc(100% - ${open ? drawerWidth : 0}px)`,
+                            width: `calc(100% - ${drawerOpen ? drawerWidth : 0}px)`,
                             transition: theme.transitions.create("width", {
                                 easing: theme.transitions.easing.sharp,
                                 duration: theme.transitions.duration.leavingScreen,
@@ -268,7 +305,7 @@ export default function ViewPage(props: any) {
                 className={classes.drawer}
                 variant="persistent"
                 anchor="right"
-                open={open}
+                open={drawerOpen}
                 classes={{
                     paper: classes.drawerPaper,
                 }}
@@ -287,12 +324,15 @@ export default function ViewPage(props: any) {
                             <PhotoOutlined />
                         </ListItemIcon>
                         <ListItemText primary={photo ? photo.name : ""} secondary={photo ? moment.unix(photo.date).format("DD. MMM YYYY, HH:mm:ss") : ""} />
+                        <IconButton onClick={() => setEditPropsOpen(true)}>
+                            <Edit></Edit>
+                        </IconButton>
                     </ListItem>
                     <ListItem>
                         <ListItemIcon>
                             <Label />
                         </ListItemIcon>
-                        <ListItemText primary="Labels" />
+                        <ListItemText primary="Labels" secondary=" " />
                     </ListItem>
                     <ListItem>
                         <ul
@@ -325,6 +365,7 @@ export default function ViewPage(props: any) {
                     </ListItem>
                 </List>
             </Drawer>
+            <EditPropsDialog open={editPropsOpen} setOpen={setEditPropsOpen} cb={editPropsCb} photo={props.photos[index]} />
         </div>
     );
 }
@@ -384,33 +425,54 @@ function LabelInputChip(props: any) {
 }
 
 function makeSlides(photos: PhotoT[]): any[] {
-    return photos.map((photo: PhotoT, index: number) => {
+    const f = photos.map((photo: PhotoT, index: number) => {
         return (
             <SwiperSlide key={photo.id} virtualIndex={index} style={{ alignSelf: "center", justifySelf: "center" }}>
-                <img
-                    className="display"
-                    alt={photo.id}
-                    style={{
-                        objectFit: "scale-down",
-                        height: "100vh",
-                        width: `100%`,
-                    }}
-                    src={baseURL + "/media/" + photo.id}
-                />
+                {photo.type === "photo" ? (
+                    <img
+                        className="display"
+                        alt={photo.id}
+                        style={{
+                            objectFit: "scale-down",
+                            height: "100vh",
+                            width: `100%`,
+                        }}
+                        src={baseURL + "/media/" + photo.id}
+                    />
+                ) : (
+                    <video
+                        className="display"
+                        style={{
+                            objectFit: "scale-down",
+                            height: "100vh",
+                            width: `100%`,
+                        }}
+                        controls
+                    >
+                        <source src={baseURL + "/media/" + photo.id} type="video/mp4" />
+                    </video>
+                )}
             </SwiperSlide>
         );
     });
+    return f;
 }
 
 const Carousel = (props: any) => {
+    const RANGE = 100;
     const [key, setKey] = useState(1);
+    const [key2, setKey2] = useState(1);
+    const [index, setIndex] = useState(props.index);
+    const slide = useMemo(() => makeSlides(props.photos.slice(Math.max(0, props.index - RANGE), Math.min(props.index + RANGE, props.photos.length))), [props.photos, props.open, key]);
 
     useEffect(() => {
+        setIndex(props.index);
         setKey(key + 1);
-    }, [props.photos, props.open]);
+    }, [props.photos, props.open, key2]); //add props.hideArrows if you want swiping to be disabled when screen size changes
 
     return props.photos.length === 0 ? null : (
         <Swiper
+            allowTouchMove={props.hideArrows}
             key={key}
             className="imageHolder"
             spaceBetween={50}
@@ -425,7 +487,7 @@ const Carousel = (props: any) => {
                 prevEl: props.prevRef.current ? props.prevRef.current : undefined,
                 nextEl: props.nextRef.current ? props.nextRef.current : undefined,
             }}
-            initialSlide={props.index >= props.photos.length ? props.photos.length - 1 : props.index}
+            initialSlide={Math.min(RANGE, index)}
             onInit={(swiper) => {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
@@ -438,10 +500,23 @@ const Carousel = (props: any) => {
                 swiper.navigation.update();
             }}
             onSlideChange={(e) => {
-                props.slideChange(e.activeIndex);
+                props.slideChange(e.activeIndex + Math.max(0, index - RANGE));
+                e.slides.forEach((el) => {
+                    if (el.firstChild instanceof HTMLVideoElement) {
+                        el.firstChild.pause();
+                        el.firstChild.currentTime = 0;
+                    }
+                });
+            }}
+            onTransitionEnd={(e) => {
+                console.log(e.activeIndex);
+                console.log(index);
+                if ((e.activeIndex == 0 && index > RANGE) || e.activeIndex - Math.min(index, RANGE) == RANGE - 1) {
+                    setKey2(key2 + 1);
+                }
             }}
         >
-            {makeSlides(props.photos)}
+            {slide}
         </Swiper>
     );
 };

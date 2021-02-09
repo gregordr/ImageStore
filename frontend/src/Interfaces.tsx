@@ -10,4 +10,6 @@ export interface PhotoT {
     name: string;
     height: number;
     width: number;
+    date: number;
+    type: "photo" | "video";
 }
