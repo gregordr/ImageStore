@@ -1,0 +1,43 @@
+version: "3.9"
+services:
+    nginx:
+        image: imagestored/nginx:test
+        ports:
+            - "3000:8080" #Change to X:8080 to access on port X
+        depends_on:
+            - frontend
+
+    frontend:
+        image: imagestored/frontend:test
+        depends_on:
+            - backend
+
+    backend:
+        image: imagestored/backend:test
+        restart: always
+        environment:
+            PGSTRING: postgres://postgres:example@db:5432/postgres # This string has to resolve to a Postgres database on version 11
+        volumes:
+            - ./media/:/code/media/
+        depends_on:
+            - db
+
+    db:
+        image: postgres:11
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: example
+        volumes:
+            - ./data/:/var/lib/postgresql/data/
+
+    # detectron2: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very leigthweight. Check yourself how much load detectron2 puts on your device, and if it's too much, switch to yolo. Comment out the model you want to use back in, but never comment out both.
+    #     image: imagestored/detectron2:test
+    #     environment:
+    #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
+    #         FETCH_INTERVAL: 10 # This is the interval the labeler will poll for new images in seconds
+
+    # yolo: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very leigthweight. Check yourself how much load detectron2 puts on your device, and if it's too much, switch to yolo. Comment out the model you want to use back in, but never comment out both.
+    #     image: imagestored/yolo:test
+    #     environment:
+    #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
+    #         FETCH_INTERVAL: 10 # This is the interval the labeler will poll for new images in seconds
