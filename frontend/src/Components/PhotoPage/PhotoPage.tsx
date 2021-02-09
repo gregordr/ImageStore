@@ -18,7 +18,7 @@ import { CloudUpload } from "@material-ui/icons";
 import AutocompleteSearchBar from "../Shared/SearchBar";
 import AddLabels from "../Shared/AddLabels";
 
-const maxSize = parseInt(process.env.MAX_SIZE || (50 * 1024 * 1024).toString());
+const maxSize = parseInt(process.env.MAX_SIZE || (10 * 1024 * 1024 * 1024).toString());
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -241,7 +241,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         const formData = new FormData();
         files.forEach((file) => {
             if (file.size > maxSize) {
-                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize} bytes`, code: "file-too-large" }] });
+                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize / (1024 * 1024 * 1024)} GB`, code: "file-too-large" }] });
             } else {
                 formData.append("file", file);
             }
