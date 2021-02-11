@@ -114,7 +114,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         await fetchAlbums();
     };
 
-    const openAlbum = () => () => { };
+    const openAlbum = () => () => {};
 
     const heights = [searchTerm === "" || !searchTerm ? 0 : 20];
 
@@ -139,7 +139,13 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                                 <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
                                     <MenuIcon />
                                 </IconButton>
-                                <TopBar searchBarText={searchBarText} setSearchBarText={setSearchBarText} autocompleteOptions={autocompleteOptions} buttonFunctions={topBarButtonFunctions} show={showLoadingBar} />
+                                <TopBar
+                                    searchBarText={searchBarText}
+                                    setSearchBarText={setSearchBarText}
+                                    autocompleteOptions={autocompleteOptions}
+                                    buttonFunctions={topBarButtonFunctions}
+                                    show={showLoadingBar}
+                                />
                             </Toolbar>
                         </AppBar>
 

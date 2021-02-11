@@ -19,32 +19,30 @@ const theme = createMuiTheme({
     },
 });
 
-function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Promise<void>; dimension: number }) {
-    const useStyles = makeStyles(() =>
-        createStyles({
-            root: {
-                overflow: "hidden",
-                padding: 5,
-                paddingTop: 10,
-            },
-            icon: {
-                color: "rgba(255, 255, 255, 0.54)",
-            },
-            photoDiv: {
-                margin: 5,
-                // height: props.y,
-                // width: props.x,
-                // "align-items": "center",
-                // "justify-content": "center",
-                display: "flex",
-                flexFlow: "row wrap",
-                // background: "#aaaaaa33",
-                // position: "relative",
-            },
-            // photoBox: { transition: "0.07s all  linear", position: "absolute", left: 15, top: 15, height: 20, width: 20, opacity: opacity },
-        })
-    );
+const useStyles = makeStyles(() =>
+    createStyles({
+        root: {
+            overflow: "hidden",
+        },
+        icon: {
+            color: "rgba(255, 255, 255, 0.54)",
+        },
+        photoDiv: {
+            margin: 5,
+            // height: props.y,
+            // width: props.x,
+            // "align-items": "center",
+            // "justify-content": "center",
+            display: "flex",
+            flexFlow: "row wrap",
+            // background: "#aaaaaa33",
+            // position: "relative",
+        },
+        // photoBox: { transition: "0.07s all  linear", position: "absolute", left: 15, top: 15, height: 20, width: 20, opacity: opacity },
+    })
+);
 
+function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Promise<void>; dimension: number }) {
     const classes = useStyles();
     const history = useHistory();
     const [openInfo, setOpenInfo] = useState(false);
@@ -53,45 +51,55 @@ function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Pro
         history.push(`/albums/open/${props.album.id}`);
     };
 
-    const onInfoClick = () => { };
-
     return (
-        <GridList className={classes.root}>
-            <GridListTile key={props.album.id} style={{ height: props.dimension, width: props.dimension, backgroundColor: "white" }} onClick={onImageClick}>
+        <>
+            <GridListTile
+                key={props.album.id}
+                style={{
+                    padding: 5,
+                    paddingTop: 10,
+                    height: props.dimension,
+                    width: props.dimension,
+                    backgroundColor: "white",
+                }}
+                onClick={onImageClick}
+            >
                 {props.album.cover === null ? (
                     <PhotoAlbum style={{ height: props.dimension, width: props.dimension, color: "#666666" }} />
                 ) : (
-                        <div
-                            style={{
-                                backgroundImage: `url(${baseURL + "/media/thumb_" + props.album.cover})`,
-                                backgroundSize: "cover",
-                                backgroundPosition: "center",
-                                height: props.dimension,
-                                width: props.dimension,
-                            }}
-                        />
-                    )}
+                    <div
+                        style={{
+                            backgroundImage: `url(${baseURL + "/media/thumb_" + props.album.cover})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            height: props.dimension,
+                            width: props.dimension,
+                        }}
+                    />
+                )}
                 <GridListTileBar
                     title={props.album.name}
                     subtitle={<span>{props.album.imagecount} elements</span>}
                     actionIcon={
-                        <div
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onInfoClick();
-                            }}
-                        >
-                            <ThemeProvider theme={theme}>
-                                <IconButton aria-label={`info about ${props.album.name}`} color="primary" onClick={() => setOpenInfo(true)} className={classes.icon}>
-                                    <Info />
-                                </IconButton>
-                            </ThemeProvider>
-                        </div>
+                        //To do: remove this to increase scroll speed
+                        <ThemeProvider theme={theme}>
+                            <IconButton
+                                aria-label={`info about ${props.album.name}`}
+                                color="primary"
+                                onClick={(e) => {
+                                    setOpenInfo(true);
+                                    e.stopPropagation();
+                                }}
+                                className={classes.icon}
+                            >
+                                <Info />
+                            </IconButton>
+                        </ThemeProvider>
                     }
                 />
             </GridListTile>
             <AlbumInfo album={props.album} open={openInfo} setOpen={setOpenInfo} fetchAlbums={props.fetchAlbums}></AlbumInfo>
-        </GridList>
+        </>
     );
 }
 
@@ -128,12 +136,14 @@ const calculate = (photos: AlbumT[], width: number) => {
 
 const Row = (altprops: any) =>
     altprops.data.linNum <= altprops.index ? (
-        <div style={{ ...altprops.style, display: "flex", transition: "0.05s linear" }}>
-            {altprops.data.rowPics[altprops.index].map((a: AlbumT) => makeAlbum(a, altprops.data.rowH[altprops.index], altprops.data.props))}
-        </div>
+        <GridList className={altprops.data.classes.root}>
+            <div style={{ ...altprops.style, display: "flex", transition: "0.05s linear" }}>
+                {altprops.data.rowPics[altprops.index].map((a: AlbumT) => makeAlbum(a, altprops.data.rowH[altprops.index], altprops.data.props))}
+            </div>
+        </GridList>
     ) : (
-            <div>{altprops.data.rowPics[altprops.index]}</div>
-        );
+        <div>{altprops.data.rowPics[altprops.index]}</div>
+    );
 
 const CustomScrollbars = ({ onScroll, forwardedRef, style, children }: any) => {
     const refSetter = useCallback(
@@ -165,6 +175,7 @@ export default function AbstractAlbumPage(props: {
     heights: number[];
     lines: any[];
 }) {
+    const classes = useStyles();
     const listRef = useRef<List>(null);
     useEffect(() => listRef.current?.resetAfterIndex(0), [props.width, props.albums, props.heights]);
     let { rowH, rowPics } = calculate(props.albums, props.width - 20);
@@ -174,10 +185,10 @@ export default function AbstractAlbumPage(props: {
 
     return (
         <List
-            overscanCount={10}
+            overscanCount={2}
             height={props.height}
             ref={listRef}
-            itemData={{ rowH, rowPics, props, linNum: props.lines.length }}
+            itemData={{ rowH, rowPics, props, linNum: props.lines.length, classes }}
             itemCount={rowH.length}
             itemSize={getItemSize}
             width={props.width - 1}
