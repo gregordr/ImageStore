@@ -2,7 +2,7 @@
 
 [Online demo](https://gregordr.github.io/ImageStore/)
 
-This shows off all currently available features - the only restriction is that you cannot upload your own images.
+This should give you a feeling of how everything works with some images of cats. To upload your own images, you will of course need to self-host.
 
 ![preview](https://imgur.com/0yZQ7c7.jpg)
 
@@ -12,9 +12,9 @@ This shows off all currently available features - the only restriction is that y
 
 Requirements:
 
- - x86_64 CPU (also known as x64, x86_64, AMD64 and Intel 64)
  - Docker
  - Docker-compose
+ - For automatic labeling: x86_64 CPU (also known as x64, x86_64, AMD64 and Intel 64)
 
 Download the docker-compose.yml: ```wget https://raw.githubusercontent.com/gregordr/ImageStore/main/docker-compose.yml```.
 
@@ -27,8 +27,9 @@ Go to http://localhost:3000, or whichever port you have chosen to use.
 Requirements:
  - Docker
  - Docker-compose
+ - For automatic labeling: x86_64 CPU (also known as x64, x86_64, AMD64 and Intel 64)
 
-If you want to build yourself, for example because you are not on x86_64, then clone this repo and run ```docker-compose -f docker-compose-build.yml up```
+If you want to build yourself, then clone this repo and run ```docker-compose -f docker-compose-build.yml up```
 
 ### Without docker
 
