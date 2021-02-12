@@ -20,14 +20,16 @@ import {
     ListItemText,
     makeStyles,
     Paper,
+    Switch,
     TextField,
     Theme,
     ThemeProvider,
+    Tooltip,
     Typography,
     useMediaQuery,
     useTheme,
 } from "@material-ui/core";
-import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, HighlightOff, Edit } from "@material-ui/icons";
+import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, Map, Edit, Info, Warning } from "@material-ui/icons";
 import clsx from "clsx";
 import { PhotoT } from "../../Interfaces";
 import { addLabel, baseURL, editMedia, getPhotoLabels, removeLabel } from "../../API";
@@ -36,7 +38,12 @@ import SwiperCore, { Virtual, Navigation } from "swiper";
 import "swiper/swiper.min.css";
 import moment from "moment";
 import EditPropsDialog from "./EditPropsDialog";
-import { timeStamp } from "console";
+
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css"; // Re-uses images from ~leaflet package
+import "leaflet-defaulticon-compatibility";
+
 SwiperCore.use([Virtual, Navigation]);
 
 const theme = createMuiTheme({
@@ -110,11 +117,13 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const id = window.location.pathname.split("/").slice(-1)[0];
     const [opacityRight, setOpacityRight] = useState(0);
     const [opacityLeft, setOpacityLeft] = useState(0);
-    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [drawerOpen, setDrawerOpen] = useState(localStorage.getItem("drawerOpen") === "true");
     const [editPropsOpen, setEditPropsOpen] = useState(false);
     const [labels, setLabels] = useState<string[] | "Loading">("Loading");
     const index = props.photos.findIndex((v: PhotoT) => v.id === id);
     const photo = props.photos[index];
+
+    const [mapEnabled, setMapEnabled] = useState(localStorage.getItem("enableMap") === "true");
 
     useEffect(() => {
         props.setViewId(id);
@@ -136,6 +145,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const classes = useStyles(useTheme());
 
     const handleDrawerClose = () => {
+        localStorage.setItem("drawerOpen", "false");
         setDrawerOpen(false);
     };
 
@@ -177,6 +187,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
             await props.buttonFunctions.remove(id);
         },
         info: () => {
+            localStorage.setItem("drawerOpen", drawerOpen ? "false" : "true");
             setDrawerOpen(!drawerOpen);
         },
     };
@@ -362,6 +373,43 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                                 </>
                             )}
                         </ul>
+                    </ListItem>
+                    <ListItem>
+                        {photo && photo.coordx && photo.coordy && (
+                            <>
+                                <ListItemIcon>
+                                    <Map />
+                                </ListItemIcon>
+                                <ListItemText
+                                    primary={
+                                        <>
+                                            Map
+                                            <Switch
+                                                checked={mapEnabled}
+                                                onChange={() => {
+                                                    localStorage.setItem("enableMap", mapEnabled ? "false" : "true");
+                                                    setMapEnabled(!mapEnabled);
+                                                }}
+                                                color="primary"
+                                            />
+                                        </>
+                                    }
+                                />
+                                <IconButton>
+                                    <Tooltip title="The map has to be requested from an external source (openstreetmap.org).">
+                                        <Warning></Warning>
+                                    </Tooltip>
+                                </IconButton>
+                            </>
+                        )}
+                    </ListItem>
+                    <ListItem>
+                        {mapEnabled && photo && photo.coordx && photo.coordy && (
+                            <MapContainer center={[photo.coordx, photo.coordy]} zoom={13} scrollWheelZoom={false} style={{ height: 200, width: "100%" }} key={photo.id}>
+                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                <Marker position={[photo.coordx, photo.coordy]}></Marker>
+                            </MapContainer>
+                        )}
                     </ListItem>
                 </List>
             </Drawer>
