@@ -13,7 +13,7 @@ apt install -y postgresql-11
 
 ##Gotta do a little extra for Node too
 curl -fsSL https://deb.nodesource.com/setup_current.x | sudo -E bash -
-sudo apt-get install -y nodejs
+apt install -y nodejs
 
 ##Do the rest, no extras required
 apt install -y npm nginx build-essential
