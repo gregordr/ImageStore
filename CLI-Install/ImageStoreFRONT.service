@@ -1,0 +1,5 @@
+[Service]
+Type=simple
+Restart=on-failure
+WorkingDirectory=/etc/imagestore/frontend
+ExecStart=npm start

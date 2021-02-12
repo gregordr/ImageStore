@@ -18,14 +18,30 @@ sudo apt-get install -y nodejs
 ##Do the rest, no extras required
 apt install -y npm nginx build-essential
 
+#Make an Config folder
+mkdir /etc/imagestore
+cp -r ../frontend /etc/imagestore/.
+cp -r ../backend /etc/imagestore/.
+
+#Load up the system with the proper configurations
+cp default.conf /etc/nginx/conf.d/.
+cp ImagestoreFRONT.service /etc/systemd/system/.
+cp ImagestoreBACK.service /etc/systemd/system/.
+
+
 #Service Time
 systemctl enable postgresql
 systemctl enable nginx
+systemctl enable ImagestoreFRONT
+systemctl enable ImagestoreBACK
 systemctl start postgresql
 
 #Init an user and the database
 su postgres -c './postgresql.sh'
-echo "PGSTRING=postgres://imagestore:imagestore@localhost:5432/imagestore" > backend/.env
+echo "PGSTRING=postgres://imagestore:imagestore@localhost:5432/imagestore" > ../backend/.env
 
+systemctl start ImagestoreFRONT
+systemctl start ImagestoreBACK
+systemctl start nginx
 
 
