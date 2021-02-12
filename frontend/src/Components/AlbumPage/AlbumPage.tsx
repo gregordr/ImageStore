@@ -116,7 +116,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     const openAlbum = () => () => {};
 
-    const heights = [searchTerm === "" || !searchTerm ? 0 : 20];
+    const heights = [searchTerm === "" || !searchTerm ? 0 : 40];
 
     const lines = [
         <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block" }}>

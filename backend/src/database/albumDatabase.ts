@@ -20,7 +20,8 @@ export async function getAlbums(searchTerm: string): Promise<unknown[]> {
             SELECT COUNT(*)
             FROM ${await album_photo}
             WHERE ${await albums}.oid = ${await album_photo}.${album}
-        )::integer AS imageCount FROM ${await albums} WHERE ${album} like $1::text;`, [searchTerm]);
+        )::integer AS imageCount FROM ${await albums} WHERE ${album} like $1::text
+        ORDER BY name;`, [searchTerm]);
         return result.rows;
     });
 }
