@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Need this for scriptery
-apt install curl
+apt install curl gpg
 
 #Install the required programs
 ##First is Postgresql - This requires importing their repo key and repo
@@ -13,10 +13,10 @@ apt install -y postgresql-11
 
 ##Gotta do a little extra for Node too
 curl -fsSL https://deb.nodesource.com/setup_current.x | sudo -E bash -
-apt install -y nodejs
+apt install nodejs
 
 ##Do the rest, no extras required
-apt install -y npm build-essential
+apt install npm build-essential
 
 apt install nginx
 
@@ -45,7 +45,7 @@ systemctl start postgresql
 
 #Init an user and the database
 su postgres -c './postgresql.sh'
-echo "PGSTRING=postgres://imagestore:imagestore@localhost:5432/imagestore" > ../backend/.env
+echo "PGSTRING=postgres://imagestore:imagestore@localhost:5432/imagestore" > /etc/imagestore/backend/.env
 
 systemctl start ImageStoreFRONT
 systemctl start ImageStoreBACK
