@@ -45,7 +45,7 @@ cd /etc/imagestore/frontend
 systemctl enable postgresql
 systemctl enable nginx
 systemctl enable ImageStoreFRONT
-systemctl enable ImagestoreBACK
+systemctl enable ImageStoreBACK
 systemctl start postgresql
 
 systemctl start ImageStoreFRONT
