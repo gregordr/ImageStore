@@ -1,5 +1,15 @@
+[Unit]
+Description=ImageStore Frontend
+After=network.target
+
 [Service]
 Type=simple
+
 Restart=on-failure
 WorkingDirectory=/etc/imagestore/frontend
-ExecStart=npm start
+ExecStart=/usr/bin/npm start &
+
+[Install]
+WantedBy=multi-user.target
+
+

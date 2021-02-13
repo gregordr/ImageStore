@@ -16,23 +16,30 @@ curl -fsSL https://deb.nodesource.com/setup_current.x | sudo -E bash -
 apt install -y nodejs
 
 ##Do the rest, no extras required
-apt install -y npm nginx build-essential
+apt install -y npm build-essential
+
+apt install nginx
 
 #Make an Config folder
 mkdir /etc/imagestore
-cp -r ../frontend /etc/imagestore/.
-cp -r ../backend /etc/imagestore/.
+cp -r ../frontend /etc/imagestore/
+cp -r ../backend /etc/imagestore/
 
 #Load up the system with the proper configurations
-cp default.conf /etc/nginx/conf.d/.
-cp ImagestoreFRONT.service /etc/systemd/system/.
-cp ImagestoreBACK.service /etc/systemd/system/.
+cp default.conf /etc/nginx/conf.d/default.conf
+cp ImageStoreFRONT.service /etc/systemd/system/ImageStoreFRONT.service
+cp ImageStoreBACK.service /etc/systemd/system/ImageStoreBACK.service
 
+#Install node modules
+cd /etc/imagestore/frontend
+/usr/bin/npm i
+cd /etc/imagestore/frontend
+/usr/bin/npm i
 
 #Service Time
 systemctl enable postgresql
 systemctl enable nginx
-systemctl enable ImagestoreFRONT
+systemctl enable ImageStoreFRONT
 systemctl enable ImagestoreBACK
 systemctl start postgresql
 
@@ -40,8 +47,8 @@ systemctl start postgresql
 su postgres -c './postgresql.sh'
 echo "PGSTRING=postgres://imagestore:imagestore@localhost:5432/imagestore" > ../backend/.env
 
-systemctl start ImagestoreFRONT
-systemctl start ImagestoreBACK
+systemctl start ImageStoreFRONT
+systemctl start ImageStoreBACK
 systemctl start nginx
 
 
