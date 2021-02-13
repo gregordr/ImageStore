@@ -38,8 +38,9 @@ echo "PGSTRING=postgres://imagestore:imagestore@localhost:5432/imagestore" > /et
 #Install node modules
 cd /etc/imagestore/frontend
 /usr/bin/npm i
-cd /etc/imagestore/frontend
+cd /etc/imagestore/backend
 /usr/bin/npm i
+/usr/bin/npm install ts-node
 
 #Service Time
 systemctl enable postgresql
@@ -47,9 +48,8 @@ systemctl enable nginx
 systemctl enable ImageStoreFRONT
 systemctl enable ImageStoreBACK
 systemctl start postgresql
-
-systemctl start ImageStoreFRONT
 systemctl start ImageStoreBACK
+systemctl start ImageStoreFRONT
 systemctl start nginx
 
 
