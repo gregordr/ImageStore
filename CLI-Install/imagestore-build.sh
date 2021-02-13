@@ -50,6 +50,6 @@ systemctl enable ImageStoreBACK
 systemctl start postgresql
 systemctl start ImageStoreBACK
 systemctl start ImageStoreFRONT
-systemctl start nginx
+systemctl restart nginx
 
 
