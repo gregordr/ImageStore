@@ -30,6 +30,10 @@ cp default.conf /etc/nginx/conf.d/default.conf
 cp ImageStoreFRONT.service /etc/systemd/system/ImageStoreFRONT.service
 cp ImageStoreBACK.service /etc/systemd/system/ImageStoreBACK.service
 
+#Init an user and the database
+su postgres -c './postgresql.sh'
+echo "PGSTRING=postgres://imagestore:imagestore@localhost:5432/imagestore" > /etc/imagestore/backend/.env
+
 #Install node modules
 cd /etc/imagestore/frontend
 /usr/bin/npm i
@@ -42,10 +46,6 @@ systemctl enable nginx
 systemctl enable ImageStoreFRONT
 systemctl enable ImagestoreBACK
 systemctl start postgresql
-
-#Init an user and the database
-su postgres -c './postgresql.sh'
-echo "PGSTRING=postgres://imagestore:imagestore@localhost:5432/imagestore" > /etc/imagestore/backend/.env
 
 systemctl start ImageStoreFRONT
 systemctl start ImageStoreBACK
