@@ -1,5 +1,5 @@
 [Unit]
-Description=ImageStore Frontend
+Description=ImageStore Backend
 After=network.target
 
 [Service]
