@@ -57,6 +57,7 @@ echo "PGSTRING=postgres://imagestore:$ranpass@localhost:5432/imagestore" > /etc/
 #Install node modules
 cd /etc/imagestore/frontend
 /usr/bin/npm i
+/usr/bin/npm run-script build
 cd /etc/imagestore/backend
 /usr/bin/npm i
 /usr/bin/npm install ts-node
