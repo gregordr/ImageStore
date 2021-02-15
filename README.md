@@ -40,6 +40,9 @@ By default it hosts over port 8080. However, the script has built in error check
 it will detect it and ask for an alternate port. The created database user is seeded with a random 16 character string, so there 
 is no default password to worry about. 
 
+The Imagestore service by default is enable to start on boot. To stop Imagestore, run ```sudo systemctl stop ImageStoreFRONT.service; sudo systemctl stop ImageStoreBACK.service;```
+To prevent the service from starting on boot, run ```sudo systemctl disable ImageStoreFRONT.service; sudo systemctl disable ImageStoreBACK.service;```
+
 ## Contributing:
 
 Accepted feature requests can be seen under projects/ToDOs. If you have a new feature request, feel free to open an issue.
