@@ -12,4 +12,5 @@ COPY package*.json ./
 RUN npm i
 COPY . .
 VOLUME /code/media
+ENV IMAGESTORE_HOST 0.0.0.0
 CMD "npm" "start"

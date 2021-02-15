@@ -29,5 +29,6 @@ app.use('/albums', albumRouter);
 import { router as labelRouter } from './routers/labelRouter';
 app.use('/labels', labelRouter);
 
-const port = process.env.PORT || 4000;
-app.listen(port, () => console.log(`Listening on port ${port}`));
+const port = parseInt(process.env.PORT || "4000");
+const host = process.env.IMAGESTORE_HOST || "localhost"
+app.listen(port, host, () => console.log(`Listening on port ${host}:${port}`));
