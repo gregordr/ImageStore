@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Need this for scriptery
-apt install curl gpg
+apt install curl gpg -y
 
 #Install the required programs
 ##First is Postgresql - This requires importing their repo key and repo
@@ -14,12 +14,12 @@ apt install -y postgresql-11
 
 ##Gotta do a little extra for Node too
 curl -fsSL https://deb.nodesource.com/setup_current.x | sudo -E bash -
-apt install nodejs
+apt install nodejs -y
 
 ##Do the rest, no extras required
-apt install npm build-essential
+apt install npm build-essential -y
 
-apt install nginx
+apt install nginx -y
 
 #Make an Config folder
 mkdir /etc/imagestore
