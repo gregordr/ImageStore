@@ -1,0 +1,15 @@
+[Unit]
+Description=ImageStore Frontend
+After=network.target
+
+[Service]
+Type=simple
+
+Restart=on-failure
+WorkingDirectory=/etc/imagestore/frontend
+ExecStart=/usr/bin/npx serve -s build -l tcp://localhost:3000  
+
+[Install]
+WantedBy=multi-user.target
+
+
