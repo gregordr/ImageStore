@@ -1,0 +1,14 @@
+[Unit]
+Description=ImageStore Backend
+After=network.target
+
+[Service]
+Type=simple
+
+Restart=on-failure
+WorkingDirectory=/etc/imagestore/backend
+ExecStart=/usr/bin/npm start &
+
+[Install]
+WantedBy=multi-user.target
+
