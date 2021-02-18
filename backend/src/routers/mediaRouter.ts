@@ -87,6 +87,9 @@ router.post('/add', async (req, res) => {
                         dims.width = tmp;
                     }
 
+                    const coordX: number = (await exifr.parse(dir + f.filename))?.latitude;
+                    const coordY: number = (await exifr.parse(dir + f.filename))?.longitude;
+
                     let date;
                     try {
                         date = Date.parse((await exifr.parse(dir + f.filename))?.CreateDate)
@@ -95,7 +98,7 @@ router.post('/add', async (req, res) => {
                     }
 
 
-                    const oid = await addMedia(f.originalname, dims.height, dims.width, (date.toString() === 'NaN') ? Date.now() : date, "photo")
+                    const oid = await addMedia(f.originalname, dims.height, dims.width, (date.toString() === 'NaN') ? Date.now() : date, "photo", coordX, coordY)
 
                     await fsPromises.rename(dir + f.filename, dir + oid);
 
@@ -115,6 +118,16 @@ router.post('/add', async (req, res) => {
                             date = NaN
                         }
 
+                        let coordX: number | undefined = undefined;
+                        let coordY: number | undefined = undefined;
+
+                        if (data.format.tags.location) {
+                            try {
+                                const loc: string = data.format.tags.location;
+                                coordX = parseFloat(loc)
+                                coordY = parseFloat(loc.split("" + coordX)[1])
+                            } catch { }
+                        }
 
                         let dims = { height: data.streams[0].height, width: data.streams[0].width }
                         for (const stream of data.streams) {
@@ -129,7 +142,7 @@ router.post('/add', async (req, res) => {
                             return
                         }
 
-                        const oid = await addMedia(f.originalname, dims.height, dims.width, (date.toString() === 'NaN') ? Date.now() : date, "video")
+                        const oid = await addMedia(f.originalname, dims.height, dims.width, (date.toString() === 'NaN') ? Date.now() : date, "video", coordX, coordY)
 
 
                         let dimsS: string;

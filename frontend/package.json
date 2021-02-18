@@ -20,6 +20,8 @@
     "clsx": "^1.1.1",
     "is-valid-path": "^0.1.1",
     "jszip": "^3.5.0",
+    "leaflet": "^1.7.1",
+    "leaflet-defaulticon-compatibility": "^0.1.1",
     "material-design-icons": "^3.0.1",
     "material-ui-search-bar": "^1.0.0",
     "moment": "^2.29.1",
@@ -30,6 +32,7 @@
     "react-dom": "^17.0.1",
     "react-dropzone": "^11.2.4",
     "react-image": "^4.0.3",
+    "react-leaflet": "^3.1.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.1",
     "react-spring": "^8.0.27",
@@ -67,6 +70,7 @@
   },
   "devDependencies": {
     "@types/is-valid-path": "^0.1.0",
+    "@types/leaflet": "^1.5.21",
     "@types/qs": "^6.9.5",
     "@types/react-custom-scrollbars": "^4.0.7",
     "@types/react-window": "^1.8.2"

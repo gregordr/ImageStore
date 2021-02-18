@@ -1,10 +1,10 @@
 import React, { useCallback, useState, useRef, useEffect } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { PhotoT } from "../../Interfaces";
 import { VariableSizeList as List } from "react-window";
 import { Scrollbars } from "react-custom-scrollbars";
 import { baseURL } from "../../API";
-import { IconButton } from "@material-ui/core";
+import { IconButton, useMediaQuery } from "@material-ui/core";
 import { PlayArrow, VideoCall } from "@material-ui/icons";
 
 const useStyles = makeStyles({
@@ -198,6 +198,8 @@ export default function AbstractPhotoPage(props: {
     viewId: string;
     setViewId: (id: string) => void;
 }) {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const [jumped, setJumped] = useState(false);
     const listRef = useRef<List>(null);
     useEffect(() => {
@@ -211,7 +213,7 @@ export default function AbstractPhotoPage(props: {
     const { rowH: tmpRowH, rowPics: tmpRowPics } = calculate(props.photos, props.width - 12);
     const rowH = [...props.heights, ...tmpRowH];
     const rowPics = [...props.lines, ...tmpRowPics];
-    const getItemSize = (index: number) => (index !== rowH.length - 1 ? rowH[index] : rowH[index] + 20);
+    const getItemSize = (index: number) => (index !== rowH.length - 1 ? rowH[index] : rowH[index] + (isMobile ? 60 : 20));
 
     return (
         <List

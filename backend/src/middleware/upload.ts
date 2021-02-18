@@ -1,6 +1,6 @@
 import multer from "multer";
 
-const maxSize = parseInt(process.env.MAX_SIZE || (50 * 1024 * 1024).toString());
+const maxSize = parseInt(process.env.MAX_SIZE || (10 * 1024 * 1024 * 1024).toString());
 const dir = "media/"
 
 const storage = multer.diskStorage({

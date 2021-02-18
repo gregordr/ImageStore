@@ -1,12 +1,24 @@
 # ImageStore
 
+ImageStore is a self-hosted photo gallery, that makes Google Photos users feel right at home.
+
+## Features:
+- Clean and intuitive UI for desktop and mobile browsers
+- Automatic thumbnail and preview creation for faster loading times
+- Fast uploads for both photos and videos
+- Albums to sort your photos into
+- Easily searchable labels
+- Automatic image-tagging
+
 [Online demo](https://gregordr.github.io/ImageStore/)
 
-This should give you a feeling of how everything works with some images of cats. To upload your own images, you will of course need to self-host.
+This should give you a feeling of how everything works with some images of cats. Or, take a look below:
+
+To upload your own images, you will of course need to self-host.
 
 ![preview](https://imgur.com/0yZQ7c7.jpg)
 
-## Instructions:
+## Installation instructions:
 
 ### Docker prebuilt images
 
@@ -18,9 +30,9 @@ Requirements:
 
 Download the docker-compose.yml: ```wget https://raw.githubusercontent.com/gregordr/ImageStore/main/docker-compose.yml```.
 
-Edit it according to your liking, then run ```docker-compose up```. Note that you need to comment in one of the two labelers, in case you want automatic image labeling.
+Edit it according to your liking, then run ```docker-compose up```. Note that you need to comment back in one of the two labelers, in case you want automatic image labeling.
 
-Go to http://localhost:3000, or whichever port you have chosen to use.
+Go to http://localhost:3000, or alternatively the port you have chosen to use.
 
 ### Docker build images yourself
 
@@ -32,18 +44,23 @@ Requirements:
 If you want to build yourself, then clone this repo and run ```docker-compose -f docker-compose-build.yml up```
 
 ### Without docker
+Requires Ubuntu 18.04/20.04. A RHEL/Centos build is in the works.
 
-Requirements:
- - npm
- - node
- - NGINX
- - postgreSQL v11
+```
+git clone https://github.com/gregordr/ImageStore
+cd CLI-Install
+sudo ./imagestore-build.sh
+```
+This will install and configure everything as needed in order to host ImageStore. PostgreSQL 11, Nodejs and nginx will be installed.
+By default it hosts over port 8080. However, the script has built in error checking such that if you're already hosting something over that port, 
+it will detect it and ask for an alternate port. The created database user is seeded with a random 16 character string, so there 
+is no default password to worry about. 
 
-This is a bit more complicated. Start by spinning up a postgreSQL v11 database, and put the URI to it into a ```.env``` file inside of the ```backend``` folder, like this: ```PGSTRING=postgres://user-pass@location:port/db```
+The Imagestore service by default will start on boot. To stop Imagestore, run
+```sudo systemctl stop ImageStoreFRONT.service; sudo systemctl stop ImageStoreBACK.service;```
 
-After that, you can go into the frontend and backend folders, and run ```npm i``` in both, then ```npm start```. This should make them serve content.
-
-Last, spin up a NGINX instance, with the configuration file found in ```./nginx```. Now, you should be ready to go.
+To prevent the service from starting on boot, run 
+```sudo systemctl disable ImageStoreFRONT.service; sudo systemctl disable ImageStoreBACK.service;```
 
 ## Contributing:
 

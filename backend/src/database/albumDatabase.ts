@@ -20,7 +20,8 @@ export async function getAlbums(searchTerm: string): Promise<unknown[]> {
             SELECT COUNT(*)
             FROM ${await album_photo}
             WHERE ${await albums}.oid = ${await album_photo}.${album}
-        )::integer AS imageCount FROM ${await albums} WHERE ${album} like $1::text;`, [searchTerm]);
+        )::integer AS imageCount FROM ${await albums} WHERE ${album} like $1::text
+        ORDER BY name;`, [searchTerm]);
         return result.rows;
     });
 }
@@ -40,7 +41,7 @@ export async function deleteAlbum(name: string): Promise<string> {
 
 export async function getMediaInAlbum(album: string, searchTerm: string, label: string): Promise<unknown[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width, date as date, type as type FROM ${await media} WHERE 
+        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width, date as date, type as type, coordX as coordX, coordY as coordY FROM ${await media} WHERE 
         (
             ${photo} like $1::text
             OR
