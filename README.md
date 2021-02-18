@@ -1,12 +1,24 @@
 # ImageStore
 
+ImageStore is a self-hosted photo gallery, that makes Google Photos users feel right at home.
+
+## Features:
+- Clean and intuitive UI for desktop and mobile browsers
+- Automatic thumbnail and preview creation for faster loading times
+- Fast uploads for both photos and videos
+- Albums to sort your photos into
+- Easily searchable labels
+- Automatic image-tagging
+
 [Online demo](https://gregordr.github.io/ImageStore/)
 
-This should give you a feeling of how everything works with some images of cats. To upload your own images, you will of course need to self-host.
+This should give you a feeling of how everything works with some images of cats. Or, take a look below:
+
+To upload your own images, you will of course need to self-host.
 
 ![preview](https://imgur.com/0yZQ7c7.jpg)
 
-## Instructions:
+## Installation instructions:
 
 ### Docker prebuilt images
 
@@ -18,9 +30,9 @@ Requirements:
 
 Download the docker-compose.yml: ```wget https://raw.githubusercontent.com/gregordr/ImageStore/main/docker-compose.yml```.
 
-Edit it according to your liking, then run ```docker-compose up```. Note that you need to comment in one of the two labelers, in case you want automatic image labeling.
+Edit it according to your liking, then run ```docker-compose up```. Note that you need to comment back in one of the two labelers, in case you want automatic image labeling.
 
-Go to http://localhost:3000, or whichever port you have chosen to use.
+Go to http://localhost:3000, or alternatively the port you have chosen to use.
 
 ### Docker build images yourself
 
