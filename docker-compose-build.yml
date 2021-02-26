@@ -43,3 +43,11 @@ services:
     #         FETCH_INTERVAL: 10
     #     depends_on:
     #       - backend
+    
+    face:
+        build: face
+        environment:
+            BASE_ADDRESS: backend:4000
+            FETCH_INTERVAL: 3
+        depends_on:
+            - backend

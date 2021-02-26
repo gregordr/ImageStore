@@ -41,3 +41,9 @@ services:
     #     environment:
     #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
     #         FETCH_INTERVAL: 10 # This is the interval the labeler will poll for new images in seconds
+
+    face:
+        image: imagestored/face
+        environment:
+            BASE_ADDRESS: backend:4000
+            FETCH_INTERVAL: 3

@@ -1,0 +1,2 @@
+facenet-pytorch
+python-dotenv
