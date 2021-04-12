@@ -30,13 +30,13 @@ services:
         volumes:
             - ./data/:/var/lib/postgresql/data/
 
-    # detectron2: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very leigthweight. Check yourself how much load detectron2 puts on your device, and if it's too much, switch to yolo. Comment out the model you want to use back in, but never comment out both.
+    # detectron2: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very lightweight. Check yourself how much load detectron2 puts on your device, and if it's too much, switch to yolo. Comment out the model you want to use back in, but never comment out both.
     #     image: imagestored/detectron2
     #     environment:
     #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
     #         FETCH_INTERVAL: 10 # This is the interval the labeler will poll for new images in seconds
 
-    # yolo: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very leigthweight. Check yourself how much load detectron2 puts on your device, and if it's too much, switch to yolo. Comment out the model you want to use back in, but never comment out both.
+    # yolo: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very lightweight. Check yourself how much load detectron2 puts on your device, and if it's too much, switch to yolo. Comment out the model you want to use back in, but never comment out both.
     #     image: imagestored/yolo
     #     environment:
     #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
