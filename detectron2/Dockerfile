@@ -1,7 +1,7 @@
 FROM jjanzic/docker-python3-opencv
 WORKDIR /code
 RUN apt-get update
-RUN apt-get install libgl1-mesa-glx
+RUN apt-get install libgl1-mesa-glx -y
 COPY requirements.txt .
 RUN apt-get update \
     && apt-get install -y libsm6 libxext6 libxrender-dev \
