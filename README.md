@@ -62,7 +62,7 @@ The Imagestore service by default will start on boot. To stop Imagestore, run
 To prevent the service from starting on boot, run 
 ```sudo systemctl disable ImageStoreFRONT.service; sudo systemctl disable ImageStoreBACK.service;```
 
-### Notes for raspberry PI:
+### Notes for raspberry Pi:
 
 Incase you get an error with the backend saying unreachable code, you might have to run the following commands:
 
