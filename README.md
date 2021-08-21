@@ -62,6 +62,18 @@ The Imagestore service by default will start on boot. To stop Imagestore, run
 To prevent the service from starting on boot, run 
 ```sudo systemctl disable ImageStoreFRONT.service; sudo systemctl disable ImageStoreBACK.service;```
 
+### Notes for raspberry PI:
+
+Incase you get an error with the backend saying unreachable code, you might have to run the following commands:
+
+```
+wget http://ftp.ch.debian.org/debian/pool/main/libs/libseccomp/libseccomp2_2.5.1-1_armhf.deb
+sha256sum libseccomp2_2.5.1-1_armhf.deb
+# CONFIRM THAT THE OUTPUT MATCHES THE FOLLOWING LINE BEFORE YOU RUN THE LAST COMMAND:
+# 7a4d09eea20f7e17a416825ae2be06ca08b9cb5072566045c545c74192e6fcca  libseccomp2_2.5.1-1_armhf.deb
+sudo dpkg -i libseccomp2_2.5.1-1_armhf.deb
+```
+
 ## Contributing:
 
 Accepted feature requests can be seen under projects/ToDOs. If you have a new feature request, feel free to open an issue.
