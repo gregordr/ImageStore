@@ -10,11 +10,10 @@ import { DownloadSnackbar } from "./Components/Snackbars/DownloadSnackbar";
 import { RemovePhotosSnackbar } from "./Components/Snackbars/RemovePhotosSnackbar";
 import { AlbumT, PhotoT } from "./Interfaces";
 
-const port = 4000;
-export const baseURL = window.location.protocol + "//" + window.location.hostname + (port ? ":" : "") + port + process.env.PUBLIC_URL;
+const docker = process.env.REACT_APP_DOCKER;
 
-// const port = window.location.port;
-// export const baseURL = window.location.protocol + "//" + window.location.hostname + (port ? ":" : "") + port + process.env.PUBLIC_URL + "/api";
+const port = docker ? window.location.port : 4000;
+export const baseURL = window.location.protocol + "//" + window.location.hostname + (port ? ":" : "") + port + process.env.PUBLIC_URL + (docker ? "/api" : "");
 
 axios.defaults.baseURL = baseURL;
 
