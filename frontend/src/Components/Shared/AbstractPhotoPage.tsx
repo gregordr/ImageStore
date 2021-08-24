@@ -44,6 +44,7 @@ function Photo(props: any) {
             style={{
                 height: props.y,
                 width: props.x,
+                boxShadow: props.marked?"inset 0px 0px 0px 100px rgb(0,0,255,0.6)":""
             }}
             onMouseEnter={async () => {
                 setVis(0.4);
@@ -63,8 +64,16 @@ function Photo(props: any) {
                 }
             }}
         >
-            <div onClick={props.imageClick}>
-                <div style={{ backgroundColor: "#eeeeee", height: props.y - 5, width: props.x - 5 }}>
+            <div
+                onClick={props.imageClick}
+                onMouseOver={props.hoverEventHandler}
+            >
+                <div
+                    style={{
+                        backgroundColor: "#eeeeee",
+                        height: props.y - 5,
+                        width: props.x - 5,
+                    }}>
                     {props.type === "photo" ? (
                         <div
                             style={{
@@ -96,7 +105,15 @@ function Photo(props: any) {
                     )}
                 </div>
             </div>
-            {(vis || props.anySelected() || true) && <input className={classes.photoBox} style={{ opacity: opacity }} readOnly={true} checked={props.selected} type="checkbox" onClick={props.click} />}
+            {(vis || props.anySelected() || true) && <input
+                className={classes.photoBox}
+                style={{ opacity: opacity }}
+                readOnly={true}
+                checked={props.selected}
+                type="checkbox"
+                onClick={props.click}
+                onMouseOver={props.hoverEventHandler} />
+            }
             {props.type === "video" && !play && (
                 <IconButton className={classes.videoIcon}>
                     <PlayArrow style={{ fontSize: "28" }}></PlayArrow>
@@ -113,7 +130,9 @@ const makePhoto = (photo: PhotoT, realH: number, props: any, isScrolling: boolea
         y={realH}
         click={props.clickHandler(photo.id)}
         imageClick={props.imageClickHandler(photo.id)}
+        hoverEventHandler={props.hoverEventHandler(photo.id)}
         selected={props.selected.includes(photo.id)}
+        marked={props.marked.includes(photo.id)}
         anySelected={props.anySelected}
         outZoom={0.9}
         isScrolling={isScrolling}
@@ -191,6 +210,8 @@ export default function AbstractPhotoPage(props: {
     width: number;
     clickHandler: (id: string) => () => void;
     imageClickHandler: (id: string) => () => void;
+    hoverEventHandler: (id: string) => () => void;
+    marked: string[];
     selected: string[];
     anySelected: any;
     heights: number[];
