@@ -1,4 +1,4 @@
-import React, { ChangeEvent, RefObject, useEffect, useState } from "react";
+import React, { ChangeEvent, RefObject, useCallback, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Backdrop } from "@material-ui/core";
@@ -107,7 +107,14 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     }, [photos]);
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-    const { getRootProps, open: openM, getInputProps, acceptedFiles, fileRejections, isDragActive } = useDropzone({
+    const {
+        getRootProps,
+        open: openM,
+        getInputProps,
+        acceptedFiles,
+        fileRejections,
+        isDragActive,
+    } = useDropzone({
         // Disable click and keydown behavior
         noClick: true,
         noKeyboard: true,
@@ -142,6 +149,11 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         fetchPhotos();
         fetchAlbums();
     }, [searchTerm, id]);
+
+    const [lastSelected, setLastSelected] = useState<string | undefined>();
+    const [hover, setHover] = useState<string | undefined>();
+    const [marked, setMarked] = useState<string[]>([]);
+    const [ctrl, setCtrl] = useState(false);
     //#endregion hooks
 
     //#region API
@@ -193,6 +205,47 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     //#region handlers
 
+    const photoSelection = useCallback(
+        (inclusive: string, exclusive: string): string[] => {
+            if (inclusive === exclusive) return [];
+            const selection = [inclusive];
+            let include = false;
+            for (const photo of photos) {
+                if ((photo.id === inclusive || photo.id === exclusive) && include) {
+                    break;
+                }
+
+                if (include) selection.push(photo.id);
+
+                if (photo.id === inclusive || photo.id === exclusive) {
+                    include = true;
+                }
+            }
+
+            return selection;
+        },
+        [photos]
+    );
+
+    useEffect(() => {
+        document.addEventListener("keydown", (e) => {
+            e.key === "Control" && setCtrl(true);
+        });
+
+        document.addEventListener("keyup", (e) => {
+            e.key === "Control" && setCtrl(false);
+        });
+
+        return () => {
+            document.removeEventListener("keydown", (e) => e);
+            document.removeEventListener("keyup", (e) => e);
+        };
+    }, []);
+
+    const hoverEventHandler = (id: string) => () => {
+        setHover(id);
+    };
+
     const imageClickHandler = (photoId: string) => () => {
         if (anySelected()) {
             clickHandler(photoId)();
@@ -201,19 +254,35 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         }
     };
 
-    const clickHandler = (id: string) => () => {
+    const clickHandler = (clickedPhotoId: string) => () => {
         let copy = selected.slice();
-        if (copy.includes(id)) copy = copy.filter((v) => v !== id);
-        else copy.push(id);
+        let toggleSet = [clickedPhotoId];
+        if (anySelected() && lastSelected && ctrl) {
+            toggleSet = photoSelection(clickedPhotoId, lastSelected);
+        }
+        setLastSelected(clickedPhotoId);
+        for (const id of toggleSet) {
+            if (copy.includes(id)) copy = copy.filter((v) => v !== id);
+            else copy.push(id);
+        }
+
         setSelected(copy);
         if (copy.length === 0) {
             setSelectable(false);
         }
     };
 
-    const anySelected = (): boolean => {
+    const anySelected = useCallback(() => {
         return selected.length !== 0 || selectable;
-    };
+    }, [selectable, selected.length]);
+
+    useEffect(() => {
+        if (anySelected() && lastSelected && hover && ctrl) {
+            setMarked(photoSelection(hover, lastSelected));
+        } else {
+            setMarked([]);
+        }
+    }, [lastSelected, hover, ctrl, anySelected, photoSelection]);
 
     const viewButtonFunctions = {
         delete: async (id: string) => {
@@ -384,6 +453,8 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                                             selected={selected}
                                             anySelected={anySelected}
                                             imageClickHandler={imageClickHandler}
+                                            hoverEventHandler={hoverEventHandler}
+                                            marked={marked}
                                             lines={lines}
                                             heights={heights}
                                             viewId={viewId}
