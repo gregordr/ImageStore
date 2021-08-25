@@ -179,12 +179,17 @@ export async function removeLabel(id: string, label: string) {
     await axios.post("/labels/remove", qs.stringify(requestBody));
 }
 
-export async function editMedia(id: string, name: string, date: number) {
+/**
+ * Edit the properties of the photo with id=@param id
+ */
+export async function editMedia(id: string, name: string, date: number, x?: number, y?: number) {
     const requestBody = {
         name,
         date,
+        x,
+        y,
     };
-    await axios.post("/media/edit/" + id, qs.stringify(requestBody));
+    await axios.post("/media/edit/" + id, qs.stringify(requestBody, { skipNulls: true }));
 }
 
 export async function addLabel(ids: string[], labels: string[]) {
