@@ -36,9 +36,9 @@ export async function addMedia(name: string, heigth: number, width: number, date
     });
 }
 
-export async function editMedia(oid: string, name: string, date: number): Promise<void> {
+export async function editMedia(oid: string, name: string, date: number, coordX?: number, coordY?: number): Promise<void> {
     return await transaction(async (client) => {
-        (await client.query(`UPDATE ${await media} SET photo=$2::text, date=$3::integer WHERE OID = $1::OID;`, [oid, name, date]));
+        (await client.query(`UPDATE ${await media} SET photo=$2::text, date=$3::integer, coordX=$4::float, coordY=$5::float WHERE OID = $1::OID;`, [oid, name, date, coordX, coordY]));
     })
 }
 
