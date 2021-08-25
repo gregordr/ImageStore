@@ -22,7 +22,7 @@ const useStyles = makeStyles({
     },
 });
 
-export default function AddToAlbum(props: { cb: (name: string, number: number) => any; setOpen: (arg0: boolean) => any; open: boolean; photo: PhotoT }) {
+export default function EditPropsDialog(props: { cb: (name: string, number: number) => any; setOpen: (arg0: boolean) => any; open: boolean; photo: PhotoT }) {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const [name, setName] = useState("");

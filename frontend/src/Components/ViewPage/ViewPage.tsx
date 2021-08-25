@@ -38,6 +38,7 @@ import SwiperCore, { Virtual, Navigation } from "swiper";
 import "swiper/swiper.min.css";
 import moment from "moment";
 import EditPropsDialog from "./EditPropsDialog";
+import EditLocationDialog from "./EditLocationDialog";
 
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -119,6 +120,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const [opacityLeft, setOpacityLeft] = useState(0);
     const [drawerOpen, setDrawerOpen] = useState(localStorage.getItem("drawerOpen") === "true");
     const [editPropsOpen, setEditPropsOpen] = useState(false);
+    const [editLocationOpen, setEditLocationOpen] = useState(false);
     const [labels, setLabels] = useState<string[] | "Loading">("Loading");
     const index = props.photos.findIndex((v: PhotoT) => v.id === id);
     const photo = props.photos[index];
@@ -199,9 +201,15 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const hideArrows = useMediaQuery(theme.breakpoints.down("sm"));
 
     const editPropsCb = async (name: string, date: number) => {
-        editMedia(id, name, date);
+        editMedia(id, name, date, props.photos[index].coordx, props.photos[index].coordy);
         props.photos[index].name = name;
         props.photos[index].date = date;
+    };
+
+    const editLocationCb = async (x?: number, y?: number) => {
+        editMedia(id, props.photos[index].name, props.photos[index].date, x, y);
+        props.photos[index].coordx = x;
+        props.photos[index].coordy = y;
     };
 
     return (
@@ -375,37 +383,47 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                         </ul>
                     </ListItem>
                     <ListItem>
-                        {photo && photo.coordx && photo.coordy && (
-                            <>
-                                <ListItemIcon>
-                                    <Map />
-                                </ListItemIcon>
-                                <ListItemText
-                                    primary={
-                                        <>
-                                            Map
-                                            <Switch
-                                                checked={mapEnabled}
-                                                onChange={() => {
-                                                    localStorage.setItem("enableMap", mapEnabled ? "false" : "true");
-                                                    setMapEnabled(!mapEnabled);
-                                                }}
-                                                color="primary"
-                                            />
-                                        </>
-                                    }
-                                />
-                                <IconButton>
-                                    <Tooltip title="The map has to be requested from an external source (openstreetmap.org).">
-                                        <Warning></Warning>
-                                    </Tooltip>
-                                </IconButton>
-                            </>
-                        )}
+                        <ListItemIcon>
+                            <Map />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary={
+                                <>
+                                    Map
+                                    {photo && photo.coordx && photo.coordy && (
+                                        <Switch
+                                            checked={mapEnabled}
+                                            onChange={() => {
+                                                localStorage.setItem("enableMap", mapEnabled ? "false" : "true");
+                                                setMapEnabled(!mapEnabled);
+                                            }}
+                                            color="primary"
+                                        />
+                                    )}
+                                </>
+                            }
+                        />
+                        <IconButton>
+                            <Tooltip title="The map has to be requested from an external source (openstreetmap.org).">
+                                <Warning></Warning>
+                            </Tooltip>
+                        </IconButton>
+                        <IconButton onClick={() => setEditLocationOpen(true)}>
+                            <Tooltip title="Edit location">
+                                <Edit></Edit>
+                            </Tooltip>
+                        </IconButton>
                     </ListItem>
                     <ListItem>
                         {mapEnabled && photo && photo.coordx && photo.coordy && (
-                            <MapContainer center={[photo.coordx, photo.coordy]} zoom={13} scrollWheelZoom={false} style={{ height: 200, width: "100%" }} key={photo.id}>
+                            <MapContainer
+                                attributionControl={false}
+                                center={[photo.coordx, photo.coordy]}
+                                zoom={13}
+                                scrollWheelZoom={false}
+                                style={{ height: 200, width: "100%" }}
+                                key={photo.id + photo.coordx + photo.coordy}
+                            >
                                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                                 <Marker position={[photo.coordx, photo.coordy]}></Marker>
                             </MapContainer>
@@ -414,6 +432,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                 </List>
             </Drawer>
             <EditPropsDialog open={editPropsOpen} setOpen={setEditPropsOpen} cb={editPropsCb} photo={props.photos[index]} />
+            <EditLocationDialog open={editLocationOpen} setOpen={setEditLocationOpen} cb={editLocationCb} photo={props.photos[index]} />
         </div>
     );
 }
