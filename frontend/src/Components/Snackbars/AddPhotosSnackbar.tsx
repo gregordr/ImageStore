@@ -1,6 +1,7 @@
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@material-ui/core";
 import { OptionsObject } from "notistack";
 import React from "react";
+import { useState } from "react";
 import { addPhotosToAlbums } from "../../API";
 import { AlbumT } from "../../Interfaces";
 import AddToAlbum from "../Shared/AddToAlbum";
@@ -22,18 +23,21 @@ function DialogComponent(props: any) {
         </div>
     );
 }
+function ProgressCounter(props: { setProgressUpdateHandler: (handler: (progress: number) => void) => void; amount: number }) {
+    const [val, setVal] = React.useState(0);
+    props.setProgressUpdateHandler(setVal);
+
+    return <>{`${val} of ${props.amount} element${props.amount === 1 ? "" : "s"} have been uploaded`}</>;
+}
 
 export class AddPhotosSnackbar {
     enqueueSnackbar: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number;
     closeSnackbar: (key?: string | number | undefined) => void;
-    albums?: AlbumT[]
+    albums?: AlbumT[];
     snackMsg: string | number | undefined;
+    handleUpdateProgress?: (progress: number) => void;
 
-    constructor(
-        enqueueSnackbar: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number,
-        closeSnackbar: (key?: string | number | undefined) => void,
-        albums?: AlbumT[]
-    ) {
+    constructor(enqueueSnackbar: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number, closeSnackbar: (key?: string | number | undefined) => void, albums?: AlbumT[]) {
         this.enqueueSnackbar = enqueueSnackbar;
         this.closeSnackbar = closeSnackbar;
         this.albums = albums;
@@ -49,13 +53,19 @@ export class AddPhotosSnackbar {
     }
 
     begin(amount: number) {
-        const message = `${amount} element${amount === 1 ? " is" : "s are"} being uploaded`;
         const action = SnackbarAction(null, <CircularProgress color="inherit" style={{ padding: 5 }} />);
-        this.snackMsg = this.enqueueSnackbar!(message, {
-            variant: "info",
-            autoHideDuration: null,
-            action,
-        });
+        this.snackMsg = this.enqueueSnackbar!(
+            <ProgressCounter setProgressUpdateHandler={(updateProgress: (progress: number) => void) => (this.handleUpdateProgress = updateProgress)} amount={amount}></ProgressCounter>,
+            {
+                variant: "info",
+                autoHideDuration: null,
+                action,
+            }
+        );
+    }
+
+    updateProgress(progress: number) {
+        this.handleUpdateProgress?.(progress);
     }
 
     end(photos: string[], errors: string[]) {
@@ -63,8 +73,19 @@ export class AddPhotosSnackbar {
         const message = `${photos.length} element${photos.length === 1 ? " was" : "s were"} uploaded`;
         const action = SnackbarAction(
             this.closeSnackbar,
-            this.albums ?
-                (key: any) => <DialogComponent photos={photos} closeSnackbar={this.closeSnackbar} closeAddSnackbar={() => { if (key) this.closeSnackbar(key) }} enqueueSnackbar={this.enqueueSnackbar} albums={this.albums} /> : null
+            this.albums
+                ? (key: any) => (
+                      <DialogComponent
+                          photos={photos}
+                          closeSnackbar={this.closeSnackbar}
+                          closeAddSnackbar={() => {
+                              if (key) this.closeSnackbar(key);
+                          }}
+                          enqueueSnackbar={this.enqueueSnackbar}
+                          albums={this.albums}
+                      />
+                  )
+                : null
         );
         let count = 0;
         const errorMessage = (
