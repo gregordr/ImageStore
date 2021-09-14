@@ -17,8 +17,6 @@ export const baseURL = window.location.protocol + "//" + window.location.hostnam
 
 axios.defaults.baseURL = baseURL;
 
-axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
-
 const SEND_SIZE = 50;
 export async function addPhotos(
     files: File[],
@@ -63,10 +61,10 @@ export async function deletePhotos(
     const snackbar = DeletePhotosSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
     try {
         snackbar?.begin(photoIds.length);
-        const something = await Promise.all(photoIds.map(async (pid) => await axios.post("/media/delete/" + pid)));
-        snackbar?.end(something, []);
+        const res = await axios.post("/media/delete/", { ids: photoIds });
+        snackbar?.end(res.data.successes, res.data.errors);
     } catch (error) {
-        snackbar?.end([], [error]);
+        snackbar?.end(0, [error]);
         return [];
     }
 }
@@ -91,7 +89,7 @@ export async function renameAlbum(albumId: string, newAlbumName: string) {
         newAlbumName,
         albumId,
     };
-    await axios.post("/albums/rename", qs.stringify(requestBody));
+    await axios.post("/albums/rename", requestBody);
 }
 
 export async function addPhotosToAlbums(
@@ -107,7 +105,7 @@ export async function addPhotosToAlbums(
     const snackbar = AddPhotosToAlbumsSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
     try {
         snackbar?.begin(photoIds.length, albumIds.length);
-        const result = await axios.post("/albums/addPhotos", qs.stringify(requestBody));
+        const result = await axios.post("/albums/addPhotos", requestBody);
         snackbar?.end(photoIds, albumIds, []);
     } catch (error) {
         snackbar?.end([], [], [error]);
@@ -123,10 +121,14 @@ export async function removePhotosFromAlbum(
     const snackbar = RemovePhotosSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
     try {
         snackbar?.begin(photoIds.length);
-        const smth = await Promise.all(photoIds.map(async (pid) => await axios.post(`/albums/remove/${albumId}/${pid}`)));
-        snackbar?.end(photoIds, []);
+        const requestBody = {
+            photoIds,
+            albumId,
+        };
+        const res = await axios.post(`/albums/remove`, requestBody);
+        snackbar?.end(res.data, []);
     } catch (error) {
-        snackbar?.end([], [error]);
+        snackbar?.end(0, [error]);
     }
 }
 
@@ -189,7 +191,7 @@ export async function removeLabel(id: string, label: string) {
         id,
         label,
     };
-    await axios.post("/labels/remove", qs.stringify(requestBody));
+    await axios.post("/labels/remove", requestBody);
 }
 
 /**
@@ -202,7 +204,7 @@ export async function editMedia(id: string, name: string, date: number, x?: numb
         x,
         y,
     };
-    await axios.post("/media/edit/" + id, qs.stringify(requestBody, { skipNulls: true }));
+    await axios.post("/media/edit/" + id, requestBody);
 }
 
 export async function addLabel(ids: string[], labels: string[]) {
@@ -210,14 +212,14 @@ export async function addLabel(ids: string[], labels: string[]) {
         ids,
         labels,
     };
-    await axios.post("/labels/add", qs.stringify(requestBody));
+    await axios.post("/labels/add", requestBody);
 }
 
 export async function getPhotoLabels(ids: string[]) {
     const requestBody = {
         ids,
     };
-    return await axios.post("/labels/get/", qs.stringify(requestBody));
+    return await axios.post("/labels/get/", requestBody);
 }
 
 export async function getAlbums(searchTerm: string) {

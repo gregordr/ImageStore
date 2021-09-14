@@ -31,9 +31,9 @@ export class DeletePhotosSnackbar {
         });
     }
 
-    end(photos: any[], errors: string[]) {
+    end(photos: number, errors: string[]) {
         if (this.snackMsg) this.closeSnackbar(this.snackMsg);
-        const message = `${photos.length} element${photos.length === 1 ? " was" : "s were"} deleted`;
+        const message = `${photos} element${photos === 1 ? " was" : "s were"} deleted`;
         const action = SnackbarAction(this.closeSnackbar);
         let count = 0;
         const errorMessage = (
@@ -46,7 +46,7 @@ export class DeletePhotosSnackbar {
         );
         const errorAction = SnackbarAction(this.closeSnackbar);
 
-        if (photos.length !== 0)
+        if (photos !== 0)
             this.enqueueSnackbar(message, {
                 variant: "success",
                 autoHideDuration: 3000,

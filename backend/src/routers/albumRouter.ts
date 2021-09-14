@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAlbums, addAlbum, addPhotosToAlbums, removePhotoFromAlbum, deleteAlbum, getMediaInAlbum, setCover, rename } from '../database/albumDatabase';
+import { getAlbums, addAlbum, addPhotosToAlbums, removePhotosFromAlbum, deleteAlbum, getMediaInAlbum, setCover, rename } from '../database/albumDatabase';
 
 export const router = express.Router();
 
@@ -62,9 +62,9 @@ router.post('/addPhotos/', async (req, res) => {
     }
 });
 
-router.post('/remove/:albumID/:photoID', async (req, res) => {
+router.post('/remove', async (req, res) => {
     try {
-        res.status(200).send(await removePhotoFromAlbum(req.params.albumID, req.params.photoID));
+        res.status(200).send(await removePhotosFromAlbum(req.body.albumId, req.body.photoIds));
     } catch (err) {
         res.status(500).send(err.toString());
     }
