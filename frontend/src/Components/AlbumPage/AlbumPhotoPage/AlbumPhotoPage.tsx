@@ -182,20 +182,21 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const upload = async (files: File[], fileRejections: FileRejection[]) => {
         if (!files) return;
 
-        const formData = new FormData();
+        const acceptedFiles: File[] = [];
+
         files.forEach((file) => {
             if (file.size > maxSize) {
                 fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize / (1024 * 1024 * 1024)} GB`, code: "file-too-large" }] });
             } else {
-                formData.append("file", file);
+                acceptedFiles.push(file);
             }
         });
 
         const snackbar = UploadErrorSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
         snackbar?.begin(fileRejections);
 
-        if (formData.getAll("file").length === 0) return;
-        const data = await addPhotos(formData, enqueueSnackbar, closeSnackbar, albums);
+        if (acceptedFiles.length === 0) return;
+        const data = await addPhotos(acceptedFiles, enqueueSnackbar, closeSnackbar, albums);
 
         await addPhotosToAlbums(data, [id], enqueueSnackbar, closeSnackbar);
         await fetchPhotos();

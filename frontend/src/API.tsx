@@ -19,19 +19,32 @@ axios.defaults.baseURL = baseURL;
 
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 
+const SEND_SIZE = 50;
 export async function addPhotos(
-    formData: FormData,
+    files: File[],
     enqueueSnackbar?: (message: React.ReactNode, options?: OptionsObject | undefined) => string | number,
     closeSnackbar?: (key?: string | number | undefined) => void,
     albums?: AlbumT[]
 ) {
     const snackbar = AddPhotosSnackbar.createInstance(enqueueSnackbar, closeSnackbar, albums);
     try {
-        snackbar?.begin(formData.getAll("file").length);
+        snackbar?.begin(files.length);
 
-        const res = await axios.post("/media/add", formData);
-        const photos: string[] = res.data.success;
-        const errors: string[] = res.data.errors;
+        const photos: string[] = [];
+        const errors: string[] = [];
+
+        let formData = new FormData();
+        for (let fileIdx = 0; fileIdx < files.length; fileIdx++) {
+            formData.append("file", files[fileIdx]);
+
+            if ((fileIdx !== 0 && fileIdx % SEND_SIZE === 0) || fileIdx === files.length - 1) {
+                const res = await axios.post("/media/add", formData);
+                photos.push(...(res.data.success as string[]));
+                errors.push(...(res.data.errors as string[]));
+                snackbar?.updateProgress(fileIdx);
+                formData = new FormData();
+            }
+        }
 
         snackbar?.end(photos, errors);
 
