@@ -42,13 +42,11 @@ export async function editMedia(oid: string, name: string, date: number, coordX?
     })
 }
 
-export async function removeMedia(oid: string): Promise<number> {
+export async function removeMedia(oids: string[]): Promise<number[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT OID FROM ${await media} WHERE oid = $1::oid;`, [oid]);
-        if (result.rowCount == 0)
-            throw new DatabaseError('This file does not exist');
+        const result = await client.query(`WITH VALa(aa) AS (SELECT * FROM UNNEST ($1::OID[])) SELECT OID FROM ${await media}, VALa WHERE oid = VALa.aa;`, [oids]);
 
-        await client.query(`DELETE FROM ${await media} WHERE oid = $1::oid;`, [oid]);
-        return result.rows[0].oid
+        await client.query(`DELETE FROM ${await media} WHERE oid in (SELECT * FROM UNNEST($1::OID[]));`, [oids]);
+        return result.rows.map((row) => row.oid);
     });
 }

@@ -75,9 +75,9 @@ export async function addPhotosToAlbums(photoIDs: string[], albumIDs: string[]):
     }, false)
 }
 
-export async function removePhotoFromAlbum(albumID: string, photoID: string): Promise<string> {
+export async function removePhotosFromAlbum(albumID: string, photoIDs: string[]): Promise<string> {
     return await transaction(async (client) => {
-        return (await client.query(`DELETE FROM ${await album_photo} WHERE Album = $1::OID and Photo = $2::OID;`, [albumID, photoID])).rowCount.toString();
+        return (await client.query(`DELETE FROM ${await album_photo} WHERE Album = $1::OID and Photo in (SELECT * FROM UNNEST($2::OID[]));`, [albumID, photoIDs])).rowCount.toString();
     })
 }
 

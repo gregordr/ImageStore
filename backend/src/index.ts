@@ -10,7 +10,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions))
 
-app.use(bodyParser.urlencoded({ limit: '50mb', extended: true, parameterLimit: 1000000 }));
+app.use(bodyParser.json({ limit: '50mb' }));
 
 import dotenv from 'dotenv'
 dotenv.config();
