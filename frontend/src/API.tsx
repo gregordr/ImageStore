@@ -156,17 +156,31 @@ export async function download(
             name = photo.name;
         } else {
             const zip = new JSZip();
-            await Promise.all(
-                photos.map(async (photo) => {
-                    const response = await axios({
-                        url: `/media/${photo.id}`,
-                        method: "GET",
-                        responseType: "blob", // important
-                    });
 
-                    zip.file(photo.name, response.data);
-                })
-            );
+            const takenNames: { [name: string]: true } = {};
+            const findFreeName = (name: string): string => {
+                if (!takenNames[name]) {
+                    takenNames[name] = true;
+                    return name;
+                } else {
+                    return findFreeName(`_CONFLICT_${Math.random().toString(5).substring(2, 15)}_` + name);
+                }
+            };
+
+            const CHUNK = 10;
+            for (let i = 0; i < photos.length; i += CHUNK) {
+                await Promise.all(
+                    photos.slice(i, i + CHUNK).map(async (photo) => {
+                        const response = await axios({
+                            url: `/media/${photo.id}`,
+                            method: "GET",
+                            responseType: "blob", // important
+                        });
+
+                        zip.file(findFreeName(photo.name), response.data);
+                    })
+                );
+            }
 
             content = await zip.generateAsync({ type: "blob" });
             name = `photos.zip`;
