@@ -17,6 +17,7 @@ import { UploadErrorSnackbar } from "../Snackbars/UploadErrorSnackbar";
 import { CloudUpload } from "@material-ui/icons";
 import AutocompleteSearchBar from "../Shared/SearchBar";
 import AddLabels from "../Shared/AddLabels";
+import ConfirmDeleteDialog from "../Shared/ConfirmDeleteDialog";
 
 const maxSize = parseInt(process.env.MAX_SIZE || (10 * 1024 * 1024 * 1024).toString());
 const drawerWidth = 240;
@@ -110,6 +111,12 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [onDeleteDialogClose, setOnDeleteDialogClose] = useState<(confirm: boolean) => () => void>(() => (confirm: boolean) => () => {
+        setDeleteDialogOpen(false);
+        alert("Error onDeleteClose not defined");
+    });
 
     const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
 
@@ -243,7 +250,14 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const viewButtonFunctions = {
         delete: async (id: string) => {
-            await deletePhoto(id);
+            setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
+                if (confirm) {
+                    await deletePhoto(id);
+                }
+
+                setDeleteDialogOpen(false);
+            });
+            setDeleteDialogOpen(true);
         },
         addToAlbum: (id: string) => {
             setSelected([id]);
@@ -265,10 +279,17 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const topBarButtonFunctions = {
         delete: async () => {
-            topBarButtonFunctions.unselect();
-            await deletePhotos(selected, enqueueSnackbar, closeSnackbar);
-            setPhotos(photos.filter((p) => !selected.includes(p.id)));
-            await fetchPhotos();
+            setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
+                if (confirm) {
+                    topBarButtonFunctions.unselect();
+                    await deletePhotos(selected, enqueueSnackbar, closeSnackbar);
+                    setPhotos(photos.filter((p) => !selected.includes(p.id)));
+                    fetchPhotos();
+                }
+
+                setDeleteDialogOpen(false);
+            });
+            setDeleteDialogOpen(true);
         },
         unselect: () => {
             setSelected([]);
@@ -421,6 +442,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             </Switch>
             <AddToAlbum albums={albums} open={albumDialogOpen} setOpen={setAlbumDialogOpen} cb={albumDialogCallback} />
             <AddLabels open={labelDialogOpen} setOpen={setLabelDialogOpen} cb={labelDialogCallback}></AddLabels>
+            <ConfirmDeleteDialog open={deleteDialogOpen} handleClose={onDeleteDialogClose}></ConfirmDeleteDialog>
         </div>
     );
 }
