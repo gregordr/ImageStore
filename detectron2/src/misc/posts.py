@@ -10,5 +10,5 @@ def post_image_labels(url, img_id, labels):
         'labels[]': labels
     }
     # TODO: handle error here
-    requests.post(url, data=data)
+    requests.post(url, json=data)
     

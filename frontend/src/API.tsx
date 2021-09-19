@@ -247,3 +247,27 @@ export async function getPhotos(searchTerm: string) {
 export async function getPhotosInAlbum(id: string, searchTerm: string) {
     return await axios.get(searchTerm === "" || !searchTerm ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`);
 }
+
+export async function getAutoAddLabels(albumId: string) {
+    const requestBody = {
+        albumId,
+    };
+    return await axios.post("/labels/getAutoAdd/", requestBody);
+}
+
+export async function addAutoAddLabel(albumId: string, label: string, addExisting: boolean) {
+    const requestBody = {
+        albumId,
+        label,
+        addExisting
+    };
+    return await axios.post("/labels/addAutoAdd/", requestBody);
+}
+
+export async function removeAutoAddLabel(albumId: string, label: string) {
+    const requestBody = {
+        albumId,
+        label
+    };
+    return await axios.post("/labels/removeAutoAdd/", requestBody);
+}

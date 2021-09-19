@@ -9,12 +9,22 @@ import { useTheme } from "@material-ui/core/styles";
 import { TextField } from "@material-ui/core";
 import { AlbumT } from "../../Interfaces";
 import { clearCover, deleteAlbum, renameAlbum } from "../../API";
+import ConfirmDeleteDialog from "../Shared/ConfirmDeleteDialog";
+import AutoAddDialog from "./AutoAddDialog";
 
 export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen: (arg0: boolean) => any; fetchAlbums: () => Promise<void> }) {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const [nameField, setNameField] = useState(props.album.name);
     const [hasCover, setHasCover] = useState(props.album.cover !== null);
+
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [onDeleteDialogClose, setOnDeleteDialogClose] = useState<(confirm: boolean) => () => void>(() => (confirm: boolean) => () => {
+        setDeleteDialogOpen(false);
+        alert("Error onDeleteClose not defined");
+    });
+
+    const [autoAddDialogOpen, setAutoAddDialogOpen] = useState(false);
 
     useEffect(() => {
         if (props.open) {
@@ -40,9 +50,16 @@ export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen
     };
 
     const deleteThis = async () => {
-        await deleteAlbum(props.album.id);
-        await props.fetchAlbums();
-        await handleClose(false)();
+        setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
+            if (confirm) {
+                await deleteAlbum(props.album.id);
+                await props.fetchAlbums();
+                await handleClose(false)();
+            }
+
+            setDeleteDialogOpen(false);
+        });
+        setDeleteDialogOpen(true);
     };
 
     return (
@@ -50,6 +67,11 @@ export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen
             <Dialog fullScreen={fullScreen} open={props.open} onClose={handleClose(false)} aria-labelledby="responsive-dialog-title">
                 <DialogTitle id="responsive-dialog-title">Settings of {props.album.name}</DialogTitle>
                 <DialogContent>
+                    <Button style={{ backgroundColor: "#dddddd" }} onClick={() => setAutoAddDialogOpen(true)}>
+                        Auto-adding
+                    </Button>
+                    <br></br>
+                    <br></br>
                     <Button style={{ backgroundColor: "#dddddd" }} disabled={!hasCover} onClick={() => setHasCover(false)}>
                         {hasCover ? "Clear cover" : "No album cover"}
                     </Button>
@@ -74,6 +96,8 @@ export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen
                     </Button>
                 </DialogActions>
             </Dialog>
+            <ConfirmDeleteDialog open={deleteDialogOpen} handleClose={onDeleteDialogClose}></ConfirmDeleteDialog>
+            <AutoAddDialog open={autoAddDialogOpen} setOpen={setAutoAddDialogOpen} albumId={props.album.id} fetchAlbums={props.fetchAlbums}></AutoAddDialog>
         </div>
     );
 }

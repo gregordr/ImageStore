@@ -2,17 +2,19 @@ import { DatabaseError, requireTable, transaction } from './databaseHelper'
 import { labelTable } from './labelDatabase';
 import { media, photo } from './mediaDatabase';
 
-const album = 'album'
+export const album = 'album'
 
-const albums = (async () => requireTable('albums', `(${album} varchar, UNIQUE(oid), picture OID,
+export const albums = (async () => {
+    await media;
+    return requireTable('albums', `(${album} varchar, UNIQUE(oid), picture OID,
 CONSTRAINT photo_Exists FOREIGN KEY(picture) REFERENCES ${await media}(OID) ON DELETE SET NULL
-) WITH OIDS`).catch((err) => { console.log(err) }))();
-//add foreign key photo
-const album_photo = (async () => requireTable('album_photo', `(${album} OID, Photo OID, PRIMARY KEY(${album}, Photo), 
+) WITH OIDS`).catch((err) => { console.log(err) })
+})();
+
+export const album_photo = (async () => requireTable('album_photo', `(${album} OID, Photo OID, PRIMARY KEY(${album}, Photo), 
 CONSTRAINT album_Exists FOREIGN KEY(${album}) REFERENCES ${await albums}(OID) ON DELETE CASCADE,
 CONSTRAINT photo_Exists FOREIGN KEY(Photo) REFERENCES ${await media}(OID) ON DELETE CASCADE
 ) WITH OIDS`).catch((err) => { console.log(err) }))();
-//TODO: 2nd foreign key, photo
 
 export async function getAlbums(searchTerm: string): Promise<unknown[]> {
     return transaction(async (client) => {
