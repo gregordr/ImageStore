@@ -1,5 +1,5 @@
 import express from 'express'
-import { getUnlabeled, removeLabel, addLabels, addLabelsAuto, getLabels } from '../database/labelDatabase'
+import { getUnlabeled, removeLabel, addLabels, addLabelsAuto, getLabels, getAutoAddLabels, removeAutoAddLabel, addAutoAddLabel } from '../database/labelDatabase'
 
 export const router = express.Router();
 
@@ -16,8 +16,7 @@ router.post('/get', async (req, res) => {
 });
 
 router.post('/labelAuto', async (req, res) => {
-    const { id, labels } = req.body;
-    addLabelsAuto(id, labels)
+    addLabelsAuto(req.body.id, req.body["labels[]"])
     res.status(200).send()
 });
 
@@ -33,6 +32,30 @@ router.post('/add', async (req, res) => {
 router.post('/remove/', async (req, res) => {
     try {
         res.status(200).send(await removeLabel(req.body.id, req.body.label))
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+})
+
+router.post('/getAutoAdd/', async (req, res) => {
+    try {
+        res.status(200).send(await getAutoAddLabels(req.body.albumId))
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+})
+
+router.post('/addAutoAdd/', async (req, res) => {
+    try {
+        res.status(200).send(await addAutoAddLabel(req.body.albumId, req.body.label, req.body.addExisting))
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+})
+
+router.post('/removeAutoAdd/', async (req, res) => {
+    try {
+        res.status(200).send(await removeAutoAddLabel(req.body.albumId, req.body.label))
     } catch (err) {
         res.status(500).send(err.toString());
     }
