@@ -113,7 +113,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any) => React.ReactNode }) {
+export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any) => React.ReactNode; search: (term: string) => void }) {
     const history = useHistory();
     const id = window.location.pathname.split("/").slice(-1)[0];
     const [opacityRight, setOpacityRight] = useState(0);
@@ -150,6 +150,11 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
         localStorage.setItem("drawerOpen", "false");
         setDrawerOpen(false);
     };
+
+    const searchForLabel = (term: string) => {
+        history.goBack()
+        props.search(term)
+    }
 
     const slideChange = (index: number) => {
         const photos = props.photos;
@@ -373,7 +378,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                                     {labels.map((label) => {
                                         return (
                                             <li key={label}>
-                                                <LabelChip id={id} label={label} removeLabel={removeLabel} getLabels={getLabels} />
+                                                <LabelChip id={id} label={label} removeLabel={removeLabel} getLabels={getLabels} search={searchForLabel} />
                                             </li>
                                         );
                                     })}
@@ -444,11 +449,13 @@ function LabelChip(props: any) {
     return (
         <Chip
             label={props.label}
+            onClick={() => props.search(props.label)}
             onDelete={async () => {
                 setDeleted(true);
                 await props.removeLabel(props.id, props.label);
                 props.getLabels();
             }}
+
             className={classes.chip}
             deleteIcon={deleted ? <CircularProgress style={{ height: 20, width: 20, padding: 1.5, marginRight: 7 }} /> : undefined}
         />
