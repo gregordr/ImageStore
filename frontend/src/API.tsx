@@ -34,6 +34,7 @@ export async function addPhotos(
         let formData = new FormData();
         for (let fileIdx = 0; fileIdx < files.length; fileIdx++) {
             formData.append("file", files[fileIdx]);
+            formData.append("date", files[fileIdx].lastModified.toString());
 
             if ((fileIdx !== 0 && fileIdx % SEND_SIZE === 0) || fileIdx === files.length - 1) {
                 const res = await axios.post("/media/add", formData);
@@ -259,7 +260,7 @@ export async function addAutoAddLabel(albumId: string, label: string, addExistin
     const requestBody = {
         albumId,
         label,
-        addExisting
+        addExisting,
     };
     return await axios.post("/labels/addAutoAdd/", requestBody);
 }
@@ -267,7 +268,7 @@ export async function addAutoAddLabel(albumId: string, label: string, addExistin
 export async function removeAutoAddLabel(albumId: string, label: string) {
     const requestBody = {
         albumId,
-        label
+        label,
     };
     return await axios.post("/labels/removeAutoAdd/", requestBody);
 }

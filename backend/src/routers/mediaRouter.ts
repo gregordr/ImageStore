@@ -61,7 +61,7 @@ router.post('/add', async (req, res) => {
             throw new Error();
         }
 
-        await Promise.all(req.files.map(async (f) => {
+        await Promise.all(req.files.map(async (f, index) => {
             try {
                 if (!f || !f.originalname) {
                     errors.push("Something went really wrong!")
@@ -93,8 +93,13 @@ router.post('/add', async (req, res) => {
                     let date;
                     try {
                         date = Date.parse((await exifr.parse(dir + f.filename))?.CreateDate)
+                        if (isNaN(date))
+                            throw Error
                     } catch (e) {
-                        date = NaN
+                        if (req.body.date instanceof Array)
+                            date = req.body.date[index]
+                        else
+                            date = req.body.date
                     }
 
 
@@ -109,13 +114,18 @@ router.post('/add', async (req, res) => {
                     oids.push(oid)
                 } else if (type?.startsWith("video")) {
                     try {
-                        const data = await new Promise<any>((resolve) => ffmpeg.ffprobe(dir + f.filename, (err, data) => { resolve(data) }));
+                        const data = await new Promise<any>((resolve) => ffmpeg.ffprobe(dir + f.filename, (err, data) => { if (err) console.log("missing FFMPEG"); resolve(data) }));
 
                         let date;
                         try {
                             date = parseISO(data.format.tags.creation_time).getTime()
+                            if (isNaN(date))
+                                throw Error
                         } catch (e) {
-                            date = NaN
+                            if (req.body.date instanceof Array)
+                                date = req.body.date[index]
+                            else
+                                date = req.body.date
                         }
 
                         let coordX: number | undefined = undefined;
