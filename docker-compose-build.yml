@@ -43,3 +43,13 @@ services:
     #         FETCH_INTERVAL: 10
     #     depends_on:
     #       - backend
+
+    # search: # CLIP-based search engine to replace the default search feature
+    #     build:
+    #         context: search
+    #     restart: always
+    #     environment:
+    #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
+    #         PORT: 5000 # Pick a port to run the search-backend on
+    #     depends_on:
+    #         - backend

@@ -148,6 +148,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     useEffect(() => {
+        setPhotos([])
         fetchPhotos();
         fetchAlbums();
     }, [searchTerm]);
