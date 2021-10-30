@@ -49,7 +49,7 @@ export async function addPhotos(
 
         return photos;
     } catch (error) {
-        snackbar?.end([], [error]);
+        snackbar?.end([], [error as string]);
         return [];
     }
 }
@@ -65,7 +65,7 @@ export async function deletePhotos(
         const res = await axios.post("/media/delete/", { ids: photoIds });
         snackbar?.end(res.data.successes, res.data.errors);
     } catch (error) {
-        snackbar?.end(0, [error]);
+        snackbar?.end(0, [error as string]);
         return [];
     }
 }
@@ -109,7 +109,7 @@ export async function addPhotosToAlbums(
         const result = await axios.post("/albums/addPhotos", requestBody);
         snackbar?.end(photoIds, albumIds, []);
     } catch (error) {
-        snackbar?.end([], [], [error]);
+        snackbar?.end([], [], [error as string]);
     }
 }
 
@@ -129,7 +129,7 @@ export async function removePhotosFromAlbum(
         const res = await axios.post(`/albums/remove`, requestBody);
         snackbar?.end(res.data, []);
     } catch (error) {
-        snackbar?.end(0, [error]);
+        snackbar?.end(0, [error as string]);
     }
 }
 
@@ -197,7 +197,7 @@ export async function download(
         window.URL.revokeObjectURL(url);
         snackbar?.end([], []);
     } catch (error) {
-        snackbar?.end([], [error]);
+        snackbar?.end([], [error as string]);
     }
 }
 
