@@ -116,9 +116,9 @@ function Photo(props: any) {
                 onMouseOver={props.hoverEventHandler} />
             }
 
-            {!!(vis && props.searchByImageEnabled) && <IconButton
+            {!!(props.searchByImageEnabled) && <IconButton
                 className={classes.searchButton}
-                style={{ opacity: 0.6 }}
+                style={{ opacity: opacity*1.5 }}
                 onClick={props.searchByImageId}
                 onMouseOver={props.hoverEventHandler} >
                     <Search style={{ fontSize: "28", color: "white" }}></Search>
