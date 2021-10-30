@@ -113,7 +113,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any) => React.ReactNode; search: (term: string) => void }) {
+export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any, searchByImageEnabled: boolean) => React.ReactNode; search: (term: string) => void; searchByImageEnabled: boolean } ) {
     const history = useHistory();
     const id = window.location.pathname.split("/").slice(-1)[0];
     const [opacityRight, setOpacityRight] = useState(0);
@@ -152,7 +152,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     };
 
     const searchForLabel = (term: string) => {
-        history.goBack()
+        history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))
         props.search(term)
     }
 
@@ -180,7 +180,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const modifiedButtonFunctions = {
         ...props.buttonFunctions,
         delete: async (id: string) => {
-            if (props.photos.length === 1) history.goBack();
+            if (props.photos.length === 1) history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"));
             else if (index === 0) {
                 slideChange(1);
             } else {
@@ -189,7 +189,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
             await props.buttonFunctions.delete(id);
         },
         remove: async (id: string) => {
-            if (props.photos.length === 1) history.goBack();
+            if (props.photos.length === 1) history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"));
             else slideChange(index === 0 ? 1 : index - 1);
             await props.buttonFunctions.remove(id);
         },
@@ -271,7 +271,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                         <div
                             className="center"
                             onClick={(ev) => {
-                                history.goBack();
+                                history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"));
                                 ev.stopPropagation();
                             }}
                             onMouseEnter={mouseCenter}
@@ -321,7 +321,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                         }}
                     >
                         <TopLeftBar />
-                        {props.topRightBar(id, modifiedButtonFunctions)}
+                        {props.topRightBar(id, modifiedButtonFunctions, props.searchByImageEnabled)}
                     </div>
                 </ThemeProvider>
             </main>

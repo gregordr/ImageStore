@@ -16,7 +16,7 @@ export default function TopBar(props: any) {
             <div className={classes.TopBar}>
                 <div className={classes.left}>
                     {props.numSelected() === 0 && (
-                        <IconButton style={{ float: "left" }} aria-label="back" onClick={() => history.goBack()} className="IconButton">
+                        <IconButton style={{ float: "left" }} aria-label="back" onClick={() => history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))} className="IconButton">
                             <ArrowBack />
                         </IconButton>
                     )}

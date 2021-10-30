@@ -8,7 +8,7 @@ import ViewPage from "../../ViewPage/ViewPage";
 import AddToAlbum from "../../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../../Interfaces";
 import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
-import { addLabel, addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosInAlbum, removePhotosFromAlbum, setCover } from "../../../API";
+import { addLabel, addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosByImageInAlbum, getPhotosInAlbum, removePhotosFromAlbum, setCover } from "../../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
@@ -78,7 +78,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; refresh: () => Promise<void> }) {
+export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; refresh: () => Promise<void>; searchByImageEnabled: boolean }) {
     //#region Hooks
     const classes = useStyles();
 
@@ -103,6 +103,8 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+    
+    const [searchByImage, setSearchByImage] = useState(false);
 
     const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
 
@@ -134,7 +136,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     const fetchPhotos = async () => {
         setShowLoadingBar(true);
-        const resp = await getPhotosInAlbum(id, searchTerm);
+        const resp = await (searchByImage ? getPhotosByImageInAlbum(id, searchTerm) : getPhotosInAlbum(id, searchTerm));
         if (resp.status === 200) {
             setPhotos(resp.data);
             setShowLoadingBar(false);
@@ -153,6 +155,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     };
 
     useEffect(() => {
+        setPhotos([])
         fetchPhotos();
         fetchAlbums();
     }, [searchTerm, id]);
@@ -292,6 +295,12 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         }
     }, [lastSelected, hover, ctrl, anySelected, photoSelection]);
 
+    const searchByImageId = (id: string) => {
+        setSearchBarText("similar images")
+        setSearchTerm(id)
+        setSearchByImage(true)
+    }
+
     const viewButtonFunctions = {
         delete: async (id: string) => {
             setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
@@ -325,6 +334,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                 closeSnackbar
             );
         },
+        searchByImageId,
     };
 
     const topBarButtonFunctions = {
@@ -382,6 +392,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             );
         },
         search: (s: string) => async () => {
+            setSearchByImage(false)
             setSearchTerm(s);
         },
         mobileSearch: () => {
@@ -391,8 +402,8 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     //#endregion handlers
 
-    const topRightBar = (id: string, buttonFunctions: any) => {
-        return <TopRightBar id={id} buttonFunctions={buttonFunctions} />;
+    const topRightBar = (id: string, buttonFunctions: any, searchByImageEnabled: boolean) => {
+        return <TopRightBar id={id} buttonFunctions={buttonFunctions} searchByImageEnabled={searchByImageEnabled} />;
     };
 
     const lines = [
@@ -401,7 +412,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             {(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}
         </Typography>,
         <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block", paddingLeft: 5 }}>
-            Search results for {searchTerm}:
+            Search results for {searchByImage ? "similar images" : searchTerm}:
         </Typography>,
     ];
 
@@ -411,7 +422,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         <div>
             <Switch>
                 <Route path="/albums/open/:albumID/view">
-                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(term); }}></ViewPage>
+                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(term); }} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
                 </Route>
                 <Route path="/">
                     <div {...getRootProps({ className: "dropzone" })} className={classes.root}>
@@ -475,6 +486,8 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                                             anySelected={anySelected}
                                             imageClickHandler={imageClickHandler}
                                             hoverEventHandler={hoverEventHandler}
+                                            searchByImageId={searchByImageId}
+                                            searchByImageEnabled={props.searchByImageEnabled}
                                             marked={marked}
                                             lines={lines}
                                             heights={heights}

@@ -5,7 +5,7 @@ import { VariableSizeList as List } from "react-window";
 import { Scrollbars } from "react-custom-scrollbars";
 import { baseURL } from "../../API";
 import { IconButton, useMediaQuery } from "@material-ui/core";
-import { PlayArrow, VideoCall } from "@material-ui/icons";
+import { PlayArrow, Search } from "@material-ui/icons";
 
 const useStyles = makeStyles({
     photoDiv: {
@@ -18,6 +18,7 @@ const useStyles = makeStyles({
     },
     photoBox: { transition: "0.05s linear", position: "absolute", left: 15, top: 15, height: 20, width: 20 },
     videoIcon: { position: "absolute", left: 40, top: 15, height: 20, width: 20, color: "#666666" },
+    searchButton: { transition: "0.05s linear", position: "absolute", left: 19, top: 45, height: 20, width: 20 },
 });
 
 function Photo(props: any) {
@@ -114,6 +115,16 @@ function Photo(props: any) {
                 onClick={props.click}
                 onMouseOver={props.hoverEventHandler} />
             }
+
+            {!!(vis && props.searchByImageEnabled) && <IconButton
+                className={classes.searchButton}
+                style={{ opacity: 0.6 }}
+                onClick={props.searchByImageId}
+                onMouseOver={props.hoverEventHandler} >
+                    <Search style={{ fontSize: "28", color: "white" }}></Search>
+                </IconButton>
+            }
+
             {props.type === "video" && !play && (
                 <IconButton className={classes.videoIcon}>
                     <PlayArrow style={{ fontSize: "28" }}></PlayArrow>
@@ -132,6 +143,8 @@ const makePhoto = (photo: PhotoT, realH: number, props: any, isScrolling: boolea
         imageClick={props.imageClickHandler(photo.id)}
         hoverEventHandler={props.hoverEventHandler(photo.id)}
         selected={props.selected.includes(photo.id)}
+        searchByImageId={() => props.searchByImageId(photo.id)}
+        searchByImageEnabled={props.searchByImageEnabled}
         marked={props.marked.includes(photo.id)}
         anySelected={props.anySelected}
         outZoom={0.9}
@@ -211,6 +224,8 @@ export default function AbstractPhotoPage(props: {
     clickHandler: (id: string) => () => void;
     imageClickHandler: (id: string) => () => void;
     hoverEventHandler: (id: string) => () => void;
+    searchByImageId?: (id: string) => void;
+    searchByImageEnabled?: boolean
     marked: string[];
     selected: string[];
     anySelected: any;

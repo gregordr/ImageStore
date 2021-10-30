@@ -9,29 +9,25 @@ from io import BytesIO
 from waitress import serve
 from dotenv import load_dotenv
 import threading, queue
+from PIL import ImageFile
 
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 load_dotenv()
 PORT = os.getenv("PORT")
 BACKEND = os.getenv("BASE_ADDRESS")
 
-
 api = Flask(__name__)
-from PIL import ImageFile
-ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model, preprocess = clip.load("ViT-B/32", device=device)
 
-
 featureDirectory = "features/" 
-
 
 obj = {}
 
 processQueue = queue.Queue()
-
 
 def getPhoto(imgId, thumb = False):
     response = requests.get("http://" + BACKEND + "/media/" + ("thumb_" if thumb else "") + imgId )
@@ -64,12 +60,11 @@ def getAllPhotos():
         if not file in usedSet:
             os.unlink(file)
     
-def filterCandidates(term, candidates: List[str]):
+def findByText(term, candidates: List[str]):
     text = clip.tokenize([term,  ""]).to(device)
     text_features = model.encode_text(text)
     text_features = text_features / text_features.norm(dim=-1, keepdim=True)
     usedCandidates = list()
-
 
     tmp = []
     for x in candidates:
@@ -95,15 +90,53 @@ def filterCandidates(term, candidates: List[str]):
 
     return [usedCandidates[x] for x in res]
 
+    
+def findByImage(term, candidates: List[str]):
+    target_features = torch.squeeze(obj[term])
 
-@api.route('/search', methods=['POST'])
-def search():
+    usedCandidates = list()
+
+    tmp = []
+    for x in candidates:
+        if(not x in obj):
+            continue
+        
+        usedCandidates.append(x)
+        tmp.append(obj[x])
+
+    if len(tmp) == 0:
+        return []
+
+    tmp = torch.stack(tmp)
+    scores = (tmp @ target_features).t()
+
+
+    accepted = torch.sort(scores)
+    ind = torch.searchsorted(accepted.values, torch.tensor(0.65))
+
+    res = accepted.indices[ind.item():].tolist()
+    res.reverse()
+
+    return [usedCandidates[x] for x in res]
+
+
+@api.route('/searchByText', methods=['POST'])
+def searchByText():
     jsonData = request.get_json()
     
-    term = jsonData["term"]
+    text = jsonData["text"]
     candidates = jsonData["candidates"]
 
-    return json.dumps(filterCandidates(term, candidates))
+    return json.dumps(findByText(text, candidates))
+
+@api.route('/searchByImage', methods=['POST'])
+def searchByImage():
+    jsonData = request.get_json()
+    
+    image = jsonData["image"]
+    candidates = jsonData["candidates"]
+
+    return json.dumps(findByImage(image, candidates))
 
 def worker():
     while True:

@@ -245,8 +245,16 @@ export async function getPhotos(searchTerm: string) {
     return await axios.get(searchTerm === "" || !searchTerm ? "media/all" : "media/search/" + searchTerm);
 }
 
+export async function getPhotosByImage(imageId: string) {
+    return await axios.get("media/searchByImage/" + imageId);
+}
+
 export async function getPhotosInAlbum(id: string, searchTerm: string) {
     return await axios.get(searchTerm === "" || !searchTerm ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`);
+}
+
+export async function getPhotosByImageInAlbum(id: string, searchTerm: string) {
+    return await axios.get(`albums/${id}/searchByImage/${searchTerm}`);
 }
 
 export async function getAutoAddLabels(albumId: string) {
@@ -271,4 +279,11 @@ export async function removeAutoAddLabel(albumId: string, label: string) {
         label,
     };
     return await axios.post("/labels/removeAutoAdd/", requestBody);
+}
+
+export async function checkForFeature(name: string) {
+    const requestBody = {
+        serviceName: name
+    };
+    return await axios.post("/services/check/", requestBody)
 }

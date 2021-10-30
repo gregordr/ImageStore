@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function AlbumPage(props: { handleDrawerToggle: () => void; drawerElement: any }) {
+export default function AlbumPage(props: { handleDrawerToggle: () => void; drawerElement: any; searchByImageEnabled: boolean }) {
     const classes = useStyles();
 
     const [albums, setAlbums] = useState<AlbumT[]>([]);
@@ -128,7 +128,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         <div>
             <Switch>
                 <Route path="/albums/open">
-                    <AlbumPhotoPage refresh={fetchAlbums} drawerElement={props.drawerElement} handleDrawerToggle={props.handleDrawerToggle} />
+                    <AlbumPhotoPage refresh={fetchAlbums} drawerElement={props.drawerElement} handleDrawerToggle={props.handleDrawerToggle} searchByImageEnabled={props.searchByImageEnabled} />
                 </Route>
                 <Route path="/albums/">
                     <div className={classes.root}>

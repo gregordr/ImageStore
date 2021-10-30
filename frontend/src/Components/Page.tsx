@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Divider, Drawer, Hidden, List, ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
 import PhotoPage from "./PhotoPage/PhotoPage";
 import { Photo, PhotoAlbum } from "@material-ui/icons";
 import { Switch, Route, useHistory, useLocation } from "react-router-dom";
 import AlbumPage from "./AlbumPage/AlbumPage";
+import { checkForFeature } from "../API";
 
 const drawerWidth = 240;
 
@@ -63,6 +64,11 @@ export default function ResponsiveDrawer({ window }: any) {
 
     const history = useHistory();
     const location = useLocation();
+
+    const [searchByImageEnabled, setSearchByImageEnabled] = useState(false)
+    useEffect(() => {
+        ( async () => setSearchByImageEnabled((await checkForFeature("search")).data))()
+    }, [])
 
     const drawer = (
         <div>
@@ -140,10 +146,10 @@ export default function ResponsiveDrawer({ window }: any) {
     return (
         <Switch>
             <Route path="/albums">
-                <AlbumPage drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
+                <AlbumPage searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
             </Route>
             <Route path="/">
-                <PhotoPage drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
+                <PhotoPage searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
             </Route>
         </Switch>
     );

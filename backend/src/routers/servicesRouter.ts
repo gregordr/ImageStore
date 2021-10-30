@@ -18,3 +18,9 @@ router.post("/register", async (req, res) => {
 
     res.status(200).send()
 })
+
+router.post("/check", async (req, res) => {
+    const { serviceName } = req.body
+
+    res.status(200).send(registeredServices[serviceName] && registeredServices[serviceName].size > 0)
+})

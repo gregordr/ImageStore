@@ -8,7 +8,7 @@ import ViewPage from "../ViewPage/ViewPage";
 import AddToAlbum from "../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
-import { addLabel, addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotos } from "../../API";
+import { addLabel, addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotos, getPhotosByImage } from "../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { useSnackbar } from "notistack";
@@ -77,7 +77,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any }) {
+export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; searchByImageEnabled: boolean }) {
     const classes = useStyles();
 
     const [photos, setPhotos] = useState<PhotoT[]>([]);
@@ -112,6 +112,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [searchBarText, setSearchBarText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
 
+    const [searchByImage, setSearchByImage] = useState(false);
+
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [onDeleteDialogClose, setOnDeleteDialogClose] = useState<(confirm: boolean) => () => void>(() => (confirm: boolean) => () => {
         setDeleteDialogOpen(false);
@@ -129,7 +131,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const fetchPhotos = async () => {
         setShowLoadingBar(true);
-        const resp = await getPhotos(searchTerm);
+        const resp = await (searchByImage ? getPhotosByImage(searchTerm) : getPhotos(searchTerm));
         if (resp.status === 200) {
             setPhotos(resp.data);
             setShowLoadingBar(false);
@@ -249,6 +251,12 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         await addLabel(selected, labels);
     };
 
+    const searchByImageId = (id: string) => {
+        setSearchBarText("similar images")
+        setSearchTerm(id)
+        setSearchByImage(true)
+    }
+
     const viewButtonFunctions = {
         delete: async (id: string) => {
             setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
@@ -271,6 +279,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                 closeSnackbar
             );
         },
+        searchByImageId,
     };
 
     const deletePhoto = async (pid: any) => {
@@ -320,6 +329,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             );
         },
         search: (s: string) => async () => {
+            setSearchByImage(false)
             setSearchTerm(s);
         },
         mobileSearch: () => {
@@ -348,14 +358,14 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         await fetchPhotos();
     };
 
-    const topRightBar = (id: string, buttonFunctions: any) => {
-        return <TopRightBar id={id} buttonFunctions={buttonFunctions} />;
+    const topRightBar = (id: string, buttonFunctions: any, searchByImageEnabled: boolean) => {
+        return <TopRightBar id={id} buttonFunctions={buttonFunctions} searchByImageEnabled={searchByImageEnabled} />;
     };
 
     const lines = [
         <div></div>,
         <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block", paddingTop: 10, paddingLeft: 5 }}>
-            Search results for {searchTerm}:
+            Search results for {searchByImage ? "similar images" : searchTerm}:
         </Typography>,
     ];
 
@@ -365,7 +375,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         <div>
             <Switch>
                 <Route path="/view">
-                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(term); }}></ViewPage>
+                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(term); setSearchByImage(false) }} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
                 </Route>
                 <Route path="/">
                     <div {...getRootProps({ className: "dropzone" })} className={classes.root}>
@@ -428,6 +438,8 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                                             anySelected={anySelected}
                                             imageClickHandler={imageClickHandler}
                                             hoverEventHandler={hoverEventHandler}
+                                            searchByImageId={searchByImageId}
+                                            searchByImageEnabled={props.searchByImageEnabled}
                                             marked={marked}
                                             lines={lines}
                                             heights={heights}
