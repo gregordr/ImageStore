@@ -36,7 +36,7 @@ export default function TopRightBar(props: any) {
                         onClick={(e) => {
                             e.stopPropagation();
                             props.buttonFunctions.searchByImageId(props.id);
-                            history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))
+                            history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))
                         }}
                     >
                         <Search />

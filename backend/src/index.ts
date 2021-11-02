@@ -32,6 +32,9 @@ app.use('/labels', labelRouter);
 import { router as servicesRouter } from './routers/servicesRouter';
 app.use('/services', servicesRouter);
 
+import { router as faceRouter } from './routers/faceRouter';
+app.use('/face', faceRouter);
+
 const port = parseInt(process.env.PORT || "4000");
 const host = process.env.IMAGESTORE_HOST || "localhost"
 app.listen(port, host, () => console.log(`Listening on port ${host}:${port}`));

@@ -1,13 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import "./ViewPage.css";
 import { useHistory } from "react-router-dom";
-import { useTransition, animated } from "react-spring";
 import TopLeftBar from "./TopLeftBar";
 import {
     Chip,
     CircularProgress,
-    ClickAwayListener,
     createMuiTheme,
     createStyles,
     CssBaseline,
@@ -19,7 +16,6 @@ import {
     ListItemIcon,
     ListItemText,
     makeStyles,
-    Paper,
     Switch,
     TextField,
     Theme,
@@ -29,10 +25,10 @@ import {
     useMediaQuery,
     useTheme,
 } from "@material-ui/core";
-import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, Map, Edit, Info, Warning } from "@material-ui/icons";
+import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, Map, Edit, Warning, Face } from "@material-ui/icons";
 import clsx from "clsx";
 import { PhotoT } from "../../Interfaces";
-import { addLabel, baseURL, editMedia, getPhotoLabels, removeLabel } from "../../API";
+import { addLabel, baseURL, Box, editMedia, getBoxes, getPhotoLabels, removeLabel } from "../../API";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore, { Virtual, Navigation } from "swiper";
 import "swiper/swiper.min.css";
@@ -113,7 +109,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any, searchByImageEnabled: boolean) => React.ReactNode; search: (term: string) => void; searchByImageEnabled: boolean } ) {
+export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any, searchByImageEnabled: boolean) => React.ReactNode; search: (term: string) => void; searchByImageEnabled: boolean; searchByFace: (id: string, box: Box)=> void } ) {
     const history = useHistory();
     const id = window.location.pathname.split("/").slice(-1)[0];
     const [opacityRight, setOpacityRight] = useState(0);
@@ -122,6 +118,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const [editPropsOpen, setEditPropsOpen] = useState(false);
     const [editLocationOpen, setEditLocationOpen] = useState(false);
     const [labels, setLabels] = useState<string[] | "Loading">("Loading");
+    const [faces, setFaces] = useState<[{ boundingbox: Box }] | "Loading">("Loading");
     const index = props.photos.findIndex((v: PhotoT) => v.id === id);
     const photo = props.photos[index];
 
@@ -132,7 +129,13 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     }, [id]);
 
     useEffect(() => {
+        setLabels("Loading")
         getLabels();
+    }, [id]);
+
+    useEffect(() => {
+        setFaces("Loading")
+        getFaces();
     }, [id]);
 
     const getLabels = async () => {
@@ -144,6 +147,11 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
         }
     };
 
+    const getFaces = async () => {
+        const faces = await getBoxes(id);
+        setFaces(faces);
+    };
+
     const classes = useStyles(useTheme());
 
     const handleDrawerClose = () => {
@@ -152,7 +160,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     };
 
     const searchForLabel = (term: string) => {
-        history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))
+        history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))
         props.search(term)
     }
 
@@ -343,6 +351,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                 <Divider></Divider>
 
                 <List>
+                    {/* General info */}
                     <ListItem>
                         <ListItemIcon>
                             <PhotoOutlined />
@@ -352,6 +361,8 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                             <Edit></Edit>
                         </IconButton>
                     </ListItem>
+
+                    {/* Labels */}
                     <ListItem>
                         <ListItemIcon>
                             <Label />
@@ -378,7 +389,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                                     {labels.map((label) => {
                                         return (
                                             <li key={label}>
-                                                <LabelChip id={id} label={label} removeLabel={removeLabel} getLabels={getLabels} search={searchForLabel} />
+                                                <LabelChip id={id} label={label} getLabels={getLabels} search={searchForLabel} />
                                             </li>
                                         );
                                     })}
@@ -387,6 +398,44 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                             )}
                         </ul>
                     </ListItem>
+
+                    {/* Faces */}
+                    <ListItem>
+                        <ListItemIcon>
+                            <Face />
+                        </ListItemIcon>
+                        <ListItemText primary="Faces" secondary=" " />
+                    </ListItem>
+                    <ListItem>
+                        <ul
+                            style={{
+                                display: "flex",
+                                justifyContent: "left",
+                                flexWrap: "wrap",
+                                listStyle: "none",
+                                padding: 0,
+                                margin: 0,
+                                marginLeft: 5,
+                                marginTop: -15,
+                            }}
+                        >
+                            {faces === "Loading" || !photo ? (
+                                <CircularProgress size={20} style={{ margin: 10 }} />
+                            ) : (
+                                <>
+                                        {faces.map((face) => {
+                                        return (
+                                            <li key={face.boundingbox.toJSON()}>
+                                                <FaceCrop id={id} photo={photo} face={face} searchByFace={props.searchByFace} getFaces={getFaces} search={searchForLabel} />
+                                            </li>
+                                        );
+                                    })}
+                                </>
+                            )}
+                        </ul>
+                    </ListItem>
+
+                    {/* Map */}
                     <ListItem>
                         <ListItemIcon>
                             <Map />
@@ -452,13 +501,55 @@ function LabelChip(props: any) {
             onClick={() => props.search(props.label)}
             onDelete={async () => {
                 setDeleted(true);
-                await props.removeLabel(props.id, props.label);
+                await removeLabel(props.id, props.label);
                 props.getLabels();
             }}
 
             className={classes.chip}
             deleteIcon={deleted ? <CircularProgress style={{ height: 20, width: 20, padding: 1.5, marginRight: 7 }} /> : undefined}
         />
+    );
+}
+
+function FaceCrop(props: any) {
+    const box: Box = props.face.boundingbox
+    const {x1:x2, x2:x1, y1:y2, y2:y1} = box
+
+    const xcenter = x1 + (x2-x1)/2
+    const ycenter = y1 + (y2-y1)/2
+
+    const scale = Math.min(75 / (x2 - x1), 75 / (y2 - y1))
+    
+    const history = useHistory()
+
+    return (
+        <div
+            onClick={async() => {
+                props.searchByFace(props.id, box);
+                history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))
+            }}
+            style={{
+                cursor: 'pointer',
+                margin: 2,
+                position: "relative",
+                overflow: "hidden",
+                    width: "75px",
+                    height: "75px",
+            }}
+        >
+            <img
+                style={{
+                    position: "absolute",
+                    top: -ycenter*scale+75/2,
+                    left: -xcenter*scale+75/2,
+                    transform: `scale(${scale})`,
+                    width: props.photo.width,
+                    height: props.photo.height,
+                    transformOrigin: "top left",
+                    zIndex: -1
+                }}
+                src={baseURL + "/media/" + props.id} />
+        </div>
     );
 }
 

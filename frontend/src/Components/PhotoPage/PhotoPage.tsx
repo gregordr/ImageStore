@@ -1,4 +1,4 @@
-import React, { ChangeEvent, RefObject, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Backdrop } from "@material-ui/core";
@@ -8,7 +8,7 @@ import ViewPage from "../ViewPage/ViewPage";
 import AddToAlbum from "../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
-import { addLabel, addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotos, getPhotosByImage } from "../../API";
+import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotos, getPhotosByFace, getPhotosByImage } from "../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { useSnackbar } from "notistack";
@@ -110,9 +110,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
-    const [searchTerm, setSearchTerm] = useState("");
-
-    const [searchByImage, setSearchByImage] = useState(false);
+    const [searchTerm, setSearchTerm] = useState<["text"|"image"|"face"|"none", string]>(["none", ""]);
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [onDeleteDialogClose, setOnDeleteDialogClose] = useState<(confirm: boolean) => () => void>(() => (confirm: boolean) => () => {
@@ -129,9 +127,20 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         })();
     }, [photos]);
 
+
+    
+    const search = () => {
+        const [type, term] = searchTerm
+
+        if (type === "text") return getPhotos(term)
+        if (type === "image") return getPhotosByImage(term)
+        if (type === "face") return getPhotosByFace(term)
+        return getPhotos("")
+    }
+
     const fetchPhotos = async () => {
         setShowLoadingBar(true);
-        const resp = await (searchByImage ? getPhotosByImage(searchTerm) : getPhotos(searchTerm));
+        const resp = await search();
         if (resp.status === 200) {
             setPhotos(resp.data);
             setShowLoadingBar(false);
@@ -253,8 +262,12 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const searchByImageId = (id: string) => {
         setSearchBarText("similar images")
-        setSearchTerm(id)
-        setSearchByImage(true)
+        setSearchTerm(["image",id])
+    }
+
+    const searchByFace = (id: string, box: Box) => {
+        setSearchBarText("similar faces")
+        setSearchTerm(["face",id + "||" + box.toJSON()])
     }
 
     const viewButtonFunctions = {
@@ -329,8 +342,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             );
         },
         search: (s: string) => async () => {
-            setSearchByImage(false)
-            setSearchTerm(s);
+            setSearchTerm(["text", s]);
         },
         mobileSearch: () => {
             setShowSearchBar(!showSearchBar);
@@ -364,18 +376,18 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const lines = [
         <div></div>,
-        <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block", paddingTop: 10, paddingLeft: 5 }}>
-            Search results for {searchByImage ? "similar images" : searchTerm}:
+        <Typography variant="h5" style={{ display: searchTerm[1] === "" || !searchTerm[1] ? "none" : "block", paddingLeft: 5 }}>
+            Search results for {searchTerm[0] === "text" ? searchTerm[1] : `similar ${searchTerm[0]}s` }:
         </Typography>,
     ];
 
-    const heights = [12, searchTerm === "" || !searchTerm ? 0 : 28];
+    const heights = [12, searchTerm[1] === "" || !searchTerm[1] ? 0 : 28];
 
     return (
         <div>
             <Switch>
                 <Route path="/view">
-                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(term); setSearchByImage(false) }} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
+                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(["text", term]); }} searchByFace={searchByFace} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
                 </Route>
                 <Route path="/">
                     <div {...getRootProps({ className: "dropzone" })} className={classes.root}>

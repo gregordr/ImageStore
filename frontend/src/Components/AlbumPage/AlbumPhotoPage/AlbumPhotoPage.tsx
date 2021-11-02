@@ -8,7 +8,7 @@ import ViewPage from "../../ViewPage/ViewPage";
 import AddToAlbum from "../../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../../Interfaces";
 import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
-import { addLabel, addPhotos, addPhotosToAlbums, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosByImageInAlbum, getPhotosInAlbum, removePhotosFromAlbum, setCover } from "../../../API";
+import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosByFaceInAlbum, getPhotosByImageInAlbum, getPhotosInAlbum, removePhotosFromAlbum, setCover } from "../../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
@@ -102,9 +102,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
-    const [searchTerm, setSearchTerm] = useState("");
-    
-    const [searchByImage, setSearchByImage] = useState(false);
+    const [searchTerm, setSearchTerm] = useState<["text"|"image"|"face"|"none", string]>(["none", ""]);
 
     const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
 
@@ -134,9 +132,18 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         upload(acceptedFiles, fileRejections);
     }, [acceptedFiles, fileRejections]);
 
+    const search = () => {
+        const [type, term] = searchTerm
+
+        if (type === "text") return getPhotosInAlbum(id, term)
+        if (type === "image") return getPhotosByImageInAlbum(id, term)
+        if (type === "face") return getPhotosByFaceInAlbum(id, term)
+        return getPhotosInAlbum(id, "")
+    }
+
     const fetchPhotos = async () => {
         setShowLoadingBar(true);
-        const resp = await (searchByImage ? getPhotosByImageInAlbum(id, searchTerm) : getPhotosInAlbum(id, searchTerm));
+        const resp = await search();
         if (resp.status === 200) {
             setPhotos(resp.data);
             setShowLoadingBar(false);
@@ -297,8 +304,12 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
 
     const searchByImageId = (id: string) => {
         setSearchBarText("similar images")
-        setSearchTerm(id)
-        setSearchByImage(true)
+        setSearchTerm(["image",id])
+    }
+
+    const searchByFace = (id: string, box:Box) => {
+        setSearchBarText("similar faces")
+        setSearchTerm(["face",id + "||" + box.toJSON()])
     }
 
     const viewButtonFunctions = {
@@ -392,8 +403,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
             );
         },
         search: (s: string) => async () => {
-            setSearchByImage(false)
-            setSearchTerm(s);
+            setSearchTerm(["text", s]);
         },
         mobileSearch: () => {
             setShowSearchBar(!showSearchBar);
@@ -411,18 +421,18 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         <Typography variant="h4" style={{ paddingTop: 10, paddingLeft: 5 }}>
             {(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}
         </Typography>,
-        <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block", paddingLeft: 5 }}>
-            Search results for {searchByImage ? "similar images" : searchTerm}:
+        <Typography variant="h5" style={{ display: searchTerm[1] === "" || !searchTerm[1] ? "none" : "block", paddingLeft: 5 }}>
+            Search results for {searchTerm[0] === "text" ? searchTerm[1] : `similar ${searchTerm[0]}s` }:
         </Typography>,
     ];
 
-    const heights = [12, 42, searchTerm === "" || !searchTerm ? 0 : 28];
+    const heights = [12, 42, searchTerm[1] === "" || !searchTerm[1] ? 0 : 28];
 
     return (
         <div>
             <Switch>
                 <Route path="/albums/open/:albumID/view">
-                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(term); }} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
+                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(["text", term]); }} searchByFace={searchByFace} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
                 </Route>
                 <Route path="/">
                     <div {...getRootProps({ className: "dropzone" })} className={classes.root}>

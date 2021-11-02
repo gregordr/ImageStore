@@ -105,6 +105,38 @@ router.get("/:name/searchByImage/:imageId", async (req, res) => {
     }
 });
 
+router.get("/:name/searchByFace/:imageId", async (req, res) => {
+    try {
+        if (registeredServices && registeredServices["face"]) {
+            const searchResult = await getMediaInAlbum(req.params.name, "%", "")
+
+            const data = await axios.post("http://" + registeredServices["face"].values().next().value + "/searchByFace",
+                {
+                    image: req.params.imageId,
+                    candidates: searchResult.map((photo: any) => photo.id)
+                })
+
+            const map: any = {}
+
+            searchResult.forEach((photo: any) => {
+                map[photo.id] = photo
+            })
+
+            const response = []
+
+            for (const id of (data.data as any)) {
+                response.push(map[id])
+            }
+
+            res.status(200).send(response);
+            return
+        }
+        res.status(200).send(await getMediaInAlbum(req.params.name, `%${req.params.term}%`, req.params.term));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
 router.get('/search/:term', async (req, res) => {
     try {
         res.status(200).send(await getAlbums(`%${req.params.term}%`));
