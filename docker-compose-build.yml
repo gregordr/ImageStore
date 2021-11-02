@@ -20,6 +20,8 @@ services:
         restart: always
         environment:
             PGSTRING: postgres://postgres:example@db:5432/postgres
+        volumes:
+            - ./media/:/code/media
         depends_on:
             - db
 
@@ -28,6 +30,8 @@ services:
         restart: always
         environment:
             POSTGRES_PASSWORD: example
+        volumes:
+            - ./data/:/var/lib/postgresql/data
 
     # detectron2:
     #     build: detectron2
@@ -53,6 +57,8 @@ services:
     #         PORT: 5000 # Pick a port to run the search-backend on
     #     depends_on:
     #         - backend
+    #     volumes:
+    #         - ./imageFeatures/:/code/features
 
     # face: # Facial recognition
     #     build:
@@ -63,3 +69,5 @@ services:
     #         PORT: 5000 # Pick a port to run the search-backend on
     #     depends_on:
     #         - backend
+    #     volumes:
+    #         - ./faceFeatures/:/code/features
