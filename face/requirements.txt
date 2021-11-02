@@ -2,5 +2,5 @@ requests
 python-dotenv
 waitress
 flask
-Cython
+onnxruntime
 insightface==0.5
