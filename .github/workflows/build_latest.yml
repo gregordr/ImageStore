@@ -144,7 +144,7 @@ jobs:
           context: face
           push: true
           tags: imagestored/face:latest
-          file: ./search/Dockerfile
+          file: ./face/Dockerfile
           platforms: linux/amd64
       -
         name: Image digest
