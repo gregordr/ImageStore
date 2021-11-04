@@ -149,7 +149,7 @@ export default function ResponsiveDrawer({ window }: any) {
                 <AlbumPage searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
             </Route>
             <Route path="/">
-                <PhotoPage searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
+                <PhotoPage refresh={() => {} } searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
             </Route>
         </Switch>
     );

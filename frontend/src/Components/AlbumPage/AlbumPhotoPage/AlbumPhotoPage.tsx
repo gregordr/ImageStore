@@ -7,7 +7,7 @@ import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../../ViewPage/ViewPage";
 import AddToAlbum from "../../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../../Interfaces";
-import AbstractPhotoPage from "../../Shared/AbstractPhotoPage";
+import PhotoGrid from "../../Shared/PhotoGrid";
 import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosByFaceInAlbum, getPhotosByImageInAlbum, getPhotosInAlbum, removePhotosFromAlbum, setCover } from "../../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -23,7 +23,7 @@ import usePhotoPage from "../../Shared/usePhotoPage";
 
 
 export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; refresh: () => Promise<void>; searchByImageEnabled: boolean }) {
-    const [deletePhoto, albumDialogCallback, labelDialogCallback, getRootProps,getInputProps,searchTerm,setSearchTerm,deleteDialogOpen,onDeleteDialogClose,autocompleteOptions,setAutocompleteOptions,marked,photoSelection,hoverEventHandler,clickHandler,viewButtonFunctions,topBarButtonFunctions,anySelected,searchByImageId,searchByFace,fetchPhotos,fetchAlbums] = usePhotoPage()
+    const history = useHistory();
 
     
     const search = () => {
@@ -34,19 +34,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         if (type === "face") return getPhotosByFaceInAlbum(id, term)
         return getPhotosInAlbum(id, "")
     }
-
-    useEffect(() => {
-        setPhotos([])
-        fetchPhotos();
-        fetchAlbums();
-    }, [searchTerm, id]);
-
-
-    const removePhoto = async (pid: string) => {
-        setPhotos(photos.filter((p) => p.id !== pid));
-        await removePhotosFromAlbum([pid], id, enqueueSnackbar, closeSnackbar);
-    };
-
+    
     const upload = async (files: File[], fileRejections: FileRejection[]) => {
         if (!files) return;
 
@@ -71,7 +59,22 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         await props.refresh();
     };
 
+    const [deletePhoto, albumDialogCallback, labelDialogCallback, getRootProps, getInputProps, searchTerm, setSearchTerm, deleteDialogOpen, onDeleteDialogClose, autocompleteOptions, setAutocompleteOptions, marked, photoSelection, hoverEventHandler, clickHandler, viewButtonFunctions, topBarButtonFunctions, anySelected, searchByImageId, searchByFace, fetchPhotos, fetchAlbums, classes, photos, setPhotos, albums, setAlbums, selected, setSelected, selectable, setSelectable, albumDialogOpen, setAlbumDialogOpen, labelDialogOpen, setLabelDialogOpen, showLoadingBar, setShowLoadingBar, viewId, setViewId, enqueueSnackbar, closeSnackbar,maxSize,setDeleteDialogOpen,isDragActive,showSearchBar,searchBarText,setSearchBarText, setOnDeleteDialogClose] = usePhotoPage(upload, search, props.refresh)
+    
+    const id = window.location.pathname.split("/")[2 + process.env.PUBLIC_URL.split("/").length];
+    
 
+    useEffect(() => {
+        setPhotos([])
+        fetchPhotos();
+        fetchAlbums();
+    }, [searchTerm, id]);
+
+
+    const removePhoto = async (pid: string) => {
+        setPhotos(photos.filter((p) => p.id !== pid));
+        await removePhotosFromAlbum([pid], id, enqueueSnackbar, closeSnackbar);
+    };
 
     const imageClickHandler = (photoId: string) => () => {
         if (anySelected()) {
@@ -82,26 +85,26 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
     };
 
 
-    viewButtonFunctions.remove = async (id: string) => {
+    (viewButtonFunctions as any).remove = async (id: string) => {
         await removePhoto(id);
         setPhotos(photos.filter((p) => p.id !== id));
         
         await props.refresh();
     }
     
-    viewButtonFunctions.setCover = async (photoID: string) => {
+    (viewButtonFunctions as any).setCover = async (photoID: string) => {
         await setCover(id, photoID);
         await props.refresh();
     }
     
 
-    topBarButtonFunctions.setCover = async () => {
+    (topBarButtonFunctions as any).setCover = async () => {
         await setCover(id, selected[0]);
         topBarButtonFunctions.unselect();
         await props.refresh();
     }
 
-    topBarButtonFunctions.remove = async () => {
+    (topBarButtonFunctions as any).remove = async () => {
         topBarButtonFunctions.unselect();
         await removePhotosFromAlbum(selected, id, enqueueSnackbar, closeSnackbar);
         setPhotos(photos.filter((p) => !selected.includes(p.id)));
@@ -109,7 +112,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         await props.refresh();
     }
 
-    topBarButtonFunctions.delete = async () => {
+    (topBarButtonFunctions as any).delete = async () => {
         setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
             if (confirm) {
                 topBarButtonFunctions.unselect();
@@ -199,7 +202,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
                             <div style={{ flexGrow: 1 }}>
                                 <AutoSizer>
                                     {({ height, width }) => (
-                                        <AbstractPhotoPage
+                                        <PhotoGrid
                                             height={height - 1}
                                             width={width}
                                             photos={photos}

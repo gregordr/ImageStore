@@ -267,4 +267,3 @@ export default function AbstractPhotoPage(props: {
         </List>
     );
 }
-diff --git a/frontend/src/Components/Shared/AbstractPhotoPage.tsx b/frontend/src/Components/Shared/AbstractPhotoPage.tsx

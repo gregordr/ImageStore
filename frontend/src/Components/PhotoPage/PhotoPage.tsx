@@ -7,7 +7,7 @@ import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
 import AddToAlbum from "../Shared/AddToAlbum";
 import { PhotoT, AlbumT } from "../../Interfaces";
-import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
+import PhotoGrid from "../Shared/PhotoGrid";
 import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotos, getPhotosByFace, getPhotosByImage } from "../../API";
 import TopRightBar from "./TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -20,9 +20,8 @@ import AddLabels from "../Shared/AddLabels";
 import ConfirmDeleteDialog from "../Shared/ConfirmDeleteDialog";
 import usePhotoPage from "../Shared/usePhotoPage";
 
-export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; searchByImageEnabled: boolean }) {    
-    const [deletePhoto, albumDialogCallback, labelDialogCallback, getRootProps,getInputProps,searchTerm,setSearchTerm,deleteDialogOpen,onDeleteDialogClose,autocompleteOptions,setAutocompleteOptions,marked,photoSelection,hoverEventHandler,clickHandler,viewButtonFunctions,topBarButtonFunctions,anySelected,searchByImageId,searchByFace,fetchPhotos,fetchAlbums] = usePhotoPage()
-
+export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; searchByImageEnabled: boolean; refresh:any }) {
+    const history = useHistory();    
     const search = () => {
         const [type, term] = searchTerm
 
@@ -32,14 +31,6 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         return getPhotos("")
     }
 
-    useEffect(() => {
-        setPhotos([])
-        fetchPhotos();
-        fetchAlbums();
-    }, [searchTerm]);
-
-
-    
     const upload = async (files: File[], fileRejections: FileRejection[]) => {
         if (!files) return;
 
@@ -63,6 +54,15 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         await props.refresh();
     };
 
+    const [deletePhoto, albumDialogCallback, labelDialogCallback, getRootProps,getInputProps,searchTerm,setSearchTerm,deleteDialogOpen,onDeleteDialogClose,autocompleteOptions,setAutocompleteOptions,marked,photoSelection,hoverEventHandler,clickHandler,viewButtonFunctions,topBarButtonFunctions,anySelected,searchByImageId,searchByFace,fetchPhotos,fetchAlbums, classes, photos, setPhotos, albums, setAlbums, selected, setSelected, selectable, setSelectable, albumDialogOpen, setAlbumDialogOpen, labelDialogOpen, setLabelDialogOpen, showLoadingBar, setShowLoadingBar, viewId, setViewId, enqueueSnackbar, closeSnackbar,maxSize,setDeleteDialogOpen,isDragActive,showSearchBar,searchBarText,setSearchBarText, setOnDeleteDialogClose] = usePhotoPage(upload, search, props.refresh) 
+
+
+    useEffect(() => {
+        setPhotos([])
+        fetchPhotos();
+        fetchAlbums();
+    }, [searchTerm]);
+
 
     const imageClickHandler = (id: string) => () => {
         if (anySelected()) {
@@ -74,7 +74,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
 
 
-    topBarButtonFunctions.delete = async () => {
+    (topBarButtonFunctions as any).delete = async () => {
         setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
             if (confirm) {
                 topBarButtonFunctions.unselect();
@@ -160,7 +160,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                             <div style={{ flexGrow: 1 }}>
                                 <AutoSizer>
                                     {({ height, width }) => (
-                                        <AbstractPhotoPage
+                                        <PhotoGrid
                                             height={height - 1}
                                             width={width}
                                             photos={photos}

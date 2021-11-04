@@ -1,3 +1,12 @@
+import { useCallback, useEffect, useState } from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import { createStyles, Theme } from "@material-ui/core";
+import { PhotoT, AlbumT } from "../../Interfaces";
+import { addLabel, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels } from "../../API";
+import { useSnackbar } from "notistack";
+import { FileRejection, useDropzone } from "react-dropzone";
+import { AxiosResponse } from "axios";
+
 const maxSize = parseInt(process.env.MAX_SIZE || (10 * 1024 * 1024 * 1024).toString());
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -56,12 +65,9 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function usePhotoPage() {
+export default function usePhotoPage(upload: (files: File[], fileRejections: FileRejection[]) => Promise<void>, search: () => Promise<AxiosResponse<any>>, refresh: () => Promise<void>) {
     //#region Hooks
     const classes = useStyles();
-    const history = useHistory();
-
-    const id = window.location.pathname.split("/")[2 + process.env.PUBLIC_URL.split("/").length];
 
     const [photos, setPhotos] = useState<PhotoT[]>([]);
     const [albums, setAlbums] = useState<AlbumT[]>([]);
@@ -154,6 +160,16 @@ export default function usePhotoPage() {
 
     //#endregion hooks
 
+    const searchByImageId = (id: string) => {
+        setSearchBarText("similar images")
+        setSearchTerm(["image",id])
+    }
+
+    const searchByFace = (id: string, box: Box) => {
+        setSearchBarText("similar faces")
+        setSearchTerm(["face",id + "||" + box.toJSON()])
+    }
+
     //#region handlers
     
     const hoverEventHandler = (id: string) => () => {
@@ -183,7 +199,7 @@ export default function usePhotoPage() {
             setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
                 if (confirm) {
                     await deletePhoto(id);
-                    await props.refresh();
+                    await refresh();
                 }
 
                 setDeleteDialogOpen(false);
@@ -252,17 +268,7 @@ export default function usePhotoPage() {
         } else {
             setMarked([]);
         }
-    }, [lastSelected, hover, ctrl, anySelected, photoSelection]);
-
-    const searchByImageId = (id: string) => {
-        setSearchBarText("similar images")
-        setSearchTerm(["image",id])
-    }
-
-    const searchByFace = (id: string, box: Box) => {
-        setSearchBarText("similar faces")
-        setSearchTerm(["face",id + "||" + box.toJSON()])
-    }
+    }, [lastSelected, hover, ctrl, anySelected, photoSelection])
 
 
     //#region API
@@ -289,7 +295,7 @@ export default function usePhotoPage() {
     const albumDialogCallback = async (albumIds: string[]) => {
         topBarButtonFunctions.unselect();
         await addPhotosToAlbums(selected, albumIds, enqueueSnackbar, closeSnackbar);
-        await props.refresh();
+        await refresh();
     };
 
     const labelDialogCallback = async (labels: any) => {
@@ -304,8 +310,6 @@ export default function usePhotoPage() {
     
     //#endregion API
 
-    return [deletePhoto, albumDialogCallback, labelDialogCallback, getRootProps,getInputProps,searchTerm,setSearchTerm,deleteDialogOpen,onDeleteDialogClose,autocompleteOptions,setAutocompleteOptions,marked,photoSelection,hoverEventHandler,clickHandler,viewButtonFunctions,topBarButtonFunctions,anySelected,searchByImageId,searchByFace,fetchPhotos,fetchAlbums]
+    return [deletePhoto, albumDialogCallback, labelDialogCallback, getRootProps,getInputProps,searchTerm,setSearchTerm,deleteDialogOpen,onDeleteDialogClose,autocompleteOptions,setAutocompleteOptions,marked,photoSelection,hoverEventHandler,clickHandler,viewButtonFunctions,topBarButtonFunctions,anySelected,searchByImageId,searchByFace,fetchPhotos,fetchAlbums, classes, photos, setPhotos, albums, setAlbums, selected, setSelected, selectable, setSelectable, albumDialogOpen, setAlbumDialogOpen, labelDialogOpen, setLabelDialogOpen, showLoadingBar, setShowLoadingBar, viewId, setViewId, enqueueSnackbar, closeSnackbar,maxSize,setDeleteDialogOpen,isDragActive,showSearchBar,searchBarText,setSearchBarText, setOnDeleteDialogClose] as const
 
 }
-
-diff --git a/frontend/src/Components/AlbumPage/AlbumPhotoPage/AlbumPhotoPage.tsx b/frontend/src/Components/AlbumPage/AlbumPhotoPage/AlbumPhotoPage.tsx
