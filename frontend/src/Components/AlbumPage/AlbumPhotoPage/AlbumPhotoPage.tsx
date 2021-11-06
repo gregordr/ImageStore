@@ -23,9 +23,7 @@ import usePhotoPage from "../../Shared/usePhotoPage";
 
 
 export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; refresh: () => Promise<void>; searchByImageEnabled: boolean }) {
-    const history = useHistory();
-
-    
+    const history = useHistory();    
     const search = () => {
         const [type, term] = searchTerm
 
@@ -59,10 +57,39 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         await props.refresh();
     };
 
-    const [deletePhoto, albumDialogCallback, labelDialogCallback, getRootProps, getInputProps, searchTerm, setSearchTerm, deleteDialogOpen, onDeleteDialogClose, autocompleteOptions, setAutocompleteOptions, marked, photoSelection, hoverEventHandler, clickHandler, viewButtonFunctions, topBarButtonFunctions, anySelected, searchByImageId, searchByFace, fetchPhotos, fetchAlbums, classes, photos, setPhotos, albums, setAlbums, selected, setSelected, selectable, setSelectable, albumDialogOpen, setAlbumDialogOpen, labelDialogOpen, setLabelDialogOpen, showLoadingBar, setShowLoadingBar, viewId, setViewId, enqueueSnackbar, closeSnackbar,maxSize,setDeleteDialogOpen,isDragActive,showSearchBar,searchBarText,setSearchBarText, setOnDeleteDialogClose] = usePhotoPage(upload, search, props.refresh)
+    
+
+    const topRightBar = (id: string, buttonFunctions: any, searchByImageEnabled: boolean) => {
+        return <TopRightBar id={id} buttonFunctions={buttonFunctions} searchByImageEnabled={searchByImageEnabled} />;
+    };
+
+    const path = "/albums/open/:albumID/view"
+
+    const lines = () => [
+        <div> </div>,
+        <Typography variant="h4" style={{ paddingTop: 10, paddingLeft: 5 }}>
+            {(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}
+        </Typography>,
+        <Typography variant="h5" style={{ display: searchTerm[1] === "" || !searchTerm[1] ? "none" : "block", paddingLeft: 5 }}>
+            Search results for {searchTerm[0] === "text" ? searchTerm[1] : `similar ${searchTerm[0]}s` }:
+        </Typography>,
+    ];
+
+    const heights = () => [12, 42, searchTerm[1] === "" || !searchTerm[1] ? 0 : 28];
+
+    
+    const imageClickHandler = (photoId: string, anySelected: any, clickHandler: any) => () => {
+        if (anySelected()) {
+            clickHandler(photoId)();
+        } else {
+            history.push(`/albums/open/${id}/view/${photoId}`);
+        }
+    };
+
+    const {searchTerm, viewButtonFunctions, topBarButtonFunctions, fetchPhotos, fetchAlbums, photos, setPhotos, albums, selected, enqueueSnackbar, closeSnackbar, maxSize, setDeleteDialogOpen, setOnDeleteDialogClose, layout} = usePhotoPage(upload, search, props.refresh, path, topRightBar, props.handleDrawerToggle, props.drawerElement, props.searchByImageEnabled, lines, heights, imageClickHandler)
     
     const id = window.location.pathname.split("/")[2 + process.env.PUBLIC_URL.split("/").length];
-    
+
 
     useEffect(() => {
         setPhotos([])
@@ -76,13 +103,6 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         await removePhotosFromAlbum([pid], id, enqueueSnackbar, closeSnackbar);
     };
 
-    const imageClickHandler = (photoId: string) => () => {
-        if (anySelected()) {
-            clickHandler(photoId)();
-        } else {
-            history.push(`/albums/open/${id}/view/${photoId}`);
-        }
-    };
 
 
     (viewButtonFunctions as any).remove = async (id: string) => {
@@ -127,108 +147,7 @@ export default function AlbumPhotoPage(props: { handleDrawerToggle: () => void; 
         setDeleteDialogOpen(true);
     }
 
-
-    const topRightBar = (id: string, buttonFunctions: any, searchByImageEnabled: boolean) => {
-        return <TopRightBar id={id} buttonFunctions={buttonFunctions} searchByImageEnabled={searchByImageEnabled} />;
-    };
-
-    const lines = [
-        <div> </div>,
-        <Typography variant="h4" style={{ paddingTop: 10, paddingLeft: 5 }}>
-            {(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}
-        </Typography>,
-        <Typography variant="h5" style={{ display: searchTerm[1] === "" || !searchTerm[1] ? "none" : "block", paddingLeft: 5 }}>
-            Search results for {searchTerm[0] === "text" ? searchTerm[1] : `similar ${searchTerm[0]}s` }:
-        </Typography>,
-    ];
-
-    const heights = [12, 42, searchTerm[1] === "" || !searchTerm[1] ? 0 : 28];
-
     return (
-        <div>
-            <Switch>
-                <Route path="/albums/open/:albumID/view">
-                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(["text", term]); }} searchByFace={searchByFace} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
-                </Route>
-                <Route path="/">
-                    <div {...getRootProps({ className: "dropzone" })} className={classes.root}>
-                        <Backdrop
-                            open={isDragActive}
-                            transitionDuration={150}
-                            style={{
-                                zIndex: 1201,
-                                backgroundColor: "#00006666",
-                            }}
-                        >
-                            <div>
-                                <CloudUpload style={{ fontSize: 200, color: "#1976d2aa" }}></CloudUpload>
-                            </div>
-                        </Backdrop>
-                        <input {...getInputProps()} />
-                        <CssBaseline />
-
-                        <AppBar position="fixed" className={classes.appBar}>
-                            <Toolbar>
-                                <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={props.handleDrawerToggle} className={classes.menuButton}>
-                                    <MenuIcon />
-                                </IconButton>
-                                <TopBar
-                                    searchBarText={searchBarText}
-                                    setSearchBarText={setSearchBarText}
-                                    autocompleteOptions={autocompleteOptions}
-                                    anySelected={anySelected}
-                                    buttonFunctions={topBarButtonFunctions}
-                                    numSelected={() => selected.length}
-                                    show={showLoadingBar}
-                                />
-                            </Toolbar>
-                        </AppBar>
-
-                        {props.drawerElement}
-
-                        <main className={classes.content}>
-                            <div className={classes.toolbar} />
-                            {showSearchBar && (
-                                <AutocompleteSearchBar
-                                    options={autocompleteOptions}
-                                    search={topBarButtonFunctions.search}
-                                    className={classes.onlyMobile}
-                                    value={searchBarText}
-                                    onChange={(s: string) => setSearchBarText(s)}
-                                    onRequestSearch={topBarButtonFunctions.search(searchBarText)}
-                                    style={{ marginLeft: -6, borderRadius: 0, alignSelf: "flex-top" }}
-                                />
-                            )}
-                            <div style={{ flexGrow: 1 }}>
-                                <AutoSizer>
-                                    {({ height, width }) => (
-                                        <PhotoGrid
-                                            height={height - 1}
-                                            width={width}
-                                            photos={photos}
-                                            clickHandler={clickHandler}
-                                            selected={selected}
-                                            anySelected={anySelected}
-                                            imageClickHandler={imageClickHandler}
-                                            hoverEventHandler={hoverEventHandler}
-                                            searchByImageId={searchByImageId}
-                                            searchByImageEnabled={props.searchByImageEnabled}
-                                            marked={marked}
-                                            lines={lines}
-                                            heights={heights}
-                                            viewId={viewId}
-                                            setViewId={setViewId}
-                                        />
-                                    )}
-                                </AutoSizer>
-                            </div>
-                        </main>
-                    </div>
-                </Route>
-            </Switch>
-            <AddToAlbum albums={albums} open={albumDialogOpen} setOpen={setAlbumDialogOpen} cb={albumDialogCallback} />
-            <AddLabels open={labelDialogOpen} setOpen={setLabelDialogOpen} cb={labelDialogCallback}></AddLabels>
-            <ConfirmDeleteDialog open={deleteDialogOpen} handleClose={onDeleteDialogClose}></ConfirmDeleteDialog>
-        </div>
+        layout
     );
 }

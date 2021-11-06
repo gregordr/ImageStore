@@ -1,11 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { createStyles, Theme } from "@material-ui/core";
+import { AppBar, Backdrop, createStyles, CssBaseline, IconButton, Theme, Toolbar } from "@material-ui/core";
+import AutoSizer from "react-virtualized-auto-sizer";
+import MenuIcon from "@material-ui/icons/Menu";
 import { PhotoT, AlbumT } from "../../Interfaces";
+import { Route, Switch } from "react-router-dom";
 import { addLabel, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels } from "../../API";
 import { useSnackbar } from "notistack";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { AxiosResponse } from "axios";
+import { CloudUpload } from "@material-ui/icons";
+import TopBar from "../PhotoPage/TopBar";
+import ViewPage from "../ViewPage/ViewPage";
+import AddLabels from "./AddLabels";
+import AddToAlbum from "./AddToAlbum";
+import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
+import PhotoGrid from "./PhotoGrid";
+import AutocompleteSearchBar from "./SearchBar";
+import { useHistory } from "react-router-dom";
 
 const maxSize = parseInt(process.env.MAX_SIZE || (10 * 1024 * 1024 * 1024).toString());
 const drawerWidth = 240;
@@ -65,7 +77,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function usePhotoPage(upload: (files: File[], fileRejections: FileRejection[]) => Promise<void>, search: () => Promise<AxiosResponse<any>>, refresh: () => Promise<void>) {
+export default function usePhotoPage(upload: (files: File[], fileRejections: FileRejection[]) => Promise<void>, search: () => Promise<AxiosResponse<any>>, refresh: () => Promise<void>, path: string, topRightBar:(id: string, buttonFunctions: any, searchByImageEnabled: boolean) => JSX.Element, handleDrawerToggle: () => void, drawerElement: any, searchByImageEnabled: boolean, lines: () => JSX.Element[], heights: () => any, imageClickHandler: (photoId: string, anySelected: any, clickHandler: any) => () => void) {
     //#region Hooks
     const classes = useStyles();
 
@@ -255,7 +267,6 @@ export default function usePhotoPage(upload: (files: File[], fileRejections: Fil
             setShowSearchBar(!showSearchBar);
         },
     };
-
     //#endregion handlers
 
     const anySelected = useCallback(() => {
@@ -310,6 +321,92 @@ export default function usePhotoPage(upload: (files: File[], fileRejections: Fil
     
     //#endregion API
 
-    return [deletePhoto, albumDialogCallback, labelDialogCallback, getRootProps,getInputProps,searchTerm,setSearchTerm,deleteDialogOpen,onDeleteDialogClose,autocompleteOptions,setAutocompleteOptions,marked,photoSelection,hoverEventHandler,clickHandler,viewButtonFunctions,topBarButtonFunctions,anySelected,searchByImageId,searchByFace,fetchPhotos,fetchAlbums, classes, photos, setPhotos, albums, setAlbums, selected, setSelected, selectable, setSelectable, albumDialogOpen, setAlbumDialogOpen, labelDialogOpen, setLabelDialogOpen, showLoadingBar, setShowLoadingBar, viewId, setViewId, enqueueSnackbar, closeSnackbar,maxSize,setDeleteDialogOpen,isDragActive,showSearchBar,searchBarText,setSearchBarText, setOnDeleteDialogClose] as const
+    const layout = <div>
+            <Switch>
+                <Route path={path}>
+                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(["text", term]); }} searchByFace={searchByFace} searchByImageEnabled={searchByImageEnabled} ></ViewPage>
+                </Route>
+                <Route path="/">
+                    <div {...getRootProps({ className: "dropzone" })} className={classes.root}>
+                        <Backdrop
+                            open={isDragActive}
+                            transitionDuration={150}
+                            style={{
+                                zIndex: 1201,
+                                backgroundColor: "#00006666",
+                            }}
+                        >
+                            <div>
+                                <CloudUpload style={{ fontSize: 200, color: "#1976d2aa" }}></CloudUpload>
+                            </div>
+                        </Backdrop>
+                        <input {...getInputProps()} />
+                        <CssBaseline />
+
+                        <AppBar position="fixed" className={classes.appBar}>
+                            <Toolbar>
+                                <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={handleDrawerToggle} className={classes.menuButton}>
+                                    <MenuIcon />
+                                </IconButton>
+                                <TopBar
+                                    searchBarText={searchBarText}
+                                    setSearchBarText={setSearchBarText}
+                                    autocompleteOptions={autocompleteOptions}
+                                    anySelected={anySelected}
+                                    buttonFunctions={topBarButtonFunctions}
+                                    numSelected={() => selected.length}
+                                    show={showLoadingBar}
+                                />
+                            </Toolbar>
+                        </AppBar>
+
+                        {drawerElement}
+
+                        <main className={classes.content}>
+                            <div className={classes.toolbar} />
+                            {showSearchBar && (
+                                <AutocompleteSearchBar
+                                    options={autocompleteOptions}
+                                    search={topBarButtonFunctions.search}
+                                    className={classes.onlyMobile}
+                                    value={searchBarText}
+                                    onChange={(s: string) => setSearchBarText(s)}
+                                    onRequestSearch={topBarButtonFunctions.search(searchBarText)}
+                                    style={{ marginLeft: -6, borderRadius: 0, alignSelf: "flex-top" }}
+                                />
+                            )}
+                            <div style={{ flexGrow: 1 }}>
+                                <AutoSizer>
+                                    {({ height, width }) => (
+                                        <PhotoGrid
+                                            height={height - 1}
+                                            width={width}
+                                            photos={photos}
+                                            clickHandler={clickHandler}
+                                            selected={selected}
+                                            anySelected={anySelected}
+                                            imageClickHandler={(id) => imageClickHandler(id, anySelected, clickHandler)}
+                                            hoverEventHandler={hoverEventHandler}
+                                            searchByImageId={searchByImageId}
+                                            searchByImageEnabled={searchByImageEnabled}
+                                            marked={marked}
+                                            lines={lines()}
+                                            heights={heights()}
+                                            viewId={viewId}
+                                            setViewId={setViewId}
+                                        />
+                                    )}
+                                </AutoSizer>
+                            </div>
+                        </main>
+                    </div>
+                </Route>
+            </Switch>
+            <AddToAlbum albums={albums} open={albumDialogOpen} setOpen={setAlbumDialogOpen} cb={albumDialogCallback} />
+            <AddLabels open={labelDialogOpen} setOpen={setLabelDialogOpen} cb={labelDialogCallback}></AddLabels>
+            <ConfirmDeleteDialog open={deleteDialogOpen} handleClose={onDeleteDialogClose}></ConfirmDeleteDialog>
+        </div>
+
+    return { deletePhoto, albumDialogCallback, labelDialogCallback, getRootProps, getInputProps, searchTerm, setSearchTerm, deleteDialogOpen, onDeleteDialogClose, autocompleteOptions, setAutocompleteOptions, marked, photoSelection, hoverEventHandler, clickHandler, viewButtonFunctions, topBarButtonFunctions, anySelected, searchByImageId, searchByFace, fetchPhotos, fetchAlbums, classes, photos, setPhotos, albums, setAlbums, selected, setSelected, selectable, setSelectable, albumDialogOpen, setAlbumDialogOpen, labelDialogOpen, setLabelDialogOpen, showLoadingBar, setShowLoadingBar, viewId, setViewId, enqueueSnackbar, closeSnackbar, maxSize, setDeleteDialogOpen, isDragActive, showSearchBar, searchBarText, setSearchBarText, setOnDeleteDialogClose, layout } 
 
 }
