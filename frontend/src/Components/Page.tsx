@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Divider, Drawer, Hidden, List, ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
-import PhotoPage from "./PhotoPage/PhotoPage";
 import { Photo, PhotoAlbum } from "@material-ui/icons";
 import { Switch, Route, useHistory, useLocation } from "react-router-dom";
 import AlbumPage from "./AlbumPage/AlbumPage";
 import { checkForFeature } from "../API";
+import PhotoPage from "./Shared/PhotoPage";
 
 const drawerWidth = 240;
 
@@ -149,7 +149,7 @@ export default function ResponsiveDrawer({ window }: any) {
                 <AlbumPage searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
             </Route>
             <Route path="/">
-                <PhotoPage searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
+                <PhotoPage refresh={async () => {}} searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} root="Photo" />
             </Route>
         </Switch>
     );
