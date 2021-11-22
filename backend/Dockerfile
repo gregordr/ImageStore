@@ -5,7 +5,6 @@ RUN apt install ffmpeg python3 ca-certificates curl -y
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 RUN apt-get install -y nodejs
 RUN update-ca-certificates --fresh
-RUN npm install -g npm@latest
 WORKDIR /code
 EXPOSE 4000
 COPY package*.json ./
