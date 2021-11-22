@@ -1,5 +1,7 @@
+import axios from 'axios';
 import express from 'express';
 import { getAlbums, addAlbum, addPhotosToAlbums, removePhotosFromAlbum, deleteAlbum, getMediaInAlbum, setCover, rename } from '../database/albumDatabase';
+import { registeredServices } from './servicesRouter';
 
 export const router = express.Router();
 
@@ -40,6 +42,95 @@ router.get('/:name/all', async (req, res) => {
 
 router.get('/:name/search/:term', async (req, res) => {
     try {
+        if (registeredServices && registeredServices["search"]) {
+            const searchResult = await getMediaInAlbum(req.params.name, "%", "")
+
+            const data = await axios.post("http://" + registeredServices["search"].values().next().value + "/searchByText",
+                {
+                    text: req.params.term,
+                    candidates: searchResult.map((photo: any) => photo.id)
+                })
+
+            const map: any = {}
+
+            searchResult.forEach((photo: any) => {
+                map[photo.id] = photo
+            })
+
+            const response = []
+
+            for (const id of (data.data as any)) {
+                response.push(map[id])
+            }
+
+            res.status(200).send(response);
+            return
+        }
+
+        res.status(200).send(await getMediaInAlbum(req.params.name, `%${req.params.term}%`, req.params.term));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
+router.get("/:name/searchByImage/:imageId", async (req, res) => {
+    try {
+        if (registeredServices && registeredServices["search"]) {
+            const searchResult = await getMediaInAlbum(req.params.name, "%", "")
+
+            const data = await axios.post("http://" + registeredServices["search"].values().next().value + "/searchByImage",
+                {
+                    image: req.params.imageId,
+                    candidates: searchResult.map((photo: any) => photo.id)
+                })
+
+            const map: any = {}
+
+            searchResult.forEach((photo: any) => {
+                map[photo.id] = photo
+            })
+
+            const response = []
+
+            for (const id of (data.data as any)) {
+                response.push(map[id])
+            }
+
+            res.status(200).send(response);
+            return
+        }
+        res.status(200).send(await getMediaInAlbum(req.params.name, `%${req.params.term}%`, req.params.term));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
+router.get("/:name/searchByFace/:imageId", async (req, res) => {
+    try {
+        if (registeredServices && registeredServices["face"]) {
+            const searchResult = await getMediaInAlbum(req.params.name, "%", "")
+
+            const data = await axios.post("http://" + registeredServices["face"].values().next().value + "/searchByFace",
+                {
+                    image: req.params.imageId,
+                    candidates: searchResult.map((photo: any) => photo.id)
+                })
+
+            const map: any = {}
+
+            searchResult.forEach((photo: any) => {
+                map[photo.id] = photo
+            })
+
+            const response = []
+
+            for (const id of (data.data as any)) {
+                response.push(map[id])
+            }
+
+            res.status(200).send(response);
+            return
+        }
         res.status(200).send(await getMediaInAlbum(req.params.name, `%${req.params.term}%`, req.params.term));
     } catch (err) {
         res.status(500).send(err.toString());

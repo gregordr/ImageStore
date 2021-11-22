@@ -34,6 +34,7 @@ export async function addPhotos(
         let formData = new FormData();
         for (let fileIdx = 0; fileIdx < files.length; fileIdx++) {
             formData.append("file", files[fileIdx]);
+            formData.append("date", files[fileIdx].lastModified.toString());
 
             if ((fileIdx !== 0 && fileIdx % SEND_SIZE === 0) || fileIdx === files.length - 1) {
                 const res = await axios.post("/media/add", formData);
@@ -48,7 +49,7 @@ export async function addPhotos(
 
         return photos;
     } catch (error) {
-        snackbar?.end([], [error]);
+        snackbar?.end([], [error as string]);
         return [];
     }
 }
@@ -64,7 +65,7 @@ export async function deletePhotos(
         const res = await axios.post("/media/delete/", { ids: photoIds });
         snackbar?.end(res.data.successes, res.data.errors);
     } catch (error) {
-        snackbar?.end(0, [error]);
+        snackbar?.end(0, [error as string]);
         return [];
     }
 }
@@ -108,7 +109,7 @@ export async function addPhotosToAlbums(
         const result = await axios.post("/albums/addPhotos", requestBody);
         snackbar?.end(photoIds, albumIds, []);
     } catch (error) {
-        snackbar?.end([], [], [error]);
+        snackbar?.end([], [], [error as string]);
     }
 }
 
@@ -128,7 +129,7 @@ export async function removePhotosFromAlbum(
         const res = await axios.post(`/albums/remove`, requestBody);
         snackbar?.end(res.data, []);
     } catch (error) {
-        snackbar?.end(0, [error]);
+        snackbar?.end(0, [error as string]);
     }
 }
 
@@ -196,7 +197,7 @@ export async function download(
         window.URL.revokeObjectURL(url);
         snackbar?.end([], []);
     } catch (error) {
-        snackbar?.end([], [error]);
+        snackbar?.end([], [error as string]);
     }
 }
 
@@ -244,8 +245,24 @@ export async function getPhotos(searchTerm: string) {
     return await axios.get(searchTerm === "" || !searchTerm ? "media/all" : "media/search/" + searchTerm);
 }
 
+export async function getPhotosByImage(imageId: string) {
+    return await axios.get("media/searchByImage/" + imageId);
+}
+
+export async function getPhotosByFace(searchTerm: string) {
+    return await axios.get(`media/searchByFace/${searchTerm}`);
+}
+
 export async function getPhotosInAlbum(id: string, searchTerm: string) {
     return await axios.get(searchTerm === "" || !searchTerm ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`);
+}
+
+export async function getPhotosByImageInAlbum(id: string, searchTerm: string) {
+    return await axios.get(`albums/${id}/searchByImage/${searchTerm}`);
+}
+
+export async function getPhotosByFaceInAlbum(id: string, searchTerm: string) {
+    return await axios.get(`albums/${id}/searchByFace/${searchTerm}`);
 }
 
 export async function getAutoAddLabels(albumId: string) {
@@ -259,7 +276,7 @@ export async function addAutoAddLabel(albumId: string, label: string, addExistin
     const requestBody = {
         albumId,
         label,
-        addExisting
+        addExisting,
     };
     return await axios.post("/labels/addAutoAdd/", requestBody);
 }
@@ -267,7 +284,65 @@ export async function addAutoAddLabel(albumId: string, label: string, addExistin
 export async function removeAutoAddLabel(albumId: string, label: string) {
     const requestBody = {
         albumId,
-        label
+        label,
     };
     return await axios.post("/labels/removeAutoAdd/", requestBody);
+}
+
+export async function checkForFeature(name: string) {
+    const requestBody = {
+        serviceName: name
+    };
+    return await axios.post("/services/check/", requestBody)
+}
+
+
+
+export class Box {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+
+    constructor(x1: number, y1: number, x2: number, y2: number) {
+        this.x1 = x1
+        this.y1 = y1
+        this.x2 = x2
+        this.y2 = y2
+    }
+
+    static fromArray(input: number[]) {
+        return new Box(input[0], input[1], input[2], input[3])
+    }
+
+    static fromString(input: string) {
+        const regex = /\(|\)/g;
+        const array = input.replace(regex, '').split(",").map((num) => parseInt(num))
+        return Box.fromArray(array)
+    }
+
+    toJSON() {
+        return `((${this.x1}, ${this.y1}), (${this.x2}, ${this.y2}))`
+    }
+}
+
+export async function getBoxes(id: string) {
+    const requestBody = {
+        id
+    };
+    const res = await axios.post("/face/get", requestBody);
+    const faces = res.data
+    for (const face of faces) {
+        face.boundingbox = Box.fromString(face.boundingbox)
+    }
+
+    return faces
+}
+
+export async function deleteBox(id: string, box: Box) {
+    const requestBody = {
+        id,
+        box: [box.x1, box.y1, box.x2, box.y2],
+    };
+    const res = await axios.post("/face/remove", requestBody);
 }

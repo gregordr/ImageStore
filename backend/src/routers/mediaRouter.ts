@@ -9,6 +9,8 @@ import ffmpeg from 'fluent-ffmpeg'
 import ffmpegV from 'ffmpeg'
 import { parseISO } from "date-fns";
 import Filetype from 'file-type'
+import axios from 'axios';
+import { registeredServices } from './servicesRouter';
 sharp.cache({ files: 0 });
 
 export const router = express.Router();
@@ -23,6 +25,94 @@ router.get('/all', async (req, res) => {
 
 router.get('/search/:term', async (req, res) => {
     try {
+        if (registeredServices && registeredServices["search"]) {
+            const searchResult = await getMedia("%", "")
+
+            const data = await axios.post("http://" + registeredServices["search"].values().next().value + "/searchByText",
+                {
+                    text: req.params.term,
+                    candidates: searchResult.map((photo: any) => photo.id)
+                })
+
+            const map: any = {}
+
+            searchResult.forEach((photo: any) => {
+                map[photo.id] = photo
+            })
+
+            const response = []
+
+            for (const id of (data.data as any)) {
+                response.push(map[id])
+            }
+
+            res.status(200).send(response);
+            return
+        }
+        res.status(200).send(await getMedia(`%${req.params.term}%`, req.params.term));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
+router.get("/searchByImage/:imageId", async (req, res) => {
+    try {
+        if (registeredServices && registeredServices["search"]) {
+            const searchResult = await getMedia("%", "")
+
+            const data = await axios.post("http://" + registeredServices["search"].values().next().value + "/searchByImage",
+                {
+                    image: req.params.imageId,
+                    candidates: searchResult.map((photo: any) => photo.id)
+                })
+
+            const map: any = {}
+
+            searchResult.forEach((photo: any) => {
+                map[photo.id] = photo
+            })
+
+            const response = []
+
+            for (const id of (data.data as any)) {
+                response.push(map[id])
+            }
+
+            res.status(200).send(response);
+            return
+        }
+        res.status(200).send(await getMedia(`%${req.params.term}%`, req.params.term));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
+router.get("/searchByFace/:imageId", async (req, res) => {
+    try {
+        if (registeredServices && registeredServices["face"]) {
+            const searchResult = await getMedia("%", "")
+
+            const data = await axios.post("http://" + registeredServices["face"].values().next().value + "/searchByFace",
+                {
+                    image: req.params.imageId,
+                    candidates: searchResult.map((photo: any) => photo.id)
+                })
+
+            const map: any = {}
+
+            searchResult.forEach((photo: any) => {
+                map[photo.id] = photo
+            })
+
+            const response = []
+
+            for (const id of (data.data as any)) {
+                response.push(map[id])
+            }
+
+            res.status(200).send(response);
+            return
+        }
         res.status(200).send(await getMedia(`%${req.params.term}%`, req.params.term));
     } catch (err) {
         res.status(500).send(err.toString());
@@ -38,6 +128,7 @@ if (!fs.existsSync(dir)) {
 router.post('/add', async (req, res) => {
     upload(req, res, async (err: multer.MulterError | "router") => {
         const oids: string[] = []
+        const types: string[] = []
         const errors: string[] = []
 
         if (err) {
@@ -61,7 +152,7 @@ router.post('/add', async (req, res) => {
             throw new Error();
         }
 
-        await Promise.all(req.files.map(async (f) => {
+        await Promise.all(req.files.map(async (f, index) => {
             try {
                 if (!f || !f.originalname) {
                     errors.push("Something went really wrong!")
@@ -93,8 +184,13 @@ router.post('/add', async (req, res) => {
                     let date;
                     try {
                         date = Date.parse((await exifr.parse(dir + f.filename))?.CreateDate)
+                        if (isNaN(date))
+                            throw Error
                     } catch (e) {
-                        date = NaN
+                        if (req.body.date instanceof Array)
+                            date = req.body.date[index]
+                        else
+                            date = req.body.date
                     }
 
 
@@ -107,15 +203,21 @@ router.post('/add', async (req, res) => {
                     else
                         await sharp(dir + oid, { failOnError: false }).resize({ width: 1500, height: Math.ceil(dims.height / dims.width * 1500) }).rotate().jpeg({ quality: 85 }).toFile(dir + "thumb_" + oid)
                     oids.push(oid)
+                    types.push("photo")
                 } else if (type?.startsWith("video")) {
                     try {
-                        const data = await new Promise<any>((resolve) => ffmpeg.ffprobe(dir + f.filename, (err, data) => { resolve(data) }));
+                        const data = await new Promise<any>((resolve) => ffmpeg.ffprobe(dir + f.filename, (err, data) => { if (err) console.log("missing FFMPEG"); resolve(data) }));
 
                         let date;
                         try {
                             date = parseISO(data.format.tags.creation_time).getTime()
+                            if (isNaN(date))
+                                throw Error
                         } catch (e) {
-                            date = NaN
+                            if (req.body.date instanceof Array)
+                                date = req.body.date[index]
+                            else
+                                date = req.body.date
                         }
 
                         let coordX: number | undefined = undefined;
@@ -167,12 +269,14 @@ router.post('/add', async (req, res) => {
                             await fsPromises.rename(dir + f.filename, dir + oid);
 
                             oids.push(oid)
+                            types.push("video")
                         }, function (err) {
                             console.log('Error: ' + err);
                         });
                     } catch (e) {
                         console.log("ERROR: " + e.code);
                         console.log("ERROR: " + e.msg);
+                        errors.push("Unknown error in " + f.originalname)
                     }
                 } else {
                     errors.push("Invalid type in " + f.originalname)
@@ -183,6 +287,12 @@ router.post('/add', async (req, res) => {
                 console.log(e.toString())
             }
         }))
+
+        if (registeredServices && registeredServices["upload"]) {
+            registeredServices["upload"].forEach((endpoint) => {
+                axios.post("http://" + endpoint + "/upload", { oids, types })
+            })
+        }
 
         res.status(200).send({ success: oids, errors })
     })

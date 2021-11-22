@@ -22,7 +22,7 @@ export default function TopLeftBar() {
                 aria-label="back"
                 onClick={(e) => {
                     e.stopPropagation();
-                    history.goBack();
+                    history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"));
                 }}
             >
                 <ArrowBack />

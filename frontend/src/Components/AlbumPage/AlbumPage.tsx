@@ -6,8 +6,8 @@ import TopBar from "./TopBar";
 import { Route, Switch } from "react-router-dom";
 import { AlbumT } from "../../Interfaces";
 import CreateAlbum from "./CreateAlbum";
-import AlbumPhotoPage from "./AlbumPhotoPage/AlbumPhotoPage";
-import AbstractAlbumPage from "../Shared/AbstractAlbumPage";
+import PhotoPage from "../Shared/PhotoPage";
+import AbstractAlbumPage from "../Shared/AlbumGrid";
 import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
 import { createAlbum, getAlbums } from "../../API";
@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function AlbumPage(props: { handleDrawerToggle: () => void; drawerElement: any }) {
+export default function AlbumPage(props: { handleDrawerToggle: () => void; drawerElement: any; searchByImageEnabled: boolean }) {
     const classes = useStyles();
 
     const [albums, setAlbums] = useState<AlbumT[]>([]);
@@ -128,7 +128,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         <div>
             <Switch>
                 <Route path="/albums/open">
-                    <AlbumPhotoPage refresh={fetchAlbums} drawerElement={props.drawerElement} handleDrawerToggle={props.handleDrawerToggle} />
+                    <PhotoPage refresh={fetchAlbums} drawerElement={props.drawerElement} handleDrawerToggle={props.handleDrawerToggle} searchByImageEnabled={props.searchByImageEnabled} root="Album" />
                 </Route>
                 <Route path="/albums/">
                     <div className={classes.root}>

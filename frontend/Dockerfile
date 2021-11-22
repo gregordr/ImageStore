@@ -1,4 +1,4 @@
-FROM node
+FROM node:lts
 WORKDIR /code
 EXPOSE 3000
 COPY package*.json ./

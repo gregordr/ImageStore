@@ -15,7 +15,7 @@ export default function CreateAlbum(props: { cb: (arg0: string) => any; setOpen:
     const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
     const handleClose = (execute: boolean) => async () => {
-        if (done) return;
+        if (done || value === "") return;
         if (execute) {
             setDone(true);
             await props.cb(value);
