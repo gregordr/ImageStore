@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update
-RUN apt install ffmpeg python3 ca-certificates curl -y
+RUN apt install ffmpeg python3 ca-certificates curl make g++ -y
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 RUN apt-get install -y nodejs
 RUN update-ca-certificates --fresh
