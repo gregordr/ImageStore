@@ -1,23 +1,26 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { ChangeEvent, RefObject, useCallback, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Backdrop } from "@material-ui/core";
-import TopBar from "./TopBar";
+import AlbumTopBar from "../AlbumPage/AlbumPhotoPage/TopBar";
+import PhotoTopBar from "../PhotoPage/TopBar";
 import { Route, Switch, useHistory } from "react-router-dom";
 import ViewPage from "../ViewPage/ViewPage";
-import AddToAlbum from "../Shared/AddToAlbum";
+import AddToAlbum from "./AddToAlbum";
 import { PhotoT, AlbumT } from "../../Interfaces";
-import AbstractPhotoPage from "../Shared/AbstractPhotoPage";
-import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotos, getPhotosByFace, getPhotosByImage } from "../../API";
-import TopRightBar from "./TopRightBar";
+import AbstractPhotoPage from "./PhotoGrid";
+import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosByFaceInAlbum, getPhotosByImageInAlbum, getPhotosInAlbum, removePhotosFromAlbum, setCover, getPhotos, getPhotosByFace, getPhotosByImage } from "../../API";
+import AlbumTopRightBar from "../AlbumPage/AlbumPhotoPage/TopRightBar";
+import PhotoTopRightBar from "../PhotoPage/TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
+import SearchBar from "material-ui-search-bar";
 import { useSnackbar } from "notistack";
-import { useDropzone, FileRejection } from "react-dropzone";
+import { FileRejection, useDropzone } from "react-dropzone";
 import { UploadErrorSnackbar } from "../Snackbars/UploadErrorSnackbar";
 import { CloudUpload } from "@material-ui/icons";
-import AutocompleteSearchBar from "../Shared/SearchBar";
-import AddLabels from "../Shared/AddLabels";
-import ConfirmDeleteDialog from "../Shared/ConfirmDeleteDialog";
+import AutocompleteSearchBar from "./SearchBar";
+import AddLabels from "./AddLabels";
+import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 
 const maxSize = parseInt(process.env.MAX_SIZE || (10 * 1024 * 1024 * 1024).toString());
 const drawerWidth = 240;
@@ -30,6 +33,11 @@ const useStyles = makeStyles((theme: Theme) =>
             [theme.breakpoints.up("sm")]: {
                 width: drawerWidth,
                 flexShrink: 0,
+            },
+        },
+        onlyMobile: {
+            [theme.breakpoints.up("md")]: {
+                display: "none",
             },
         },
         appBar: {
@@ -69,16 +77,18 @@ const useStyles = makeStyles((theme: Theme) =>
             flexDirection: "column",
             height: "100vh",
         },
-        onlyMobile: {
-            [theme.breakpoints.up("md")]: {
-                display: "none",
-            },
-        },
     })
 );
 
-export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; searchByImageEnabled: boolean }) {
+export default function PhotoPage(props: { handleDrawerToggle: () => void; drawerElement: any; refresh: () => Promise<void>; searchByImageEnabled: boolean ; root: "Photo"|"Album"}) {
+    //#region Hooks
     const classes = useStyles();
+
+    const TopBar = props.root == "Photo" ? PhotoTopBar : AlbumTopBar
+    const TopRightBar = props.root == "Photo" ? PhotoTopRightBar : AlbumTopRightBar
+
+    const history = useHistory();
+    const id = props.root == "Album" ? window.location.pathname.split("/")[2 + process.env.PUBLIC_URL.split("/").length] : "";
 
     const [photos, setPhotos] = useState<PhotoT[]>([]);
     const [albums, setAlbums] = useState<AlbumT[]>([]);
@@ -88,6 +98,25 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [labelDialogOpen, setLabelDialogOpen] = useState(false);
     const [showLoadingBar, setShowLoadingBar] = useState(true);
     const [viewId, setViewId] = useState("");
+
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [onDeleteDialogClose, setOnDeleteDialogClose] = useState<(confirm: boolean) => () => void>(() => (confirm: boolean) => () => {
+        setDeleteDialogOpen(false);
+        alert("Error onDeleteClose not defined");
+    });
+
+    const [showSearchBar, setShowSearchBar] = useState(false);
+    const [searchBarText, setSearchBarText] = useState("");
+    const [searchTerm, setSearchTerm] = useState<["text"|"image"|"face"|"none", string]>(["none", ""]);
+
+    const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
+
+    useEffect(() => {
+        (async () => {
+            if (photos.length === 0) setAutocompleteOptions([]);
+            else setAutocompleteOptions((await getPhotoLabels(photos.map((photo) => photo.id))).data);
+        })();
+    }, [photos]);
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
     const {
@@ -108,34 +137,20 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         upload(acceptedFiles, fileRejections);
     }, [acceptedFiles, fileRejections]);
 
-    const [showSearchBar, setShowSearchBar] = useState(false);
-    const [searchBarText, setSearchBarText] = useState("");
-    const [searchTerm, setSearchTerm] = useState<["text"|"image"|"face"|"none", string]>(["none", ""]);
-
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [onDeleteDialogClose, setOnDeleteDialogClose] = useState<(confirm: boolean) => () => void>(() => (confirm: boolean) => () => {
-        setDeleteDialogOpen(false);
-        alert("Error onDeleteClose not defined");
-    });
-
-    const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
-
-    useEffect(() => {
-        (async () => {
-            if (photos.length === 0) setAutocompleteOptions([]);
-            else setAutocompleteOptions((await getPhotoLabels(photos.map((photo) => photo.id))).data);
-        })();
-    }, [photos]);
-
-
-    
     const search = () => {
         const [type, term] = searchTerm
 
-        if (type === "text") return getPhotos(term)
-        if (type === "image") return getPhotosByImage(term)
-        if (type === "face") return getPhotosByFace(term)
-        return getPhotos("")
+        if (props.root == "Photo") {
+            if (type === "text") return getPhotos(term)
+            if (type === "image") return getPhotosByImage(term)
+            if (type === "face") return getPhotosByFace(term)
+            return getPhotos("")
+        } else if(props.root == "Album") {
+            if (type === "text") return getPhotosInAlbum(id, term)
+            if (type === "image") return getPhotosByImageInAlbum(id, term)
+            if (type === "face") return getPhotosByFaceInAlbum(id, term)
+            return getPhotosInAlbum(id, "")
+        } else throw new Error("Wrong root type")
     }
 
     const fetchPhotos = async () => {
@@ -162,14 +177,64 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         setPhotos([])
         fetchPhotos();
         fetchAlbums();
-    }, [searchTerm]);
-
-    const history = useHistory();
+    }, [searchTerm, id]);
 
     const [lastSelected, setLastSelected] = useState<string | undefined>();
     const [hover, setHover] = useState<string | undefined>();
     const [marked, setMarked] = useState<string[]>([]);
     const [ctrl, setCtrl] = useState(false);
+    //#endregion hooks
+
+    //#region API
+
+    const albumDialogCallback = async (albumIds: string[]) => {
+        topBarButtonFunctions.unselect();
+        await addPhotosToAlbums(selected, albumIds, enqueueSnackbar, closeSnackbar);
+        await props.refresh();
+    };
+
+    const labelDialogCallback = async (labels: any) => {
+        topBarButtonFunctions.unselect();
+        await addLabel(selected, labels);
+    };
+
+    const deletePhoto = async (pid: string) => {
+        setPhotos(photos.filter((p) => p.id !== pid));
+        await deletePhotos([pid], enqueueSnackbar, closeSnackbar);
+    };
+
+    const removePhoto = async (pid: string) => {
+        setPhotos(photos.filter((p) => p.id !== pid));
+        await removePhotosFromAlbum([pid], id, enqueueSnackbar, closeSnackbar);
+    };
+
+    const upload = async (files: File[], fileRejections: FileRejection[]) => {
+        if (!files) return;
+
+        const acceptedFiles: File[] = [];
+
+        files.forEach((file) => {
+            if (file.size > maxSize) {
+                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize / (1024 * 1024 * 1024)} GB`, code: "file-too-large" }] });
+            } else {
+                acceptedFiles.push(file);
+            }
+        });
+
+        const snackbar = UploadErrorSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
+        snackbar?.begin(fileRejections);
+
+        if (acceptedFiles.length === 0) return;
+        const data = await addPhotos(acceptedFiles, enqueueSnackbar, closeSnackbar, albums);
+
+        if(props.root == "Album")
+            await addPhotosToAlbums(data, [id], enqueueSnackbar, closeSnackbar);
+        await fetchPhotos();
+        await props.refresh();
+    };
+    //#endregion API
+
+    //#region handlers
 
     const photoSelection = useCallback(
         (inclusive: string, exclusive: string): string[] => {
@@ -212,11 +277,13 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         setHover(id);
     };
 
-    const imageClickHandler = (id: string) => () => {
+    const imageClickHandler = (photoId: string) => () => {
         if (anySelected()) {
-            clickHandler(id)();
-        } else {
-            history.push(`/view/${id}`);
+            clickHandler(photoId)();
+        } else if(props.root == "Album") {
+            history.push(`/albums/open/${id}/view/${photoId}`);
+        } else if(props.root == "Photo") {
+            history.push(`/view/${photoId}`);
         }
     };
 
@@ -250,16 +317,6 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         }
     }, [lastSelected, hover, ctrl, anySelected, photoSelection]);
 
-    const albumDialogCallback = async (albumIds: any) => {
-        topBarButtonFunctions.unselect();
-        await addPhotosToAlbums(selected, albumIds, enqueueSnackbar, closeSnackbar);
-    };
-
-    const labelDialogCallback = async (labels: any) => {
-        topBarButtonFunctions.unselect();
-        await addLabel(selected, labels);
-    };
-
     const searchByImageId = (id: string) => {
         setSearchBarText("similar images")
         setSearchTerm(["image",id])
@@ -275,6 +332,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
                 if (confirm) {
                     await deletePhoto(id);
+                    await props.refresh();
                 }
 
                 setDeleteDialogOpen(false);
@@ -293,11 +351,18 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             );
         },
         searchByImageId,
-    };
 
-    const deletePhoto = async (pid: any) => {
-        setPhotos(photos.filter((p) => p.id !== pid));
-        await deletePhotos([pid], enqueueSnackbar, closeSnackbar);
+        //Albums
+        remove: async (id: string) => {
+            await removePhoto(id);
+            setPhotos(photos.filter((p) => p.id !== id));
+            // await fetchPhotos();
+            await props.refresh();
+        },
+        setCover: async (photoID: string) => {
+            await setCover(id, photoID);
+            await props.refresh();
+        },
     };
 
     const topBarButtonFunctions = {
@@ -307,7 +372,11 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                     topBarButtonFunctions.unselect();
                     await deletePhotos(selected, enqueueSnackbar, closeSnackbar);
                     setPhotos(photos.filter((p) => !selected.includes(p.id)));
-                    fetchPhotos();
+
+                    if (props.root == "Photo")
+                        fetchPhotos();
+                    else
+                        await props.refresh();
                 }
 
                 setDeleteDialogOpen(false);
@@ -347,28 +416,23 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         mobileSearch: () => {
             setShowSearchBar(!showSearchBar);
         },
+
+        // Albums
+        setCover: async () => {
+            await setCover(id, selected[0]);
+            topBarButtonFunctions.unselect();
+            await props.refresh();
+        },
+        remove: async () => {
+            topBarButtonFunctions.unselect();
+            await removePhotosFromAlbum(selected, id, enqueueSnackbar, closeSnackbar);
+            setPhotos(photos.filter((p) => !selected.includes(p.id)));
+
+            await props.refresh();
+        },
     };
-    const upload = async (files: File[], fileRejections: FileRejection[]) => {
-        if (!files) return;
 
-        const acceptedFiles: File[] = [];
-
-        files.forEach((file) => {
-            if (file.size > maxSize) {
-                fileRejections.push({ file, errors: [{ message: `File is bigger than ${maxSize / (1024 * 1024 * 1024)} GB`, code: "file-too-large" }] });
-            } else {
-                acceptedFiles.push(file);
-            }
-        });
-
-        const snackbar = UploadErrorSnackbar.createInstance(enqueueSnackbar, closeSnackbar);
-        snackbar?.begin(fileRejections);
-
-        if (acceptedFiles.length === 0) return;
-
-        await addPhotos(acceptedFiles, enqueueSnackbar, closeSnackbar, albums);
-        await fetchPhotos();
-    };
+    //#endregion handlers
 
     const topRightBar = (id: string, buttonFunctions: any, searchByImageEnabled: boolean) => {
         return <TopRightBar id={id} buttonFunctions={buttonFunctions} searchByImageEnabled={searchByImageEnabled} />;
@@ -376,17 +440,21 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const lines = [
         <div></div>,
+        props.root == "Album" ?
+        <Typography variant="h4" style={{ paddingTop: 10, paddingLeft: 5 }}>
+            {(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}
+        </Typography> : <></>,
         <Typography variant="h5" style={{ display: searchTerm[1] === "" || !searchTerm[1] ? "none" : "block", paddingLeft: 5 }}>
             Search results for {searchTerm[0] === "text" ? searchTerm[1] : `similar ${searchTerm[0]}s` }:
         </Typography>,
     ];
 
-    const heights = [12, searchTerm[1] === "" || !searchTerm[1] ? 0 : 28];
+    const heights = [12, props.root == "Album" ? 42 : 0, searchTerm[1] === "" || !searchTerm[1] ? 0 : 28];
 
     return (
         <div>
             <Switch>
-                <Route path="/view">
+                <Route path={props.root == "Photo" ? "/view" : "/albums/open/:albumID/view"}>
                     <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(["text", term]); }} searchByFace={searchByFace} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
                 </Route>
                 <Route path="/">
