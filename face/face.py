@@ -9,6 +9,7 @@ from waitress import serve
 from dotenv import load_dotenv
 import cv2
 import numpy as np
+from sklearn.cluster import DBSCAN
 
 from insightface.app import FaceAnalysis
 app = FaceAnalysis(name='antelopev2')
@@ -43,6 +44,10 @@ def getPhoto(imgId, thumb = False):
     embeddings = torch.stack(embeddings)
     torch.save(embeddings, featureDirectory+imgId)
 
+clustering = DBSCAN(eps=0.45, min_samples=5, metric='cosine')
+i2c = {}
+c2i = {}
+from itertools import chain
 def getAllPhotos():
     os.makedirs("features/", exist_ok=True)
     files = dict.fromkeys(os.listdir("features/"))
@@ -65,44 +70,35 @@ def getAllPhotos():
         if not file in usedSet:
             os.unlink("features/"+file)
 
+    # build DBSCAN
+    clustering.fit([x for x in chain.from_iterable([[y[4:].numpy() for y in obj[x]] for x in obj]) if len(x) > 0])
+    print(len(clustering.labels_[clustering.labels_ >= 0]))
+    print(np.max(clustering.labels_[clustering.labels_ >= 0]))
+    for (image, face), cluster in zip([(x,y) for (x,y) in chain.from_iterable([[(x, y[:4].numpy()) for y in obj[x]] for x in obj]) if len(y) == 4], clustering.labels_):
+        if not image in i2c:
+            i2c[image] = []
+        i2c[image].append({"face":face, "cluster": cluster})
+
+        if not cluster in c2i:
+            c2i[cluster] = []
+        c2i[cluster].append(image)
+
 def dist(box: str, array):
     numbers = [int(x) for x in box.replace("(", "").replace(")", "").split(", ")]
     return np.abs(numbers[0] - array[2])+ np.abs(numbers[1] - array[3])+ np.abs(numbers[2] - array[0])+ np.abs(numbers[3] - array[1])
     
 def findByImage(term, candidates: List[str]):
-    target_features = [x for x in obj[term.split("||")[0]] if dist(term.split("||")[1], x[:4]) < 5]
+    target_features = [x["cluster"] for x in i2c[term.split("||")[0]] if dist(term.split("||")[1], x["face"]) < 5]
 
     if(len(target_features) == 0):
         return []
 
-    target_features = target_features[0][4:]
+    target_features = target_features[0]
 
-    usedCandidates = list()
-
-    tmp = []
-    for x in candidates:
-        if(not x in obj):
-            continue
-        
-        for tensor in obj[x]:
-            if(tensor.shape[0] <= 1):
-                continue
-            usedCandidates.append(x)
-            tmp.append(tensor[4:])
-
-    if len(tmp) == 0:
+    if(target_features == -1):
         return []
 
-    tmp = torch.stack(tmp)
-    scores = (tmp @ target_features).t()
-
-    accepted = torch.sort(scores)
-    ind = torch.searchsorted(accepted.values, torch.tensor(0.35))
-
-    res = accepted.indices[ind.item():].tolist()
-    res.reverse()
-
-    return [usedCandidates[x] for x in res]
+    return c2i[target_features]
 
 @api.route('/searchByFace', methods=['POST'])
 def searchByFace():
