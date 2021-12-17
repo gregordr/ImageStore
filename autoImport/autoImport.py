@@ -17,7 +17,7 @@ os.makedirs(importPath, exist_ok=True)
 
 def upload(file):
     with open(os.path.join(importPath, file), 'rb') as f:
-        res = requests.post("http://" + BACKEND_URL + "/media/add", data={"date": str(1000*int(os.path.getctime(os.path.join(importPath, file))))}, files={"file": f})
+        res = requests.post("http://" + BACKEND_URL + "/media/add", data={"date": str(1000*int(os.path.getmtime(os.path.join(importPath, file))))}, files={"file": f})
         if res.text.startswith("{\"success\":[]"):
             raise Exception(res.text)
 
