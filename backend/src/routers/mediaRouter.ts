@@ -284,7 +284,7 @@ router.post('/add', async (req, res) => {
 
             } catch (e) {
                 errors.push("Unknown error happened and logged in " + f.originalname)
-                console.log(e.toString())
+                console.trace(e)
             }
         }))
 

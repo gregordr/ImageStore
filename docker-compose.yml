@@ -67,3 +67,15 @@ services:
     #         - ./faceFeatures/:/code/features
     #     depends_on:
     #         - backend
+
+    # autoimport: # Automatic import of media in the "import" directory
+    #     image: imagestored/autoimport
+    #     restart: always
+    #     environment:
+    #         BACKEND_URL: backend:4000 # Set this to the address the backend will be accessible on
+    #         SLEEP_TIME: 100 # How long to wait after each upload (ms)
+    #         POLLING_RATE: 10000 # How often to check for new files (ms)
+    #     depends_on:
+    #         - backend
+    #     volumes:
+    #         - ./import/:/code/import
