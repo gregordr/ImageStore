@@ -58,7 +58,7 @@ def getAllPhotos():
     # remove unused
     for file in files:
         if not file in usedSet:
-            os.unlink(file)
+            os.unlink("features/"+file)
     
 def findByText(term, candidates: List[str]):
     text = clip.tokenize([term,  ""]).to(device)
