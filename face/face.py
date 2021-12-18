@@ -63,7 +63,7 @@ def getAllPhotos():
     # remove unused
     for file in files:
         if not file in usedSet:
-            os.unlink(file)
+            os.unlink("features/"+file)
 
 def dist(box: str, array):
     numbers = [int(x) for x in box.replace("(", "").replace(")", "").split(", ")]
