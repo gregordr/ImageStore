@@ -30,62 +30,52 @@ services:
         volumes:
             - ./data/:/var/lib/postgresql/data
 
-    detectron2: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very lightweight. 
-        image: imagestored/detectron2
-        environment:
-            BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
-            FETCH_INTERVAL: 10 # This is the interval the labeler will poll for new images in seconds
-        depends_on:
-            - backend
-        profiles:
-            - detectron
+    # detectron2: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very lightweight. Check yourself how much load detectron2 puts on your device, and if it's too much, switch to yolo. Comment out the model you want to use back in, but never comment out both.
+    #     image: imagestored/detectron2
+    #     environment:
+    #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
+    #         FETCH_INTERVAL: 10 # This is the interval the labeler will poll for new images in seconds
+    #     depends_on:
+    #         - backend
 
-    yolo: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very lightweight. 
-        image: imagestored/yolo
-        environment:
-            BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
-            FETCH_INTERVAL: 10 # This is the interval the labeler will poll for new images in seconds
-        depends_on:
-            - backend
-        profiles:
-            - yolo
+    # yolo: # You can use either detectron2, which is slower but more accurate, or yolo, which is faster but has less accurate results, and is very lightweight. Check yourself how much load detectron2 puts on your device, and if it's too much, switch to yolo. Comment out the model you want to use back in, but never comment out both.
+    #     image: imagestored/yolo
+    #     environment:
+    #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
+    #         FETCH_INTERVAL: 10 # This is the interval the labeler will poll for new images in seconds
+    #     depends_on:
+    #         - backend
 
-    search: # CLIP-based search engine to replace the default search feature
-        image: imagestored/search
-        restart: always
-        environment:
-            BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
-            PORT: 5000 # Pick a port to run the search-backend on
-        volumes:
-            - ./imageFeatures/:/code/features
-        depends_on:
-            - backend
-        profiles:
-            - search
+    # search: # CLIP-based search engine to replace the default search feature
+    #     image: imagestored/search
+    #     restart: always
+    #     environment:
+    #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
+    #         PORT: 5000 # Pick a port to run the search-backend on
+    #     volumes:
+    #         - ./imageFeatures/:/code/features
+    #     depends_on:
+    #         - backend
 
-    face: # Facial recognition
-        image: imagestored/face
-        restart: always
-        environment:
-            BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
-            PORT: 5000 # Pick a port to run the search-backend on
-        volumes:
-            - ./faceFeatures/:/code/features
-        depends_on:
-            - backend
-        profiles:
-            - face
+    # face: # Facial recognition
+    #     image: imagestored/face
+    #     restart: always
+    #     environment:
+    #         BASE_ADDRESS: backend:4000 # Set this to the address the backend will be accessible on
+    #         PORT: 5000 # Pick a port to run the search-backend on
+    #     volumes:
+    #         - ./faceFeatures/:/code/features
+    #     depends_on:
+    #         - backend
 
-    autoimport: # Automatic import of media in the "import" directory
-        image: imagestored/autoimport
-        restart: always
-        environment:
-            BACKEND_URL: backend:4000 # Set this to the address the backend will be accessible on
-            SLEEP_TIME: 100 # How long to wait after each upload (ms)
-            POLLING_RATE: 10000 # How often to check for new files (ms)
-        depends_on:
-            - backend
-        volumes:
-            - ./import/:/code/import
-        profiles:
-            - import
+    # autoimport: # Automatic import of media in the "import" directory
+    #     image: imagestored/autoimport
+    #     restart: always
+    #     environment:
+    #         BACKEND_URL: backend:4000 # Set this to the address the backend will be accessible on
+    #         SLEEP_TIME: 100 # How long to wait after each upload (ms)
+    #         POLLING_RATE: 10000 # How often to check for new files (ms)
+    #     depends_on:
+    #         - backend
+    #     volumes:
+    #         - ./import/:/code/import
