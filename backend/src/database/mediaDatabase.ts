@@ -11,8 +11,9 @@ export const media = (async () => {
 })()
 
 export async function getMedia(searchTerm: string, label: string): Promise<unknown[]> {
+    const queryWords = label.split(/\s+/);
     return transaction(async (client) => {
-        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width, date as date, type as type, coordX as coordX, coordY as coordY FROM ${await media} WHERE         
+        const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width, date as date, type as type, coordX as coordX, coordY as coordY FROM ${await media} WHERE
         (
             ${photo} like $1::text
             OR
@@ -20,11 +21,13 @@ export async function getMedia(searchTerm: string, label: string): Promise<unkno
             (
                 SELECT photo
                 FROM ${await labelTable}
-                WHERE label = $2::text
+                WHERE label = ANY ($2)
+                GROUP BY photo
+                HAVING COUNT( photo )=$3::integer
             )
         )
         ORDER BY date DESC
-        ;`, [searchTerm, label]);
+        ;`, [searchTerm, queryWords, queryWords.length]);
         return result.rows;
     });
 }
