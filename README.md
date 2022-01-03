@@ -41,6 +41,8 @@ Go to http://localhost:3000. You can edit the used port in the dockerfile.
 
 You can update to the newest version with ```docker-compose pull```. Again, use ```--profile module``` if you also want to update a module. 
 
+Last, if you want to run the dev-branch, do ```TAG=:test docker-compose up```.
+
 ### Docker build images yourself
 
 Requirements:
