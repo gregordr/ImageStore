@@ -109,7 +109,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any, searchByImageEnabled: boolean) => React.ReactNode; search: (term: string) => void; searchByImageEnabled: boolean; searchByFace: (id: string, box: Box)=> void } ) {
+export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any, searchByImageEnabled: boolean) => React.ReactNode; search: (term: string) => void; searchByImageEnabled: boolean; searchByFace: (id: string, box: Box) => void }) {
     const history = useHistory();
     const id = window.location.pathname.split("/").slice(-1)[0];
     const [opacityRight, setOpacityRight] = useState(0);
@@ -160,7 +160,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     };
 
     const searchForLabel = (term: string) => {
-        history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))
+        history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/"))
         props.search(term)
     }
 
@@ -188,7 +188,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const modifiedButtonFunctions = {
         ...props.buttonFunctions,
         delete: async (id: string) => {
-            if (props.photos.length === 1) history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"));
+            if (props.photos.length === 1) history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/"));
             else if (index === 0) {
                 slideChange(1);
             } else {
@@ -197,7 +197,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
             await props.buttonFunctions.delete(id);
         },
         remove: async (id: string) => {
-            if (props.photos.length === 1) history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"));
+            if (props.photos.length === 1) history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/"));
             else slideChange(index === 0 ? 1 : index - 1);
             await props.buttonFunctions.remove(id);
         },
@@ -279,7 +279,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                         <div
                             className="center"
                             onClick={(ev) => {
-                                history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"));
+                                history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/"));
                                 ev.stopPropagation();
                             }}
                             onMouseEnter={mouseCenter}
@@ -423,7 +423,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                                 <CircularProgress size={20} style={{ margin: 10 }} />
                             ) : (
                                 <>
-                                        {faces.map((face) => {
+                                    {faces.map((face) => {
                                         return (
                                             <li key={face.boundingbox.toJSON()}>
                                                 <FaceCrop id={id} photo={photo} face={face} searchByFace={props.searchByFace} getFaces={getFaces} search={searchForLabel} />
@@ -513,35 +513,35 @@ function LabelChip(props: any) {
 
 function FaceCrop(props: any) {
     const box: Box = props.face.boundingbox
-    const {x1:x2, x2:x1, y1:y2, y2:y1} = box
+    const { x1: x2, x2: x1, y1: y2, y2: y1 } = box
 
-    const xcenter = x1 + (x2-x1)/2
-    const ycenter = y1 + (y2-y1)/2
+    const xcenter = x1 + (x2 - x1) / 2
+    const ycenter = y1 + (y2 - y1) / 2
 
     const scale = Math.min(75 / (x2 - x1), 75 / (y2 - y1))
-    
+
     const history = useHistory()
 
     return (
         <div
-            onClick={async() => {
+            onClick={async () => {
                 props.searchByFace(props.id, box);
-                history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))
+                history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/"))
             }}
             style={{
                 cursor: 'pointer',
                 margin: 2,
                 position: "relative",
                 overflow: "hidden",
-                    width: "75px",
-                    height: "75px",
+                width: "75px",
+                height: "75px",
             }}
         >
             <img
                 style={{
                     position: "absolute",
-                    top: -ycenter*scale+75/2,
-                    left: -xcenter*scale+75/2,
+                    top: -ycenter * scale + 75 / 2,
+                    left: -xcenter * scale + 75 / 2,
                     transform: `scale(${scale})`,
                     width: props.photo.width,
                     height: props.photo.height,
@@ -647,6 +647,11 @@ const Carousel = (props: any) => {
                 width: `calc(100vw - ${props.open ? drawerWidth : 0}px)`,
                 zIndex: -1,
                 position: "absolute",
+
+                transition: theme.transitions.create("width", {
+                    easing: theme.transitions.easing.sharp,
+                    duration: theme.transitions.duration.leavingScreen,
+                }),
             }}
             navigation={{
                 prevEl: props.prevRef.current ? props.prevRef.current : undefined,
