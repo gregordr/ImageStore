@@ -628,7 +628,7 @@ const Carousel = (props: any) => {
     const [key, setKey] = useState(1);
     const [key2, setKey2] = useState(1);
     const [index, setIndex] = useState(props.index);
-    const slide = useMemo(() => makeSlides(props.photos.slice(Math.max(0, props.index - RANGE), Math.min(props.index + RANGE, props.photos.length))), [props.photos, props.open, key]);
+    const slide = useMemo(() => makeSlides(props.photos.slice(Math.max(0, props.index - RANGE), Math.min(props.index + RANGE, props.photos.length))), [props.photos, key]);
 
     useEffect(() => {
         setIndex(props.index);
