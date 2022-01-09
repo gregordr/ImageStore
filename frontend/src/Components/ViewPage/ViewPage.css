@@ -17,18 +17,6 @@
     position: absolute;
 }
 
-.imageHolder {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-    display: flex;
-    background-color: black;
-    overflow: hidden;
-  justify-content: center;
-  align-items: center;
-  will-change: transform, opacity;
-}
-
 .leftIm {
     grid-area: left;
     color: white;
