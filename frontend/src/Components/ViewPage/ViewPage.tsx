@@ -165,7 +165,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     };
 
     const searchForLabel = (term: string) => {
-        history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/"))
+        history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/") + "/" + queryUrl)
         props.search(term)
     }
 
@@ -582,7 +582,7 @@ function LabelInputChip(props: any) {
     );
 }
 
-function makeSlides(photos: PhotoT[], swiperRef: any, goBack: () => void, mouseLeft: () => void, mouseCenter: () => void, mouseRight: () => void, zoomedRef: React.MutableRefObject<number>): any[] {
+function makeSlides(photos: PhotoT[], swiperRef: React.MutableRefObject<SwiperCore | undefined>, goBack: () => void, mouseLeft: () => void, mouseCenter: () => void, mouseRight: () => void, zoomedRef: React.MutableRefObject<number>): any[] {
     const f = photos.map((photo: PhotoT, index: number) => {
         return (
             <SwiperSlide
@@ -645,10 +645,13 @@ function makeSlides(photos: PhotoT[], swiperRef: any, goBack: () => void, mouseL
                         doubleClick={{ mode: "reset" }}
                     >
                         {({ zoomIn, zoomOut, resetTransform, ...rest }) => {
-                            zoomedRef.current = rest.state.scale;
-                            if (rest.state.scale !== 1) mouseCenter()
 
-                            rest.instance.props.panning!.disabled = rest.state.scale === 1
+                            if (swiperRef.current?.activeIndex === index) {
+                                zoomedRef.current = rest.state.scale;
+                                if (rest.state.scale !== 1) mouseCenter()
+
+                                rest.instance.props.panning!.disabled = rest.state.scale === 1
+                            }
 
                             return (
                                 <TransformComponent wrapperStyle={{ width: `100%` }} contentStyle={{ width: `100%` }}>
@@ -728,11 +731,13 @@ const Carousel = (props: any) => {
                         el.firstChild.currentTime = 0;
                     }
                 });
+                zoomedRef.current = 1
             }}
             onTransitionEnd={(e) => {
                 if ((e.activeIndex == 0 && index > RANGE) || e.activeIndex - Math.min(index, RANGE) == RANGE - 1) {
                     setKey2(key2 + 1);
                 }
+                zoomedRef.current = 1
             }}
             resizeObserver={true}
         >

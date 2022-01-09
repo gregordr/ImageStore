@@ -45,7 +45,7 @@ function Photo(props: any) {
             style={{
                 height: props.y,
                 width: props.x,
-                boxShadow: props.marked?"inset 0px 0px 0px 100px rgb(0,0,255,0.6)":""
+                boxShadow: props.marked ? "inset 0px 0px 0px 100px rgb(0,0,255,0.6)" : ""
             }}
             onMouseEnter={async () => {
                 setVis(0.4);
@@ -118,11 +118,11 @@ function Photo(props: any) {
 
             {!!(props.searchByImageEnabled) && <IconButton
                 className={classes.searchButton}
-                style={{ opacity: opacity*1.5 }}
+                style={{ opacity: opacity * 1.5 }}
                 onClick={props.searchByImageId}
                 onMouseOver={props.hoverEventHandler} >
-                    <Search style={{ fontSize: "28", color: "white" }}></Search>
-                </IconButton>
+                <Search style={{ fontSize: "28", color: "white" }}></Search>
+            </IconButton>
             }
 
             {props.type === "video" && !play && (
@@ -243,8 +243,10 @@ export default function AbstractPhotoPage(props: {
         const item = tmpRowPics.findIndex((photos: PhotoT[]) => {
             return photos.filter((p) => p.id === props.viewId).length !== 0;
         });
-        if (!jumped && item !== 1) listRef.current?.scrollToItem(item + props.lines.length, "smart");
-        setJumped(true);
+        if (!jumped && item !== -1) {
+            listRef.current?.scrollToItem(item + props.lines.length, "smart");
+            setJumped(true);
+        }
     }, [props.width, props.photos, props.heights]);
     const { rowH: tmpRowH, rowPics: tmpRowPics } = calculate(props.photos, props.width - 12);
     const rowH = [...props.heights, ...tmpRowH];

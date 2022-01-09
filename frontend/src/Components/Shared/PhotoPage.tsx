@@ -461,7 +461,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         <div>
             <Switch>
                 <Route path={props.root == "Photo" ? "/view" : "/albums/open/:albumID/view"}>
-                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setPhotos([]); setSearchBarText(term); setSearchTerm(term); }} searchByFace={searchByFace} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
+                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setSearchBarText(term); setSearchTerm(term); }} searchByFace={searchByFace} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
                 </Route>
                 <Route path="/">
                     <div {...getRootProps({ className: "dropzone" })} className={classes.root}>
