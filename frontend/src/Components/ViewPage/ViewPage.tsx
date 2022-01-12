@@ -3,6 +3,7 @@ import "./ViewPage.css";
 import { useHistory, useLocation } from "react-router-dom";
 import TopLeftBar from "./TopLeftBar";
 import {
+    Button,
     Chip,
     CircularProgress,
     createMuiTheme,
@@ -25,9 +26,9 @@ import {
     useMediaQuery,
     useTheme,
 } from "@material-ui/core";
-import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, Map, Edit, Warning, Face } from "@material-ui/icons";
+import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, Map, Edit, Warning, Face, PhotoAlbum } from "@material-ui/icons";
 import clsx from "clsx";
-import { PhotoT } from "../../Interfaces";
+import { AlbumT, PhotoT } from "../../Interfaces";
 import { addLabel, baseURL, Box, editMedia, getBoxes, getPhotoLabels, removeLabel } from "../../API";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore, { Virtual, Navigation } from "swiper";
@@ -41,6 +42,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css"; // Re-uses images from ~leaflet package
 import "leaflet-defaulticon-compatibility";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import OpenInDialog from "./OpenInDialog";
 
 SwiperCore.use([Virtual, Navigation]);
 
@@ -118,6 +120,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const [drawerOpen, setDrawerOpen] = useState(localStorage.getItem("drawerOpen") === "true");
     const [editPropsOpen, setEditPropsOpen] = useState(false);
     const [editLocationOpen, setEditLocationOpen] = useState(false);
+    const [openInOpen, setOpenInOpen] = useState(false);
     const [labels, setLabels] = useState<string[] | "Loading">("Loading");
     const [faces, setFaces] = useState<[{ boundingbox: Box }] | "Loading">("Loading");
     const index = props.photos.findIndex((v: PhotoT) => v.id === id);
@@ -227,6 +230,10 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
         editMedia(id, props.photos[index].name, props.photos[index].date, x, y);
         props.photos[index].coordx = x;
         props.photos[index].coordy = y;
+    };
+
+    const openInCb = async (album: "default" | string) => {
+        history.push(history.location.pathname.split("/").splice(0, 1)[0] + (album === "default" ? "" : "/albums/open/" + album), { jumpTo: photo.id })
     };
 
     const goBack = () => {
@@ -476,10 +483,25 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                             </MapContainer>
                         )}
                     </ListItem>
+
+                    {/* Open in */}
+                    <ListItem>
+                        <ListItemIcon>
+                            <PhotoAlbum />
+                        </ListItemIcon>
+                        <ListItemText primary={"See in album"} />
+                        <Tooltip title="Open in an album">
+                            <Button variant="outlined" onClick={() => setOpenInOpen(true)}>
+                                Open
+                            </Button>
+                        </Tooltip>
+                    </ListItem>
+
                 </List>
             </Drawer>
             <EditPropsDialog open={editPropsOpen} setOpen={setEditPropsOpen} cb={editPropsCb} photo={props.photos[index]} />
             <EditLocationDialog open={editLocationOpen} setOpen={setEditLocationOpen} cb={editLocationCb} photo={props.photos[index]} />
+            <OpenInDialog open={openInOpen} setOpen={setOpenInOpen} cb={openInCb} photo={props.photos[index]} />
         </div>
     );
 }
