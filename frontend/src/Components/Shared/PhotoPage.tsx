@@ -89,7 +89,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const TopRightBar = props.root == "Photo" ? PhotoTopRightBar : AlbumTopRightBar
 
     const history = useHistory();
-    const { search: queryUrl } = useLocation();
+    const { search: queryUrl, state: stateUrl } = useLocation() as { search: string, state: { jumpTo?: string } };
     const id = props.root == "Album" ? window.location.pathname.split("/")[2 + process.env.PUBLIC_URL.split("/").length] : "";
 
     const { search: searchUrlParam } = qs.parse(queryUrl.substr(1)) as { search: string }
@@ -101,7 +101,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [albumDialogOpen, setAlbumDialogOpen] = useState(false);
     const [labelDialogOpen, setLabelDialogOpen] = useState(false);
     const [showLoadingBar, setShowLoadingBar] = useState(true);
-    const [viewId, setViewId] = useState("");
+    const [viewId, setViewId] = useState(stateUrl?.jumpTo ?? "");
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [onDeleteDialogClose, setOnDeleteDialogClose] = useState<(confirm: boolean) => () => void>(() => (confirm: boolean) => () => {
