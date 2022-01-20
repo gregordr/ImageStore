@@ -7,6 +7,7 @@ import { baseURL } from "../../API";
 import { IconButton, Typography, useMediaQuery } from "@material-ui/core";
 import { PlayArrow, Search } from "@material-ui/icons";
 import moment from "moment";
+import 'typeface-roboto'
 
 type RenderedPhoto = PhotoT & {
     renderDate?: boolean;
@@ -81,7 +82,7 @@ function Photo(props: any) {
                 onMouseOver={props.hoverEventHandler}
             >
 
-                {props.addOverhead ? props.renderDate ? <Typography style={{ fontWeight: 555, fontSize: 16 }} variant="subtitle1" >{moment.unix(props.date).format("DD. MMM YYYY")}</Typography > : <Typography variant="subtitle1"  >&nbsp;</Typography > : ""}
+                {props.addOverhead ? props.renderDate ? <Typography style={{ fontWeight: 500, fontSize: 16, fontFamily: "Roboto" }} variant="subtitle1" >{moment.unix(props.date).format("DD. MMM YYYY")}</Typography > : <Typography variant="subtitle1"  >&nbsp;</Typography > : ""}
 
                 <div
                     style={{ position: "relative" }}>
@@ -252,6 +253,7 @@ const Row = (altprops: any) =>
     );
 
 const CustomScrollbars = ({ onScroll, forwardedRef, style, children }: any) => {
+    // const [top, setTop] = useState(0)
     const refSetter = useCallback(
         (scrollbarsRef) => {
             if (scrollbarsRef) {
@@ -263,8 +265,25 @@ const CustomScrollbars = ({ onScroll, forwardedRef, style, children }: any) => {
         [forwardedRef]
     );
 
+    // const RenderThumbVertical = ({ style }: any) => {
+    //     const thumbStyle = {
+    //         backgroundColor: `rgb(${Math.round(120 - (top * 255))}, ${Math.round(120 - (top * 255))}, ${Math.round(120 - (top * 255))})`
+    //     };
+
+    //     return (
+    //         <div >
+    //             <div style={{ height: 50, ...style, ...thumbStyle, width: 20 }}></div>
+    //         </div>
+
+    //     );
+    // }
     return (
-        <Scrollbars ref={refSetter} style={{ ...style, overflow: "hidden" }} onScroll={onScroll}>
+        <Scrollbars ref={refSetter}
+            thumbSize={50}
+            // renderThumbVertical={RenderThumbVertical}
+            style={{ ...style, overflow: "hidden" }}
+            // onUpdate={(e) => setTop(e.top)}
+            onScroll={onScroll}>
             {children}
         </Scrollbars>
     );

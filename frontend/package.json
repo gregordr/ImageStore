@@ -42,6 +42,7 @@
     "react-zoom-pan-pinch": "^2.1.3",
     "serve": "^11.3.2",
     "swiper": "^6.8.4",
+    "typeface-roboto": "^1.1.13",
     "typescript": "^4.4.4",
     "web-vitals": "^0.2.4"
   },
