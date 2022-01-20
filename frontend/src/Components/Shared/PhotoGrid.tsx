@@ -4,8 +4,15 @@ import { PhotoT } from "../../Interfaces";
 import { VariableSizeList as List } from "react-window";
 import { Scrollbars } from "react-custom-scrollbars";
 import { baseURL } from "../../API";
-import { IconButton, useMediaQuery } from "@material-ui/core";
+import { IconButton, Typography, useMediaQuery } from "@material-ui/core";
 import { PlayArrow, Search } from "@material-ui/icons";
+import moment from "moment";
+
+type RenderedPhoto = PhotoT & {
+    renderDate?: boolean;
+    addOverhead?: boolean;
+    addLeftSeparator?: boolean
+}
 
 const useStyles = makeStyles({
     photoDiv: {
@@ -39,12 +46,16 @@ function Photo(props: any) {
     const classes = useStyles();
     const vidRef = useRef<HTMLVideoElement>(null);
 
+    const leftMargin = props.addLeftSeparator ? 15 : 0
+    const overHead = props.addOverhead ? 35 : 5
+
     return (
         <div
             className={classes.photoDiv}
             style={{
                 height: props.y,
-                width: props.x,
+                width: props.x - leftMargin,
+                marginLeft: leftMargin,
                 boxShadow: props.marked ? "inset 0px 0px 0px 100px rgb(0,0,255,0.6)" : ""
             }}
             onMouseEnter={async () => {
@@ -69,71 +80,84 @@ function Photo(props: any) {
                 onClick={props.imageClick}
                 onMouseOver={props.hoverEventHandler}
             >
+
+                {props.addOverhead ? props.renderDate ? <Typography style={{ fontWeight: 555, fontSize: 16 }} variant="subtitle1" >{moment.unix(props.date).format("DD. MMM YYYY")}</Typography > : <Typography variant="subtitle1"  >&nbsp;</Typography > : ""}
+
                 <div
-                    style={{
-                        backgroundColor: "#eeeeee",
-                        height: props.y - 5,
-                        width: props.x - 5,
-                    }}>
-                    {props.type === "photo" ? (
-                        <div
-                            style={{
-                                transition: "0.05s linear",
-                                transform: `scale(${padding})`,
-                                backgroundImage: url === "" ? "none" : `url(${url})`,
-                                height: props.y - 5,
-                                width: props.x - 5,
-                                backgroundSize: "100% 100%",
-                            }}
-                        />
-                    ) : (
-                        <video
-                            style={{
-                                transition: "0.05s linear",
-                                transform: `scale(${padding})`,
-                                backgroundImage: url === "" ? "none" : `url(${url})`,
-                                height: props.y - 5,
-                                width: props.x - 5,
-                                backgroundSize: "100% 100%",
-                            }}
-                            autoPlay
-                            muted
-                            loop
-                            ref={vidRef}
-                        >
-                            {play && <source src={url === "" ? "" : baseURL + "/media/prev_" + props.id} type="video/mp4" />}
-                        </video>
-                    )}
+                    style={{ position: "relative" }}>
+                    <div
+                        style={{
+                            backgroundColor: "#eeeeee",
+                            height: props.y - overHead,
+                            width: props.x - 5 - leftMargin,
+                            alignSelf: ""
+                        }}>
+                        {props.type === "photo" ? (
+                            <div
+                                style={{
+                                    transition: "0.05s linear",
+                                    transform: `scale(${padding})`,
+                                    backgroundImage: url === "" ? "none" : `url(${url})`,
+                                    height: props.y - overHead,
+                                    width: props.x - 5 - leftMargin,
+                                    backgroundSize: "100% 100%",
+                                }}
+                            />
+                        ) : (
+                            <video
+                                style={{
+                                    transition: "0.05s linear",
+                                    transform: `scale(${padding})`,
+                                    backgroundImage: url === "" ? "none" : `url(${url})`,
+                                    height: props.y - 5,
+                                    width: props.x - 5,
+                                    backgroundSize: "100% 100%",
+                                }}
+                                autoPlay
+                                muted
+                                loop
+                                ref={vidRef}
+                            >
+                                {play && <source src={url === "" ? "" : baseURL + "/media/prev_" + props.id} type="video/mp4" />}
+                            </video>
+                        )}
+                    </div>
+
+
+                    {
+                        (vis || props.anySelected() || true) && <input
+                            className={classes.photoBox}
+                            style={{ opacity: opacity }}
+                            readOnly={true}
+                            checked={props.selected}
+                            type="checkbox"
+                            onClick={(e) => { props.click(); e.stopPropagation() }}
+                            onMouseOver={props.hoverEventHandler} />
+                    }
+
+                    {
+                        !!(props.searchByImageEnabled) && <IconButton
+                            className={classes.searchButton}
+                            style={{ opacity: opacity * 1.5 }}
+                            onClick={(e) => { props.searchByImageId(); e.stopPropagation() }}
+                            onMouseOver={props.hoverEventHandler} >
+                            <Search style={{ fontSize: "28", color: "white" }}></Search>
+                        </IconButton>
+                    }
+
+                    {
+                        props.type === "video" && !play && (
+                            <IconButton className={classes.videoIcon}>
+                                <PlayArrow style={{ fontSize: "28" }}></PlayArrow>
+                            </IconButton>
+                        )
+                    }
                 </div>
             </div>
-            {(vis || props.anySelected() || true) && <input
-                className={classes.photoBox}
-                style={{ opacity: opacity }}
-                readOnly={true}
-                checked={props.selected}
-                type="checkbox"
-                onClick={props.click}
-                onMouseOver={props.hoverEventHandler} />
-            }
-
-            {!!(props.searchByImageEnabled) && <IconButton
-                className={classes.searchButton}
-                style={{ opacity: opacity * 1.5 }}
-                onClick={props.searchByImageId}
-                onMouseOver={props.hoverEventHandler} >
-                <Search style={{ fontSize: "28", color: "white" }}></Search>
-            </IconButton>
-            }
-
-            {props.type === "video" && !play && (
-                <IconButton className={classes.videoIcon}>
-                    <PlayArrow style={{ fontSize: "28" }}></PlayArrow>
-                </IconButton>
-            )}
-        </div>
+        </div >
     );
 }
-const makePhoto = (photo: PhotoT, realH: number, props: any, isScrolling: boolean) => (
+const makePhoto = (photo: RenderedPhoto, realH: number, props: any, isScrolling: boolean) => (
     <Photo
         key={photo.id}
         id={photo.id}
@@ -150,37 +174,68 @@ const makePhoto = (photo: PhotoT, realH: number, props: any, isScrolling: boolea
         outZoom={0.9}
         isScrolling={isScrolling}
         type={photo.type}
+        date={photo.date}
+        renderDate={photo.renderDate}
+        addOverhead={photo.addOverhead}
+        addLeftSeparator={photo.addLeftSeparator}
     />
 );
 
 const targetHeight = 300;
 
+const getDay = (photo: PhotoT) => moment.unix(photo.date).format('DD.MM.YYYY')
+
 const calculate = (photos: PhotoT[], width: number) => {
     const rowH: number[] = [];
-    const rowPics: PhotoT[][] = [];
+    const rowPics: RenderedPhoto[][] = [];
 
     let ptr = 0;
+    let lastDay = ""
 
     while (ptr !== photos.length) {
-        let curPics: PhotoT[] = [];
+        let curPics: RenderedPhoto[] = [];
         let curWidth = 0;
+        let dateChanged = false
 
         while (
             ptr !== photos.length &&
             (curWidth === 0 ||
                 Math.abs(targetHeight - (targetHeight * width) / curWidth) > Math.abs(targetHeight - (targetHeight * width) / (curWidth + (photos[ptr].width / photos[ptr].height) * targetHeight)))
         ) {
-            curPics.push(photos[ptr]);
-            curWidth += (photos[ptr].width / photos[ptr].height) * targetHeight;
+            let curPhoto = photos[ptr] as RenderedPhoto
+            if (lastDay !== getDay(curPhoto)) {
+                // Start a new line if this photo would belong to a new day but the line did not start with a new date
+                if (!dateChanged && curPics.length !== 0)
+                    break
+                curPhoto.addLeftSeparator = curPics.length !== 0
+                lastDay = getDay(curPhoto)
+                curPhoto.renderDate = true
+                dateChanged = true
+            }
+
+            curPics.push(curPhoto);
+            curWidth += (curPhoto.width / curPhoto.height) * targetHeight;
             ptr++;
         }
 
+        if (dateChanged) {
+            curPics = curPics.map((pic) => { return { ...pic, addOverhead: true } })
+            while (ptr !== photos.length && getDay(curPics[0]) !== getDay(photos[ptr - 1]) && getDay(photos[ptr]) === getDay(photos[ptr - 1])) {
+                ptr--;
+                curPics.pop()
+                lastDay = ""
+            }
+        }
+
         rowPics.push(curPics);
-        if (ptr !== photos.length || width < curWidth) {
+        if (width < curWidth * 1.5) {
             if (!((targetHeight * width) / curWidth)) {
                 rowH.push(1);
+                console.log("errorJIOW")
             }
+            // scale to fill to right border
             rowH.push((targetHeight * width) / curWidth);
+            // Keep targetheight, dont fill to right border
         } else rowH.push(targetHeight);
     }
 
