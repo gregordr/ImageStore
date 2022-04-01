@@ -18,12 +18,24 @@ CONSTRAINT photo_Exists FOREIGN KEY(Photo) REFERENCES ${await media}(OID) ON DEL
 
 export async function getAlbums(searchTerm: string): Promise<unknown[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT oid AS id, ${album} AS name, picture AS cover, (
+        const result = await client.query(`
+        SELECT 
+        oid AS id,
+        ${album} AS name,
+        COALESCE(
+            picture, (
+                SELECT ${photo} FROM ${await album_photo} where ${await albums}.oid=album ORDER BY date DESC LIMIT 1
+            )
+        ) AS cover,
+        (
             SELECT COUNT(*)
             FROM ${await album_photo}
             WHERE ${await albums}.oid = ${await album_photo}.${album}
-        )::integer AS imageCount FROM ${await albums} WHERE ${album} like $1::text
-        ORDER BY name;`, [searchTerm]);
+        )::integer AS imageCount
+        FROM ${await albums} 
+        WHERE ${album} like $1::text
+        ORDER BY name;`,
+            [searchTerm]);
         return result.rows;
     });
 }
