@@ -4,3 +4,4 @@ waitress
 flask
 onnxruntime
 insightface==0.5
+gdown
