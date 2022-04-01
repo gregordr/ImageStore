@@ -24,7 +24,11 @@ export async function getAlbums(searchTerm: string): Promise<unknown[]> {
         ${album} AS name,
         COALESCE(
             picture, (
-                SELECT ${photo} FROM ${await album_photo} where ${await albums}.oid=album ORDER BY date DESC LIMIT 1
+                SELECT ${await album_photo}.${photo} FROM ${await album_photo} 
+                JOIN ${await media} ON ${await media}.oid=${await album_photo}.${photo}
+                WHERE ${await albums}.oid=album
+                ORDER BY date DESC 
+                LIMIT 1
             )
         ) AS cover,
         (
