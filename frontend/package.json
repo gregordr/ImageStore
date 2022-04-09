@@ -24,7 +24,7 @@
     "leaflet-defaulticon-compatibility": "^0.1.1",
     "material-design-icons": "^3.0.1",
     "material-ui-search-bar": "^1.0.0",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "notistack": "^1.0.10",
     "qs": "^6.10.1",
     "react": "^17.0.2",
