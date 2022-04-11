@@ -249,6 +249,10 @@ export async function getPhotos(searchTerm: string) {
     return await axios.get(searchTerm === "" || !searchTerm ? "media/all" : "media/search/" + searchTerm);
 }
 
+export async function getPhotosByTag(searchTerm: string) {
+    return await axios.get(searchTerm === "" || !searchTerm ? "media/all" : "media/search/" + searchTerm);
+}
+
 export async function getPhotosByImage(imageId: string) {
     return await axios.get("media/searchByImage/" + imageId);
 }
@@ -258,6 +262,10 @@ export async function getPhotosByFace(searchTerm: string) {
 }
 
 export async function getPhotosInAlbum(id: string, searchTerm: string) {
+    return await axios.get(searchTerm === "" || !searchTerm ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`);
+}
+
+export async function getPhotosByTagInAlbum(id: string, searchTerm: string) {
     return await axios.get(searchTerm === "" || !searchTerm ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`);
 }
 

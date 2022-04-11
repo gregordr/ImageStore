@@ -9,7 +9,7 @@ import ViewPage from "../ViewPage/ViewPage";
 import AddToAlbum from "./AddToAlbum";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "./PhotoGrid";
-import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosByFaceInAlbum, getPhotosByImageInAlbum, getPhotosInAlbum, removePhotosFromAlbum, setCover, getPhotos, getPhotosByFace, getPhotosByImage } from "../../API";
+import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosByFaceInAlbum, getPhotosByImageInAlbum, getPhotosInAlbum, removePhotosFromAlbum, setCover, getPhotos, getPhotosByFace, getPhotosByImage, getPhotosByTagInAlbum, getPhotosByTag } from "../../API";
 import AlbumTopRightBar from "../AlbumPage/AlbumPhotoPage/TopRightBar";
 import PhotoTopRightBar from "../PhotoPage/TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -111,9 +111,9 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState(searchUrlParam ?? "");
-    const [searchTerm, setSearchTerm] = useState<string>(searchUrlParam ?? "");
+    const searchTerm = searchUrlParam ?? "";
     //easily add tags
-    const searchType = searchTerm.startsWith("similarImage:") ? "image" : searchTerm.startsWith("similarFace:") ? "face" : "text"
+    const searchType = searchTerm.toLowerCase().startsWith("tag:") ? "tag" : searchTerm.startsWith("similarImage:") ? "image" : searchTerm.startsWith("similarFace:") ? "face" : "text"
 
     const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
 
@@ -144,14 +144,15 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     }, [acceptedFiles, fileRejections]);
 
     const search = () => {
-
         if (props.root == "Photo") {
             if (searchType === "text") return getPhotos(searchTerm)
+            if (searchType === "tag") return getPhotosByTag(searchTerm.substr("tag:".length))
             if (searchType === "image") return getPhotosByImage(searchTerm.substr("similarImage:".length))
             if (searchType === "face") return getPhotosByFace(searchTerm.substr("similarFace:".length))
             return getPhotos("")
         } else if (props.root == "Album") {
             if (searchType === "text") return getPhotosInAlbum(id, searchTerm)
+            if (searchType === "tag") return getPhotosByTagInAlbum(id, searchTerm.substr("tag:".length))
             if (searchType === "image") return getPhotosByImageInAlbum(id, searchTerm.substr("similarImage:".length))
             if (searchType === "face") return getPhotosByFaceInAlbum(id, searchTerm.substr("similarFace:".length))
             return getPhotosInAlbum(id, "")
@@ -179,7 +180,6 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     useEffect(() => {
-        history.push(searchTerm === "" ? {} : { search: qs.stringify({ search: searchTerm }) })
         setPhotos([])
         fetchPhotos();
         fetchAlbums();
@@ -323,14 +323,25 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         }
     }, [lastSelected, hover, ctrl, anySelected, photoSelection]);
 
+
+    const searchByText = (text: string) => {
+        setSearchBarText(text)
+        history.push({ search: qs.stringify({ search: text }) })
+    }
+
+    const searchByTag = (tag: string) => {
+        setSearchBarText("tag:" + tag)
+        history.push({ search: qs.stringify({ search: "tag:" + tag }) })
+    }
+
     const searchByImageId = (id: string) => {
         setSearchBarText("similarImage:" + id)
-        setSearchTerm("similarImage:" + id)
+        history.push({ search: qs.stringify({ search: "similarImage:" + id }) })
     }
 
     const searchByFace = (id: string, box: Box) => {
         setSearchBarText("similarFace:" + id + "||" + box.toJSON())
-        setSearchTerm("similarFace:" + id + "||" + box.toJSON())
+        history.push({ search: qs.stringify({ search: "similarFace:" + id + "||" + box.toJSON() }) })
     }
 
     const viewButtonFunctions = {
@@ -417,7 +428,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             );
         },
         search: (s: string) => async () => {
-            setSearchTerm(s);
+            history.push({ search: qs.stringify({ search: s }) })
         },
         mobileSearch: () => {
             setShowSearchBar(!showSearchBar);
@@ -461,7 +472,15 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         <div>
             <Switch>
                 <Route path={props.root == "Photo" ? "/view" : "/albums/open/:albumID/view"}>
-                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setSearchBarText(term); setSearchTerm(term); }} searchByFace={searchByFace} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
+                    <ViewPage
+                        setViewId={setViewId}
+                        photos={photos}
+                        topRightBar={topRightBar}
+                        buttonFunctions={viewButtonFunctions}
+                        search={(tag: string) => { searchByText(tag) }}
+                        searchByTag={(tag: string) => { searchByTag(tag) }}
+                        searchByFace={searchByFace}
+                        searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
                 </Route>
                 <Route path="/">
                     <div {...getRootProps({ className: "dropzone" })} className={classes.root}>
