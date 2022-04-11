@@ -57,7 +57,7 @@ function Photo(props: any) {
                 height: props.y,
                 width: props.x - leftMargin,
                 marginLeft: leftMargin,
-                boxShadow: props.marked ? "inset 0px 0px 0px 100px rgb(0,0,255,0.6)" : ""
+                // boxShadow: props.marked ? `inset 0px 0px 0px 100px rgb(0,0,255,0.6)` : ""
             }}
             onMouseEnter={async () => {
                 setVis(0.4);
@@ -91,7 +91,8 @@ function Photo(props: any) {
                             backgroundColor: "#eeeeee",
                             height: props.y - overHead,
                             width: props.x - 5 - leftMargin,
-                            alignSelf: ""
+                            alignSelf: "",
+                            boxShadow: props.marked ? `0px 0px 0px 5px rgb(0,0,255,0.6)` : ""
                         }}>
                         {props.type === "photo" ? (
                             <div
