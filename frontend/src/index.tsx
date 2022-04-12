@@ -7,6 +7,12 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core";
 import { SnackbarProvider } from "notistack";
 
+declare global {
+  interface Window { cordova: any; }
+}
+
+window.cordova = window.cordova || false;
+
 const theme = createMuiTheme({
     palette: {
         primary: {
@@ -24,6 +30,7 @@ const theme = createMuiTheme({
     },
 });
 
+let startApp = () => {
 ReactDOM.render(
     <React.StrictMode>
         <Router basename={process.env.PUBLIC_URL}>
@@ -41,6 +48,13 @@ ReactDOM.render(
     </React.StrictMode>,
     document.getElementById("root")
 );
+}
+
+if(!window.cordova) {
+  startApp()
+} else {
+  document.addEventListener('deviceready', startApp, false)
+}
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
