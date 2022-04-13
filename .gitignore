@@ -8,3 +8,4 @@ autoImport/node_modules/*
 import/*
 analysis/*
 media/*
+frontend/cordova/*
