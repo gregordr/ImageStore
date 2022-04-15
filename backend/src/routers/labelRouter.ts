@@ -1,5 +1,5 @@
 import express from 'express'
-import { getUnlabeled, removeLabel, addLabels, addLabelsAuto, getLabels, getAutoAddLabels, removeAutoAddLabel, addAutoAddLabel } from '../database/labelDatabase'
+import { getUnlabeled, removeLabel, addLabels, addLabelsAuto, getLabels, getAutoAddLabels, removeAutoAddLabel, addAutoAddLabel, getAllLabels, getLabelsInAlbum } from '../database/labelDatabase'
 
 export const router = express.Router();
 
@@ -13,6 +13,14 @@ router.get('/getBatch', async (req, res) => {
 
 router.post('/get', async (req, res) => {
     res.status(200).send(await getLabels(req.body.ids))
+});
+
+router.post('/getAllLabels', async (req, res) => {
+    res.status(200).send(await getAllLabels())
+});
+
+router.post('/getLabelsInAlbum', async (req, res) => {
+    res.status(200).send(await getLabelsInAlbum(req.body.id))
 });
 
 router.post('/labelAuto', async (req, res) => {

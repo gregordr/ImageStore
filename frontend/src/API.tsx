@@ -237,6 +237,17 @@ export async function getPhotoLabels(ids: string[]) {
     return await axios.post("/labels/get/", requestBody);
 }
 
+export async function getAllLabels() {
+    return await axios.post("/labels/getAllLabels/");
+}
+
+export async function getLabelsInAlbum(id: string) {
+    const requestBody = {
+        id,
+    };
+    return await axios.post("/labels/getLabelsInAlbum/", requestBody);
+}
+
 export async function getAlbumsWithMedia(photoID: string) {
     return await axios.get("albums/getAlbumsWithMedia/" + photoID);
 }

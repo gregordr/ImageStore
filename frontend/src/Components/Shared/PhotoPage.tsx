@@ -9,7 +9,7 @@ import ViewPage from "../ViewPage/ViewPage";
 import AddToAlbum from "./AddToAlbum";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "./PhotoGrid";
-import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosByFaceInAlbum, getPhotosByImageInAlbum, getPhotosInAlbum, removePhotosFromAlbum, setCover, getPhotos, getPhotosByFace, getPhotosByImage, getPhotosByTagInAlbum, getPhotosByTag } from "../../API";
+import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosByFaceInAlbum, getPhotosByImageInAlbum, getPhotosInAlbum, removePhotosFromAlbum, setCover, getPhotos, getPhotosByFace, getPhotosByImage, getPhotosByTagInAlbum, getPhotosByTag, getAllLabels, getLabelsInAlbum } from "../../API";
 import AlbumTopRightBar from "../AlbumPage/AlbumPhotoPage/TopRightBar";
 import PhotoTopRightBar from "../PhotoPage/TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -118,7 +118,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     useEffect(() => {
         (async () => {
             if (photos.length === 0) setAutocompleteOptions([]);
-            else setAutocompleteOptions((await getPhotoLabels(photos.map((photo) => photo.id))).data.map((label: string) => ({ label, icon: <LabelOutlined />, searchText: searchTypes.tag + label, searchType: searchTypes.tag })));
+            else setAutocompleteOptions((await (props.root === "Photo" ? getAllLabels() : getLabelsInAlbum(id))).data.map((label: string) => ({ label, icon: <LabelOutlined />, searchText: searchTypes.tag + label, searchType: searchTypes.tag })));
         })();
     }, [photos]);
 

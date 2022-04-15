@@ -31,6 +31,22 @@ export async function getLabels(ids: string[]): Promise<string[]> {
     });
 }
 
+export async function getAllLabels(): Promise<string[]> {
+    return transaction(async (client) => {
+        const result = await client.query(`SELECT ARRAY(SELECT DISTINCT label::text FROM ${await labelTable});`, []);
+        return result.rows[0].array;
+    });
+}
+
+export async function getLabelsInAlbum(id: string): Promise<string[]> {
+    return transaction(async (client) => {
+        const result = await client.query(`SELECT ARRAY(SELECT DISTINCT label::text FROM ${await labelTable} WHERE ${photo} in (
+            Select ${photo} from ${await album_photo} where ${album} = $1
+        ));`, [id]);
+        return result.rows[0].array;
+    });
+}
+
 export async function addLabelsAuto(id: string, labels: string[]): Promise<void> {
     return transaction(async (client) => {
         await client.query(`UPDATE ${await media} SET labeled=true WHERE OID = $1::OID;`, [id])

@@ -7,7 +7,8 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { CircularProgress, FormControlLabel, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Switch, TextField } from "@material-ui/core";
 import DeleteIcon from '@material-ui/icons/Delete';
-import { addAutoAddLabel, getAutoAddLabels, removeAutoAddLabel } from "../../API";
+import { addAutoAddLabel, getAllLabels, getAutoAddLabels, removeAutoAddLabel } from "../../API";
+import { Autocomplete } from "@material-ui/lab";
 
 export default function AutoAddDialog(props: { open: boolean; setOpen: (open: boolean) => void, albumId: string, fetchAlbums: () => Promise<void> }) {
 
@@ -15,10 +16,14 @@ export default function AutoAddDialog(props: { open: boolean; setOpen: (open: bo
     const [isLoading, setIsLoading] = useState(true)
     const [labelInput, setLabelInput] = useState("")
     const [addExisting, setAddExisting] = useState(false)
+    const [options, setOptions] = useState<string[]>([])
+
+
 
     useEffect(() => {
         if (props.open) {
-            fetch()
+            fetch();
+            (async () => setOptions((await getAllLabels()).data))();
         }
         else {
             setIsLoading(true)
@@ -74,20 +79,30 @@ export default function AutoAddDialog(props: { open: boolean; setOpen: (open: bo
 
                         {isLoading && <CircularProgress />}
                         <div style={{ textAlign: "center", background: "#eeeeee", borderRadius: "5px" }}>
-                            <TextField
-                                id="standard-basic"
-                                label="Label"
-                                variant="standard"
+
+                            <Autocomplete
                                 value={labelInput}
-                                style={{ margin: 10 }}
-                                onChange={(e) => setLabelInput(e.target.value)} onKeyPress={(ev) => {
+                                onChange={(event, newValue) => setLabelInput(newValue ?? "")}
+                                freeSolo
+                                options={options}
+                                onKeyPress={(ev) => {
                                     if (ev.key === 'Enter') {
                                         add(labelInput, addExisting)
                                         ev.preventDefault();
                                     }
                                 }}
-                                error={labels.includes(labelInput)}
-                                helperText={labels.includes(labelInput) ? "Label already included" : ""}
+                                style={{ margin: 10, display: "inline-flex", width: "250px" }}
+                                renderInput={(params) =>
+
+                                    <TextField
+                                        style={{ margin: 10, display: "inline-flex" }}
+                                        label="Label"
+                                        variant="standard"
+                                        error={labels.includes(labelInput)}
+                                        helperText={labels.includes(labelInput) ? "Label already included" : ""}
+                                        {...params}
+                                    />
+                                }
                             />
                             <FormControlLabel
                                 style={{ margin: 10 }}
