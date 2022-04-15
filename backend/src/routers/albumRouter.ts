@@ -80,6 +80,14 @@ router.get('/:name/search/:term', async (req, res) => {
     }
 });
 
+router.get('/:name/searchByTag/:term', async (req, res) => {
+    try {
+        res.status(200).send(await getMediaInAlbum(req.params.name, ``, req.params.term));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
 router.get("/:name/searchByImage/:imageId", async (req, res) => {
     try {
         if (registeredServices && registeredServices["search"]) {
