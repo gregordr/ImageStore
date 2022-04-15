@@ -18,12 +18,28 @@ CONSTRAINT photo_Exists FOREIGN KEY(Photo) REFERENCES ${await media}(OID) ON DEL
 
 export async function getAlbums(searchTerm: string): Promise<unknown[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT oid AS id, ${album} AS name, picture AS cover, (
+        const result = await client.query(`
+        SELECT 
+        oid AS id,
+        ${album} AS name,
+        COALESCE(
+            picture, (
+                SELECT ${await album_photo}.${photo} FROM ${await album_photo} 
+                JOIN ${await media} ON ${await media}.oid=${await album_photo}.${photo}
+                WHERE ${await albums}.oid=album
+                ORDER BY date DESC 
+                LIMIT 1
+            )
+        ) AS cover,
+        (
             SELECT COUNT(*)
             FROM ${await album_photo}
             WHERE ${await albums}.oid = ${await album_photo}.${album}
-        )::integer AS imageCount FROM ${await albums} WHERE ${album} like $1::text
-        ORDER BY name;`, [searchTerm]);
+        )::integer AS imageCount
+        FROM ${await albums} 
+        WHERE ${album} like $1::text
+        ORDER BY name;`,
+            [searchTerm]);
         return result.rows;
     });
 }
@@ -40,8 +56,32 @@ export async function deleteAlbum(name: string): Promise<string> {
     });
 }
 
+export function getAlbumsWithMedia(photoID: string): Promise<unknown[]> {
+    return transaction(async (client) => {
+        const result = await client.query(`SELECT ${await albums}.OID as id, ${await albums}.${album} as name,
+        COALESCE(
+            picture, (
+                SELECT ${await album_photo}.${photo} FROM ${await album_photo} 
+                JOIN ${await media} ON ${await media}.oid=${await album_photo}.${photo}
+                WHERE ${await albums}.oid=album
+                ORDER BY date DESC
+                LIMIT 1
+            )
+        ) AS cover
+        , (
+            SELECT COUNT(*)
+            FROM ${await album_photo}
+            WHERE ${album} = ${await albums}.OID
+        ) as imagecount
+        FROM ${await album_photo}
+        JOIN ${await albums} ON ${await albums}.OID = ${await album_photo}.${album}
+        WHERE ${photo} = $1::OID
+        ;`, [photoID]);
+        return result.rows;
+    });
+}
 
-export async function getMediaInAlbum(album: string, searchTerm: string, label: string): Promise<unknown[]> {
+export function getMediaInAlbum(album: string, searchTerm: string, label: string): Promise<unknown[]> {
     return transaction(async (client) => {
         const result = await client.query(`SELECT OID::text as id, ${photo} as name, h as height, w as width, date as date, type as type, coordX as coordX, coordY as coordY FROM ${await media} WHERE 
         (

@@ -6,3 +6,5 @@ faceFeatures/*
 imageFeatures/*
 autoImport/node_modules/*
 import/*
+analysis/*
+media/*

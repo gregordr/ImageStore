@@ -1,4 +1,3 @@
-import { CircularProgress } from "@material-ui/core";
 import { OptionsObject } from "notistack";
 import React from "react";
 import { FileRejection } from "react-dropzone";

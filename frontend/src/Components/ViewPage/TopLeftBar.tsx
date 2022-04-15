@@ -1,10 +1,11 @@
 import { IconButton } from "@material-ui/core";
 import { ArrowBack } from "@material-ui/icons";
 import React from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 
 export default function TopLeftBar() {
     const history = useHistory();
+    const { search: queryUrl } = useLocation();
 
     return (
         <div
@@ -22,7 +23,7 @@ export default function TopLeftBar() {
                 aria-label="back"
                 onClick={(e) => {
                     e.stopPropagation();
-                    history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"));
+                    history.replace((history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/") || "/") + queryUrl);
                 }}
             >
                 <ArrowBack />

@@ -17,8 +17,8 @@ export default function AutocompleteSearchBar(props: any) {
             freeSolo
             options={props.options}
             onChange={async (event: any, newValue: any) => {
-                setValue(newValue);
-                props.search(newValue)();
+                setValue(newValue ?? "");
+                props.search(newValue ?? "")();
             }}
             renderInput={(params: any) => {
                 return (

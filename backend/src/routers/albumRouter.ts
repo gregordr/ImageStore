@@ -1,6 +1,6 @@
 import axios from 'axios';
 import express from 'express';
-import { getAlbums, addAlbum, addPhotosToAlbums, removePhotosFromAlbum, deleteAlbum, getMediaInAlbum, setCover, rename } from '../database/albumDatabase';
+import { getAlbums, addAlbum, addPhotosToAlbums, removePhotosFromAlbum, deleteAlbum, getMediaInAlbum, setCover, rename, getAlbumsWithMedia } from '../database/albumDatabase';
 import { registeredServices } from './servicesRouter';
 
 export const router = express.Router();
@@ -31,6 +31,13 @@ router.get('/all', async (req, res) => {
     }
 });
 
+router.get("/getAlbumsWithMedia/:photoID", async (req, res) => {
+    try {
+        res.status(200).send(await getAlbumsWithMedia(req.params.photoID));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
 
 router.get('/:name/all', async (req, res) => {
     try {

@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { Ref, useEffect, useMemo, useRef, useState } from "react";
 import "./ViewPage.css";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import TopLeftBar from "./TopLeftBar";
 import {
+    Button,
     Chip,
     CircularProgress,
     createMuiTheme,
@@ -25,9 +26,9 @@ import {
     useMediaQuery,
     useTheme,
 } from "@material-ui/core";
-import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, Map, Edit, Warning, Face } from "@material-ui/icons";
+import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, Map, Edit, Warning, Face, PhotoAlbum } from "@material-ui/icons";
 import clsx from "clsx";
-import { PhotoT } from "../../Interfaces";
+import { AlbumT, PhotoT } from "../../Interfaces";
 import { addLabel, baseURL, Box, editMedia, getBoxes, getPhotoLabels, removeLabel } from "../../API";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore, { Virtual, Navigation } from "swiper";
@@ -40,6 +41,8 @@ import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.webpack.css"; // Re-uses images from ~leaflet package
 import "leaflet-defaulticon-compatibility";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import OpenInDialog from "./OpenInDialog";
 
 SwiperCore.use([Virtual, Navigation]);
 
@@ -109,7 +112,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any, searchByImageEnabled: boolean) => React.ReactNode; search: (term: string) => void; searchByImageEnabled: boolean; searchByFace: (id: string, box: Box)=> void } ) {
+export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any, searchByImageEnabled: boolean) => React.ReactNode; search: (term: string) => void; searchByImageEnabled: boolean; searchByFace: (id: string, box: Box) => void }) {
     const history = useHistory();
     const id = window.location.pathname.split("/").slice(-1)[0];
     const [opacityRight, setOpacityRight] = useState(0);
@@ -117,10 +120,15 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const [drawerOpen, setDrawerOpen] = useState(localStorage.getItem("drawerOpen") === "true");
     const [editPropsOpen, setEditPropsOpen] = useState(false);
     const [editLocationOpen, setEditLocationOpen] = useState(false);
+    const [openInOpen, setOpenInOpen] = useState(false);
     const [labels, setLabels] = useState<string[] | "Loading">("Loading");
     const [faces, setFaces] = useState<[{ boundingbox: Box }] | "Loading">("Loading");
     const index = props.photos.findIndex((v: PhotoT) => v.id === id);
     const photo = props.photos[index];
+    const { search: queryUrl } = useLocation();
+
+    const showCursor = useRef(false)
+    showCursor.current = Boolean((opacityLeft && index !== 0) || (opacityRight && index !== props.photos.length - 1))
 
     const [mapEnabled, setMapEnabled] = useState(localStorage.getItem("enableMap") === "true");
 
@@ -160,7 +168,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     };
 
     const searchForLabel = (term: string) => {
-        history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))
+        history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/") + "/" + queryUrl)
         props.search(term)
     }
 
@@ -168,7 +176,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
         const photos = props.photos;
         const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
         const id = photos[index].id;
-        history.replace(`${afterWithout}${id}`);
+        history.replace(`${afterWithout}${id}${queryUrl}`);
     };
 
     const mouseRight = () => {
@@ -188,7 +196,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const modifiedButtonFunctions = {
         ...props.buttonFunctions,
         delete: async (id: string) => {
-            if (props.photos.length === 1) history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"));
+            if (props.photos.length === 1) history.replace((history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/") || "/") + queryUrl);
             else if (index === 0) {
                 slideChange(1);
             } else {
@@ -197,7 +205,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
             await props.buttonFunctions.delete(id);
         },
         remove: async (id: string) => {
-            if (props.photos.length === 1) history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"));
+            if (props.photos.length === 1) history.replace((history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/") || "/") + queryUrl);
             else slideChange(index === 0 ? 1 : index - 1);
             await props.buttonFunctions.remove(id);
         },
@@ -207,7 +215,6 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
         },
     };
 
-    const swiperRef = useRef<SwiperCore>(null);
     const prevRef = useRef<HTMLDivElement>(null);
     const nextRef = useRef<HTMLDivElement>(null);
 
@@ -225,6 +232,14 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
         props.photos[index].coordy = y;
     };
 
+    const openInCb = async (album: "default" | string) => {
+        history.push(history.location.pathname.split("/").splice(0, 1)[0] + (album === "default" ? "" : "/albums/open/" + album), { jumpTo: photo.id })
+    };
+
+    const goBack = () => {
+        history.replace((history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/") || "/") + queryUrl)
+    }
+
     return (
         <div className={classes.root}>
             <CssBaseline />
@@ -240,7 +255,6 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                             display: `${hideArrows ? "none" : "grid"}`,
                             width: `calc(100% - ${drawerOpen ? drawerWidth : 0}px)`,
                             transition: theme.transitions.create("width", {
-                                easing: theme.transitions.easing.sharp,
                                 duration: theme.transitions.duration.leavingScreen,
                             }),
                             height: `calc(100% - ${photo?.type === "video" ? 120 : 0}px)`,
@@ -250,12 +264,10 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                         <div
                             ref={prevRef}
                             className="leftIm"
-                            onMouseEnter={mouseLeft}
-                            onMouseMove={mouseLeft}
-                            onMouseLeave={mouseCenter}
                             style={{
-                                pointerEvents: "auto",
+                                pointerEvents: "none",
                             }}
+
                         >
                             <IconButton
                                 style={{
@@ -277,22 +289,10 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                             </IconButton>
                         </div>
                         <div
-                            className="center"
-                            onClick={(ev) => {
-                                history.replace(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"));
-                                ev.stopPropagation();
-                            }}
-                            onMouseEnter={mouseCenter}
-                            style={{ pointerEvents: photo?.type === "video" ? "none" : "stroke" }}
-                        ></div>
-                        <div
                             ref={nextRef}
                             className="rightIm"
-                            onMouseEnter={mouseRight}
-                            onMouseMove={mouseRight}
-                            onMouseLeave={mouseCenter}
                             style={{
-                                pointerEvents: "auto",
+                                pointerEvents: "none",
                             }}
                         >
                             <IconButton
@@ -315,7 +315,8 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                             </IconButton>
                         </div>
                     </div>
-                    <Carousel slideChange={slideChange} index={index} photos={props.photos} open={drawerOpen} swiperRef={swiperRef} prevRef={prevRef} nextRef={nextRef} hideArrows={hideArrows} />
+                    <Carousel slideChange={slideChange} index={index} photos={props.photos} open={drawerOpen} prevRef={prevRef} nextRef={nextRef} hideArrows={hideArrows} goBack={goBack} mouseLeft={mouseLeft} mouseRight={mouseRight} mouseCenter={mouseCenter} showCursor={showCursor}
+                    />
                     <div
                         className="rootTop"
                         style={{
@@ -323,7 +324,6 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                             justifyContent: "space-between",
                             width: `calc(100% - ${drawerOpen ? drawerWidth : 0}px)`,
                             transition: theme.transitions.create("width", {
-                                easing: theme.transitions.easing.sharp,
                                 duration: theme.transitions.duration.leavingScreen,
                             }),
                         }}
@@ -423,7 +423,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                                 <CircularProgress size={20} style={{ margin: 10 }} />
                             ) : (
                                 <>
-                                        {faces.map((face) => {
+                                    {faces.map((face) => {
                                         return (
                                             <li key={face.boundingbox.toJSON()}>
                                                 <FaceCrop id={id} photo={photo} face={face} searchByFace={props.searchByFace} getFaces={getFaces} search={searchForLabel} />
@@ -483,10 +483,25 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                             </MapContainer>
                         )}
                     </ListItem>
+
+                    {/* Open in */}
+                    <ListItem>
+                        <ListItemIcon>
+                            <PhotoAlbum />
+                        </ListItemIcon>
+                        <ListItemText primary={"See in album"} />
+                        <Tooltip title="Open in an album">
+                            <Button variant="outlined" onClick={() => setOpenInOpen(true)}>
+                                Open
+                            </Button>
+                        </Tooltip>
+                    </ListItem>
+
                 </List>
             </Drawer>
             <EditPropsDialog open={editPropsOpen} setOpen={setEditPropsOpen} cb={editPropsCb} photo={props.photos[index]} />
             <EditLocationDialog open={editLocationOpen} setOpen={setEditLocationOpen} cb={editLocationCb} photo={props.photos[index]} />
+            <OpenInDialog open={openInOpen} setOpen={setOpenInOpen} cb={openInCb} photo={props.photos[index]} />
         </div>
     );
 }
@@ -513,35 +528,35 @@ function LabelChip(props: any) {
 
 function FaceCrop(props: any) {
     const box: Box = props.face.boundingbox
-    const {x1:x2, x2:x1, y1:y2, y2:y1} = box
+    const { x1: x2, x2: x1, y1: y2, y2: y1 } = box
 
-    const xcenter = x1 + (x2-x1)/2
-    const ycenter = y1 + (y2-y1)/2
+    const xcenter = x1 + (x2 - x1) / 2
+    const ycenter = y1 + (y2 - y1) / 2
 
     const scale = Math.min(75 / (x2 - x1), 75 / (y2 - y1))
-    
+
     const history = useHistory()
 
     return (
         <div
-            onClick={async() => {
+            onClick={async () => {
                 props.searchByFace(props.id, box);
-                history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))
+                history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/"))
             }}
             style={{
                 cursor: 'pointer',
                 margin: 2,
                 position: "relative",
                 overflow: "hidden",
-                    width: "75px",
-                    height: "75px",
+                width: "75px",
+                height: "75px",
             }}
         >
             <img
                 style={{
                     position: "absolute",
-                    top: -ycenter*scale+75/2,
-                    left: -xcenter*scale+75/2,
+                    top: -ycenter * scale + 75 / 2,
+                    left: -xcenter * scale + 75 / 2,
                     transform: `scale(${scale})`,
                     width: props.photo.width,
                     height: props.photo.height,
@@ -589,24 +604,95 @@ function LabelInputChip(props: any) {
     );
 }
 
-function makeSlides(photos: PhotoT[]): any[] {
+function makeSlides(photos: PhotoT[], swiperRef: React.MutableRefObject<SwiperCore | undefined>, goBack: () => void, mouseLeft: () => void, mouseCenter: () => void, mouseRight: () => void, zoomedRef: React.MutableRefObject<number>): any[] {
     const f = photos.map((photo: PhotoT, index: number) => {
         return (
-            <SwiperSlide key={photo.id} virtualIndex={index} style={{ alignSelf: "center", justifySelf: "center" }}>
+            <SwiperSlide
+                key={photo.id}
+                virtualIndex={index}
+                style={{
+                    alignSelf: "center", justifySelf: "center"
+                }}
+                onClick={(e) => {
+                    if (zoomedRef.current !== 1) return
+                    const segment = e.currentTarget.clientWidth / 3
+                    if (e.clientX > segment * 2)
+                        swiperRef.current?.slideNext()
+                    else if (e.clientX < segment)
+                        swiperRef.current?.slidePrev()
+                    else {
+                        if (photo.type === "photo")
+                            goBack()
+                        else
+                            return
+                    }
+                    e.preventDefault();
+                }}
+
+                onMouseEnter={(e) => {
+                    if (zoomedRef.current !== 1) return
+                    const segment = e.currentTarget.clientWidth / 3
+                    if (e.clientX > segment * 2)
+                        mouseRight()
+                    else if (e.clientX < segment)
+                        mouseLeft()
+                    else
+                        mouseCenter()
+                }}
+
+                onMouseMove={(e) => {
+                    if (zoomedRef.current !== 1) return
+                    const segment = e.currentTarget.clientWidth / 3
+                    if (e.clientX > segment * 2)
+                        mouseRight()
+                    else if (e.clientX < segment)
+                        mouseLeft()
+                    else
+                        mouseCenter()
+                }}
+
+                onMouseLeave={(e) => {
+                    if (zoomedRef.current !== 1) return
+                    const segment = e.currentTarget.clientWidth / 3
+                    if (e.clientX > segment * 2)
+                        mouseCenter()
+                    else if (e.clientX < segment)
+                        mouseCenter()
+                }}
+            >
                 {photo.type === "photo" ? (
-                    <img
-                        className="display"
-                        alt={photo.id}
-                        style={{
-                            objectFit: "scale-down",
-                            height: "100vh",
-                            width: `100%`,
+                    <TransformWrapper
+                        initialScale={1}
+                        panning={{ disabled: zoomedRef.current === 1 }}
+                        doubleClick={{ mode: "reset" }}
+                    >
+                        {({ zoomIn, zoomOut, resetTransform, ...rest }) => {
+
+                            if (swiperRef.current?.activeIndex === index) {
+                                zoomedRef.current = rest.state.scale;
+                                if (rest.state.scale !== 1) mouseCenter()
+
+                                rest.instance.props.panning!.disabled = rest.state.scale === 1
+                            }
+
+                            return (
+                                <TransformComponent wrapperStyle={{ width: `100%` }} contentStyle={{ width: `100%` }}>
+                                    <img
+                                        alt={photo.id}
+                                        src={baseURL + "/media/" + photo.id}
+                                        style={{
+                                            objectFit: "scale-down",
+                                            height: "100vh",
+                                            width: `100%`,
+                                        }}
+                                    />
+                                </TransformComponent>
+                            )
+
                         }}
-                        src={baseURL + "/media/" + photo.id}
-                    />
+                    </TransformWrapper>
                 ) : (
                     <video
-                        className="display"
                         style={{
                             objectFit: "scale-down",
                             height: "100vh",
@@ -628,41 +714,36 @@ const Carousel = (props: any) => {
     const [key, setKey] = useState(1);
     const [key2, setKey2] = useState(1);
     const [index, setIndex] = useState(props.index);
-    const slide = useMemo(() => makeSlides(props.photos.slice(Math.max(0, props.index - RANGE), Math.min(props.index + RANGE, props.photos.length))), [props.photos, props.open, key]);
+    const swiperRef = useRef<SwiperCore>()
+
+    const zoomedRef = useRef(1)
+    const slide = useMemo(() => makeSlides(props.photos.slice(Math.max(0, props.index - RANGE), Math.min(props.index + RANGE, props.photos.length)), swiperRef, props.goBack, props.mouseLeft, props.mouseCenter, props.mouseRight, zoomedRef), [props.photos, props.open, key]);
 
     useEffect(() => {
         setIndex(props.index);
         setKey(key + 1);
-    }, [props.photos, props.open, key2]); //add props.hideArrows if you want swiping to be disabled when screen size changes
+    }, [props.photos, key2]); //add props.hideArrows if you want swiping to be disabled when screen size changes
 
     return props.photos.length === 0 ? null : (
         <Swiper
             allowTouchMove={props.hideArrows}
             key={key}
-            className="imageHolder"
             spaceBetween={50}
             slidesPerView={1}
             virtual
+
             style={{
+                cursor: props.showCursor.current ? "pointer" : "auto",
+                position: "absolute",
+                display: "flex",
+                backgroundColor: "black",
+                height: "100%",
                 width: `calc(100vw - ${props.open ? drawerWidth : 0}px)`,
                 zIndex: -1,
-                position: "absolute",
-            }}
-            navigation={{
-                prevEl: props.prevRef.current ? props.prevRef.current : undefined,
-                nextEl: props.nextRef.current ? props.nextRef.current : undefined,
             }}
             initialSlide={Math.min(RANGE, index)}
             onInit={(swiper) => {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                // eslint-disable-next-line no-param-reassign
-                swiper.params.navigation.prevEl = props.prevRef.current;
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                // eslint-disable-next-line no-param-reassign
-                swiper.params.navigation.nextEl = props.nextRef.current;
-                swiper.navigation.update();
+                swiperRef.current = swiper
             }}
             onSlideChange={(e) => {
                 props.slideChange(e.activeIndex + Math.max(0, index - RANGE));
@@ -672,14 +753,15 @@ const Carousel = (props: any) => {
                         el.firstChild.currentTime = 0;
                     }
                 });
+                zoomedRef.current = 1
             }}
             onTransitionEnd={(e) => {
-                console.log(e.activeIndex);
-                console.log(index);
                 if ((e.activeIndex == 0 && index > RANGE) || e.activeIndex - Math.min(index, RANGE) == RANGE - 1) {
                     setKey2(key2 + 1);
                 }
+                zoomedRef.current = 1
             }}
+            resizeObserver={true}
         >
             {slide}
         </Swiper>
