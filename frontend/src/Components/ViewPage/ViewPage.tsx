@@ -112,7 +112,7 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any, searchByImageEnabled: boolean) => React.ReactNode; search: (term: string) => void; searchByImageEnabled: boolean; searchByFace: (id: string, box: Box) => void }) {
+export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: string) => void; buttonFunctions: any; topRightBar: (arg0: string, arg1: any, searchByImageEnabled: boolean) => React.ReactNode; search: (term: string) => void; searchByTag: (term: string) => void; searchByImageEnabled: boolean; searchByFace: (id: string, box: Box) => void }) {
     const history = useHistory();
     const id = window.location.pathname.split("/").slice(-1)[0];
     const [opacityRight, setOpacityRight] = useState(0);
@@ -168,8 +168,8 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     };
 
     const searchForLabel = (term: string) => {
-        history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/") + "/" + queryUrl)
-        props.search(term)
+        history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/"))
+        props.searchByTag(term)
     }
 
     const slideChange = (index: number) => {
@@ -233,6 +233,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     };
 
     const openInCb = async (album: "default" | string) => {
+        props.search("");
         history.push(history.location.pathname.split("/").splice(0, 1)[0] + (album === "default" ? "" : "/albums/open/" + album), { jumpTo: photo.id })
     };
 

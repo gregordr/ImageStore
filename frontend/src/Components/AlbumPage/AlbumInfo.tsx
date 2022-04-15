@@ -18,11 +18,7 @@ export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen
     const [nameField, setNameField] = useState(props.album.name);
     const [hasCover, setHasCover] = useState(props.album.cover !== null);
 
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [onDeleteDialogClose, setOnDeleteDialogClose] = useState<(confirm: boolean) => () => void>(() => (confirm: boolean) => () => {
-        setDeleteDialogOpen(false);
-        alert("Error onDeleteClose not defined");
-    });
+    const [onDeleteDialogState, setOnDeleteDialogState] = useState<{ open: boolean, handleClose: (confirm: boolean) => () => void }>({ open: false, handleClose: () => () => { } });
 
     const [autoAddDialogOpen, setAutoAddDialogOpen] = useState(false);
 
@@ -50,16 +46,18 @@ export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen
     };
 
     const deleteThis = async () => {
-        setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
-            if (confirm) {
-                await deleteAlbum(props.album.id);
-                await props.fetchAlbums();
-                await handleClose(false)();
-            }
+        setOnDeleteDialogState({
+            open: true,
+            handleClose: (confirm: boolean) => async () => {
+                if (confirm) {
+                    await deleteAlbum(props.album.id);
+                    await props.fetchAlbums();
+                    await handleClose(false)();
+                }
 
-            setDeleteDialogOpen(false);
+                setOnDeleteDialogState({ open: false, handleClose: () => () => { } });
+            }
         });
-        setDeleteDialogOpen(true);
     };
 
     return (
@@ -96,7 +94,7 @@ export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen
                     </Button>
                 </DialogActions>
             </Dialog>
-            <ConfirmDeleteDialog open={deleteDialogOpen} handleClose={onDeleteDialogClose}></ConfirmDeleteDialog>
+            <ConfirmDeleteDialog state={onDeleteDialogState}></ConfirmDeleteDialog>
             <AutoAddDialog open={autoAddDialogOpen} setOpen={setAutoAddDialogOpen} albumId={props.album.id} fetchAlbums={props.fetchAlbums}></AutoAddDialog>
         </div>
     );

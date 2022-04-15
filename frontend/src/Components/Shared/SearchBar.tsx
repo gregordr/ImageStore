@@ -1,10 +1,49 @@
-import { Autocomplete, createFilterOptions } from "@material-ui/lab";
+import { Autocomplete, AutocompleteRenderInputParams, createFilterOptions, FilterOptionsState } from "@material-ui/lab";
 import SearchBar from "material-ui-search-bar";
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 
-const filterOptions = createFilterOptions({
-    limit: 6
+
+//easily add tags
+export enum searchTypes {
+    tag = "#",
+    image = "$",
+    face = "@",
+    text = "",
+}
+
+export const splitTypeAndText = (input: string): [searchTypes, string] => {
+    for (const _st in searchTypes) {
+        const st = searchTypes[_st as keyof typeof searchTypes];
+        if (input.toLowerCase().startsWith(st)) {
+            return [st, input.substring(st.length)];
+        }
+    }
+    return [searchTypes.text, input];
+}
+
+export type OptionT = {
+    label: string;
+    searchType: searchTypes;
+    icon: ReactNode;
+    searchText: string;
+}
+
+const _filterOptions = createFilterOptions({
+    limit: 6,
+    stringify: (option: OptionT) => option.label,
 });
+
+const filterOptions = (options: OptionT[], state: FilterOptionsState<OptionT>) => {
+
+    const [type, text] = splitTypeAndText(state.inputValue)
+
+
+    const result = _filterOptions(options, { ...state, inputValue: text });
+    if (type === searchTypes.text) {
+        return result
+    }
+    return result.filter(o => o.searchType === type)
+}
 
 export default function AutocompleteSearchBar(props: any) {
     const value = props.value;
@@ -16,9 +55,17 @@ export default function AutocompleteSearchBar(props: any) {
             style={props.style}
             freeSolo
             options={props.options}
-            onChange={async (event: any, newValue: any) => {
-                setValue(newValue ?? "");
-                props.search(newValue ?? "")();
+            getOptionLabel={((option: OptionT) => typeof option === "string" ? option : option.label) as any}
+            renderOption={((option: OptionT) => (<React.Fragment >
+                {option.icon}
+                <div style={{ marginRight: 10 }} />
+                {option.label}
+            </React.Fragment>)) as any}
+            onChange={async (event: any, option: any) => {
+                option = option ?? "";
+                const newValue = typeof option === "string" ? option : option.searchText;
+                setValue(newValue);
+                props.search(newValue)();
             }}
             renderInput={(params: any) => {
                 return (
