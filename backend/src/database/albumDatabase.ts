@@ -58,7 +58,17 @@ export async function deleteAlbum(name: string): Promise<string> {
 
 export function getAlbumsWithMedia(photoID: string): Promise<unknown[]> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT ${await albums}.OID as id, ${await albums}.${album} as name, picture as cover, (
+        const result = await client.query(`SELECT ${await albums}.OID as id, ${await albums}.${album} as name,
+        COALESCE(
+            picture, (
+                SELECT ${await album_photo}.${photo} FROM ${await album_photo} 
+                JOIN ${await media} ON ${await media}.oid=${await album_photo}.${photo}
+                WHERE ${await albums}.oid=album
+                ORDER BY date DESC
+                LIMIT 1
+            )
+        ) AS cover
+        , (
             SELECT COUNT(*)
             FROM ${await album_photo}
             WHERE ${album} = ${await albums}.OID

@@ -63,6 +63,8 @@ export default function OpenInDialog(props: { cb: (album: "default" | string) =>
                                                         style={{
                                                             backgroundImage: `url(${baseURL + "/media/thumb_" + album.cover})`,
                                                             backgroundSize: "cover",
+                                                            width: "100%",
+                                                            height: "100%",
                                                         }}
                                                     />
                                                     :
