@@ -14,9 +14,10 @@ RUN apt-get update \
     && python setup.py install \
     && cd .. \
     && git clone --recursive https://github.com/MILVLG/bottom-up-attention.pytorch \
+    && cd bottom-up-attention.pytorch \
     && git checkout 8bb93792d0ee191ff57da4754d12647bd7b43185 \
     && git submodule update --recursive \
-    && cd bottom-up-attention.pytorch/detectron2 \
+    && cd detectron2 \
     && pip install -e . \
     && cd .. \
     && python setup.py build develop
