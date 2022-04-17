@@ -541,8 +541,8 @@ function FaceCrop(props: any) {
     return (
         <div
             onClick={async () => {
-                props.searchByFace(props.id, box);
                 history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/"))
+                props.searchByFace(props.id, box);
             }}
             style={{
                 cursor: 'pointer',
