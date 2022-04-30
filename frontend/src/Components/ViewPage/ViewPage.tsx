@@ -715,9 +715,24 @@ const Carousel = (props: any) => {
     const [key, setKey] = useState(1);
     const [key2, setKey2] = useState(1);
     const [index, setIndex] = useState(props.index);
-    const swiperRef = useRef<SwiperCore>()
 
+    const swiperRef = useRef<SwiperCore>()
     const zoomedRef = useRef(1)
+
+    useEffect(() => {
+        const arrowKeyDown = (e: KeyboardEvent) => {
+            if (!(e.target instanceof HTMLBodyElement) || zoomedRef.current !== 1) return
+            e.key === "ArrowRight" && swiperRef.current?.slideNext();
+            e.key === "ArrowLeft" && swiperRef.current?.slidePrev();
+        }
+
+        document.addEventListener("keydown", arrowKeyDown);
+
+        return () => {
+            document.removeEventListener("keydown", arrowKeyDown);
+        };
+    }, [swiperRef.current])
+
     const slide = useMemo(() => makeSlides(props.photos.slice(Math.max(0, props.index - RANGE), Math.min(props.index + RANGE, props.photos.length)), swiperRef, props.goBack, props.mouseLeft, props.mouseCenter, props.mouseRight, zoomedRef), [props.photos, props.open, key]);
 
     useEffect(() => {

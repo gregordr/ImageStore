@@ -263,17 +263,19 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     );
 
     useEffect(() => {
-        document.addEventListener("keydown", (e) => {
+        const ctrlKeyDown = (e: KeyboardEvent) => {
             e.key === "Control" && setCtrl(true);
-        });
-
-        document.addEventListener("keyup", (e) => {
+        }
+        const ctrlKeyUp = (e: KeyboardEvent) => {
             e.key === "Control" && setCtrl(false);
-        });
+        }
+        document.addEventListener("keydown", ctrlKeyDown);
+
+        document.addEventListener("keyup", ctrlKeyUp);
 
         return () => {
-            document.removeEventListener("keydown", (e) => e);
-            document.removeEventListener("keyup", (e) => e);
+            document.removeEventListener("keydown", ctrlKeyDown);
+            document.removeEventListener("keyup", ctrlKeyUp);
         };
     }, []);
 
