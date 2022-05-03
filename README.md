@@ -53,21 +53,36 @@ Requirements:
 If you want to build yourself, then clone this repo and run ```docker-compose -f docker-compose-build.yml up```. Again, you can use ```--profile``` to add features.
 
 ### Without docker
-Requires Ubuntu 18.04/20.04.
+Requires a distribution with any of the four following packaging systems: pacman, yum, apt, apk and either systemd or OpenRC.
 
 ```
 git clone https://github.com/gregordr/ImageStore
 cd CLI-Install
-sudo ./imagestore-build.sh
 ```
-This will install and configure everything as needed in order to host ImageStore. PostgreSQL 11, Nodejs and nginx will be installed.
+If you're using systemd (most distros):
+
+`sudo ./install-systemd.sh`
+
+If you're using OpenRC (e.g. Artix, Void, Alpine; Gentoo is not supported – see above):
+
+`sudo ./install-openrc.sh`
+If you are using `doas`, please use `su -c` instead. 
+
+This will install and configure everything as needed in order to host ImageStore. PostgreSQL 13 (most Debian/Ubuntu based distros), on other distros it'll most likely be PostgreSQL 14, Nodejs and nginx will be installed.
 By default it hosts over port 8080. If it is already in use, it will ask for an alternate port. The created database user is seeded with a random 16 character string, so there is no default password to worry about. 
 
-The Imagestore service by default will start on boot. To stop Imagestore, run
+The Imagestore service by default will start on boot. To stop Imagestore, on systemd run
 ```sudo systemctl stop ImageStoreFRONT.service; sudo systemctl stop ImageStoreBACK.service;```
+
+on OpenRC run:
+```sudo rc-service ImageStoreFRONT stop && sudo rc-service ImageStoreBACK stop```
 
 To prevent the service from starting on boot, run 
 ```sudo systemctl disable ImageStoreFRONT.service; sudo systemctl disable ImageStoreBACK.service;```
+
+on OpenRC run:
+
+```sudo rc-update disable ImageStoreFRONT && sudo rc-update disable ImageStoreBACK```
 
 ### Notes for raspberry Pi:
 
