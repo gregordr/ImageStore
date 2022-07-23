@@ -25,7 +25,7 @@
     "exifr": "^6.0.0",
     "express": "^4.17.1",
     "ffmpeg": "0.0.4",
-    "file-type": "^16.2.0",
+    "file-type": "^16.5.4",
     "fluent-ffmpeg": "^2.1.2",
     "image-size": "^0.9.3",
     "moment": "^2.29.1",
