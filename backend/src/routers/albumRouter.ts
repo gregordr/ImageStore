@@ -96,6 +96,7 @@ router.get("/:name/searchByImage/:imageId", async (req, res) => {
             const data = await axios.post("http://" + registeredServices["search"].values().next().value + "/searchByImage",
                 {
                     image: req.params.imageId,
+                    type: (searchResult.find((photo: any) => photo.id === req.params.imageId) as any).type,
                     candidates: searchResult.map((photo: any) => photo.id)
                 })
 

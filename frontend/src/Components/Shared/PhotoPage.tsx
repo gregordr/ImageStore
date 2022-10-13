@@ -164,7 +164,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setPhotos(resp.data);
             setShowLoadingBar(false);
         } else {
-            window.alert(await resp.data);
+            window.alert(resp.data);
         }
     };
 
