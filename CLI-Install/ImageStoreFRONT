@@ -1,0 +1,30 @@
+#!/sbin/openrc-run
+
+description="ImageStore Frontend"
+#extra_commands="checkconfig"
+extra_started_commands="reload"
+
+depend() {
+        need net
+        after postgresql nginx
+        want ImageStoreBACK
+}
+
+command="/usr/bin/npx serve -w /etc/imagestore/frontend -s build -l tcp://localhost:3000"  
+#Not sure if npx is supposed to run in background here, if yes, please uncomment these lines:
+#command_background="yes"
+#start_stop_daemon_args="--quiet"
+pidfile="/run/$RC_SVCNAME/npm.pid"
+retry="SIGTERM/20"
+cfgfile=${cfgfile:=/etc/imagestore/frontend/tsconfig.json}
+
+reload() {
+  ebegin "Reloading $description"
+  start-stop-daemon --signal HUP --pidfile "${pidfile}"
+  eend $?
+}
+
+#need to implement a function to check configuration for errors
+#checkconfig() {		
+#}
+

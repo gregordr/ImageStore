@@ -1,25 +1,46 @@
 #!/bin/bash
 
-#Need this for scriptery
-apt install curl gpg -y
+#Check for the package manager used by the system
+if [[ $(which apk) != "apk not found" ]]; then
+pkgman="apk"
+install="add"
+update="update"
+elif [[ $(which apt) != "apt not found" ]]; then
+pkgman="apt"
+install="install"
+update="update"
+elif [[ $(which yum) != "yum not found" ]]; then
+pkgman="yum"
+install="install"
+update="update"
+elif [[ $(which pacman) != "pacman not found" ]]; then
+pkgman="pacman"
+install="-S"
+update="-Syy"
+fi
 
 #Install the required programs
-##First is Postgresql - This requires importing their repo key and repo
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-RELEASE=$(lsb_release -cs)
-echo "deb http://apt.postgresql.org/pub/repos/apt/ ${RELEASE}"-pgdg main | sudo tee  /etc/apt/sources.list.d/pgdg.list
-apt update
-apt install -y postgresql-11
 
+$pkgman $update
 
-##Gotta do a little extra for Node too
+##On Debian/Ubuntu based distros gotta do a little extra for Node
+if [[ $pkgman == apt ]]; then
+apt install curl -y
 curl -fsSL https://deb.nodesource.com/setup_current.x | sudo -E bash -
 apt install nodejs -y
+fi
 
-##Do the rest, no extras required
-apt install npm build-essential -y
+case $pkgman in
 
-apt install nginx -y
+yum | apt)
+$pkgman $install postgresql npm build-essential nginx -y
+;;
+
+pacman | apk)
+$pkgman $install postgresql npm build-essential nginx
+;;
+
+esac
 
 #Make an Config folder
 mkdir /etc/imagestore
@@ -44,6 +65,17 @@ then
 		fi
 	done
 fi
+
+#Check if sites-enabled is present and enabled in nginx.conf
+cd /etc/nginx
+if [[ ! -d "sites-enabled" ]]; then
+mkdir -p sites-enabled
+fi
+
+if ! grep -q '^include /etc/nginx/sites-enabled/' nginx.conf; then                                                                     
+sed -ir '/^http {*/a  \\tinclude /etc/nginx/sites-enabled/*.conf' nginx.conf                                                                     
+fi  
+
 cp default.conf /etc/nginx/sites-enabled/imagestore.conf
 cp ImageStoreFRONT.service /etc/systemd/system/ImageStoreFRONT.service
 cp ImageStoreBACK.service /etc/systemd/system/ImageStoreBACK.service
