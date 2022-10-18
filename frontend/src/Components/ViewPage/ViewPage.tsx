@@ -26,9 +26,9 @@ import {
     useMediaQuery,
     useTheme,
 } from "@material-ui/core";
-import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, Map, Edit, Warning, Face, PhotoAlbum } from "@material-ui/icons";
+import { ChevronLeft, ChevronRight, Close, Label, PhotoOutlined, AddCircle, Map, Edit, Warning, Face, PhotoAlbum, OpenInNew } from "@material-ui/icons";
 import clsx from "clsx";
-import { AlbumT, PhotoT } from "../../Interfaces";
+import { AlbumT, LocPhotoT, PhotoT } from "../../Interfaces";
 import { addLabel, baseURL, Box, editMedia, getBoxes, getPhotoLabels, removeLabel } from "../../API";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore, { Virtual, Navigation } from "swiper";
@@ -43,6 +43,8 @@ import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility
 import "leaflet-defaulticon-compatibility";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import OpenInDialog from "./OpenInDialog";
+import PhotoMap from "../Shared/PhotoMap";
+import QueryString from "qs";
 
 SwiperCore.use([Virtual, Navigation]);
 
@@ -131,6 +133,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     showCursor.current = Boolean((opacityLeft && index !== 0) || (opacityRight && index !== props.photos.length - 1))
 
     const [mapEnabled, setMapEnabled] = useState(localStorage.getItem("enableMap") === "true");
+    const [carouselKey, setCarouselKey] = useState(1);
 
     useEffect(() => {
         props.setViewId(id);
@@ -174,10 +177,14 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
 
     const slideChange = (index: number) => {
         const photos = props.photos;
-        const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
         const id = photos[index].id;
-        history.replace(`${afterWithout}${id}${queryUrl}`);
+        changeToPicture(id)
     };
+
+    const changeToPicture = (photoId: string) => {
+        const afterWithout = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/") + 1);
+        history.replace(`${afterWithout}${photoId}${queryUrl}`);
+    }
 
     const mouseRight = () => {
         setOpacityRight(100);
@@ -316,7 +323,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                             </IconButton>
                         </div>
                     </div>
-                    <Carousel slideChange={slideChange} index={index} photos={props.photos} open={drawerOpen} prevRef={prevRef} nextRef={nextRef} hideArrows={hideArrows} goBack={goBack} mouseLeft={mouseLeft} mouseRight={mouseRight} mouseCenter={mouseCenter} showCursor={showCursor}
+                    <Carousel slideChange={slideChange} index={index} photos={props.photos} open={drawerOpen} hideArrows={hideArrows} goBack={goBack} mouseLeft={mouseLeft} mouseRight={mouseRight} mouseCenter={mouseCenter} showCursor={showCursor} key={carouselKey}
                     />
                     <div
                         className="rootTop"
@@ -460,29 +467,32 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                         />
                         <IconButton>
                             <Tooltip title="The map has to be requested from an external source (openstreetmap.org).">
-                                <Warning></Warning>
+                                <Warning />
                             </Tooltip>
                         </IconButton>
                         <IconButton onClick={() => setEditLocationOpen(true)}>
                             <Tooltip title="Edit location">
-                                <Edit></Edit>
+                                <Edit />
+                            </Tooltip>
+                        </IconButton>
+                        <IconButton disabled={!photo || !photo.coordx || !photo.coordy} onClick={() => history.push({ pathname: "/map", search: QueryString.stringify({ zoom: 12, center: [photo.coordx, photo.coordy] }) })}>
+                            <Tooltip title="Open in map">
+                                <OpenInNew />
                             </Tooltip>
                         </IconButton>
                     </ListItem>
                     <ListItem>
                         {mapEnabled && photo && photo.coordx && photo.coordy && (
-                            <MapContainer
-                                attributionControl={false}
-                                center={[photo.coordx, photo.coordy]}
-                                zoom={13}
-                                scrollWheelZoom={false}
-                                style={{ height: 200, width: "100%" }}
+                            <PhotoMap markers={[[photo.coordx, photo.coordy]]} photos={props.photos.filter((p) => p.id !== id)} defaultZoom={14} center={[photo.coordx, photo.coordy]} onClickCallback={(photo: LocPhotoT) => {
+                                changeToPicture(photo.id);
+                                setCarouselKey((k) => k + 1);
+                            }}
+                                onZoomCallback={() => { }}
+                                onPanCallback={() => { }}
+                                mapStyle={{ height: 200, width: "100%" }}
                                 key={photo.id + photo.coordx + photo.coordy}
-                            >
-                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                <Marker position={[photo.coordx, photo.coordy]}></Marker>
-                            </MapContainer>
-                        )}
+                                iconSize={50}
+                            />)}
                     </ListItem>
 
                     {/* Open in */}
@@ -499,11 +509,11 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                     </ListItem>
 
                 </List>
-            </Drawer>
+            </Drawer >
             <EditPropsDialog open={editPropsOpen} setOpen={setEditPropsOpen} cb={editPropsCb} photo={props.photos[index]} />
             <EditLocationDialog open={editLocationOpen} setOpen={setEditLocationOpen} cb={editLocationCb} photo={props.photos[index]} />
             <OpenInDialog open={openInOpen} setOpen={setOpenInOpen} cb={openInCb} photo={props.photos[index]} />
-        </div>
+        </div >
     );
 }
 

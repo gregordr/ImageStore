@@ -15,3 +15,8 @@ export interface PhotoT {
     coordy?: number;
     type: "photo" | "video";
 }
+
+export interface LocPhotoT extends PhotoT {
+    coordx: number;
+    coordy: number;
+}
