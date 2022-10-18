@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Divider, Drawer, Hidden, List, ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
 import { makeStyles, useTheme, Theme, createStyles } from "@material-ui/core/styles";
-import { Photo, PhotoAlbum } from "@material-ui/icons";
+import { Map, Photo, PhotoAlbum } from "@material-ui/icons";
 import { Switch, Route, useHistory, useLocation } from "react-router-dom";
 import AlbumPage from "./AlbumPage/AlbumPage";
 import { checkForFeature } from "../API";
 import PhotoPage from "./Shared/PhotoPage";
+import MapPage from "./MapPage/MapPage";
 
 const drawerWidth = 240;
 
@@ -67,7 +68,7 @@ export default function ResponsiveDrawer({ window }: any) {
 
     const [searchByImageEnabled, setSearchByImageEnabled] = useState(false)
     useEffect(() => {
-        ( async () => setSearchByImageEnabled((await checkForFeature("search")).data))()
+        (async () => setSearchByImageEnabled((await checkForFeature("search")).data))()
     }, [])
 
     const drawer = (
@@ -102,6 +103,19 @@ export default function ResponsiveDrawer({ window }: any) {
                         <PhotoAlbum />
                     </ListItemIcon>
                     <ListItemText primary="Albums" />
+                </ListItem>
+                <ListItem
+                    button
+                    selected={location.pathname.startsWith("/map")}
+                    onClick={() => {
+                        history.push("/map");
+                        setMobileOpen(false);
+                    }}
+                >
+                    <ListItemIcon>
+                        <Map />
+                    </ListItemIcon>
+                    <ListItemText primary="Map" />
                 </ListItem>
             </List>
         </div>
@@ -148,8 +162,11 @@ export default function ResponsiveDrawer({ window }: any) {
             <Route path="/albums">
                 <AlbumPage searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
             </Route>
+            <Route path="/map">
+                <MapPage searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} />
+            </Route>
             <Route path="/">
-                <PhotoPage refresh={async () => {}} searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} root="Photo" />
+                <PhotoPage refresh={async () => { }} searchByImageEnabled={searchByImageEnabled} drawerElement={drawerElement} handleDrawerToggle={handleDrawerToggle} root="Photo" />
             </Route>
         </Switch>
     );
