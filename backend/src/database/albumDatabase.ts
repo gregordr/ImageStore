@@ -1,8 +1,10 @@
+import { resourceLimits } from 'worker_threads';
 import { DatabaseError, requireTable, transaction } from './databaseHelper'
 import { labelTable } from './labelDatabase';
 import { media, photo } from './mediaDatabase';
 
 export const album = 'album'
+export const folder = 'folder'
 
 export const albums = (async () => {
     await media;
@@ -11,10 +13,102 @@ CONSTRAINT photo_Exists FOREIGN KEY(picture) REFERENCES ${await media}(OID) ON D
 ) WITH OIDS`).catch((err) => { console.log(err) })
 })();
 
+export const folders = (async () => {
+    await albums;
+    return requireTable('folders', `(${folder} varchar, UNIQUE(oid), picture OID, color varchar(7),
+CONSTRAINT photo_Exists FOREIGN KEY(picture) REFERENCES ${await media}(OID) ON DELETE SET NULL
+) WITH OIDS`).catch((err) => { console.log(err) })
+})();
+
+export const folder_folder = (async () => {
+    await albums;
+    return requireTable('folder_folder', `(parent oid, child oid, PRIMARY KEY(parent, child),
+    CONSTRAINT parent_Exists FOREIGN KEY(parent) REFERENCES ${await folders}(OID) ON DELETE CASCADE,
+    CONSTRAINT child_Exists FOREIGN KEY(child) REFERENCES ${await folders}(OID) ON DELETE CASCADE
+)`).catch((err) => { console.log(err) })
+})();
+
+export const folder_album = (async () => {
+    await albums;
+    return requireTable('folder_album', `(parent oid, child oid, PRIMARY KEY(parent, child),
+    CONSTRAINT parent_Exists FOREIGN KEY(parent) REFERENCES ${await folders}(OID) ON DELETE CASCADE,
+    CONSTRAINT child_Exists FOREIGN KEY(child) REFERENCES ${await albums}(OID) ON DELETE CASCADE
+)`).catch((err) => { console.log(err) })
+})();
+
 export const album_photo = (async () => requireTable('album_photo', `(${album} OID, Photo OID, PRIMARY KEY(${album}, Photo), 
 CONSTRAINT album_Exists FOREIGN KEY(${album}) REFERENCES ${await albums}(OID) ON DELETE CASCADE,
 CONSTRAINT photo_Exists FOREIGN KEY(Photo) REFERENCES ${await media}(OID) ON DELETE CASCADE
 ) WITH OIDS`).catch((err) => { console.log(err) }))();
+
+//getContens of folder (plus path?)
+export async function getFoldersInRoot(): Promise<unknown[]> {
+    return transaction(async (client) => {
+        const result = await client.query(`
+            SELECT
+            oid as id,
+            ${folder} as name,
+            picture as cover,
+            color as color
+            FROM ${await folders}
+            WHERE oid not in (
+                SELECT child
+                FROM ${await folder_folder}
+            );
+        `, []);
+
+        return result.rows
+    });
+}
+
+export async function createFolder(name:string, parentId?: string): Promise<unknown> {
+    return transaction(async (client) => {
+        const oid = (await client.query(`INSERT INTO ${await folders}
+        VALUES ($1::text);`, [name])).oid.toString();
+
+        if(parentId) {
+            await client.query(`INSERT INTO ${await folder_folder}
+            VALUES($1::oid, $2::oid);`, [parentId, oid])
+        }
+        return oid;
+    }, true)
+}
+
+export async function getFolderContentsFolder(id:string): Promise<unknown[]> {    
+    return transaction(async (client) => {
+        const result = await client.query(`SELECT * 
+        FROM ${await folders}
+        JOIN ${await folder_folder} ON  ${await folders}.oid = ${await folder_folder}.child
+        WHERE ${await folder_folder}.parent = ($1::OID);`, 
+        [id]);
+        return result.rows;
+    }, true);
+}
+
+export async function getFolderContentsAlbum(id:string): Promise<unknown[]> {    
+    return transaction(async (client) => {
+        const result = await client.query(`SELECT * 
+        FROM ${await albums}
+        JOIN ${await folder_album} ON  ${await folders}.oid = ${await folder_folder}.child
+        WHERE ${await folder_album}.parent = ($1::OID);`, 
+        [id]);
+        return result.rows;
+    }, true);
+}
+
+export async function putFolderIntoFolder(oid:string, parentId: string): Promise<unknown> {
+    return transaction(async (client) => {
+        return await client.query(`INSERT INTO ${await folder_folder}
+        VALUES($1::oid, $2::oid);`, [parentId, oid])
+    }, true)
+}
+
+export async function putAlbumIntoFolder(oid:string, parentId: string): Promise<unknown> {
+    return transaction(async (client) => {
+        return await client.query(`INSERT INTO ${await folder_album}
+        VALUES($1::oid, $2::oid);`, [parentId, oid])
+    }, true)
+}
 
 export async function getAlbums(searchTerm: string): Promise<unknown[]> {
     return transaction(async (client) => {
