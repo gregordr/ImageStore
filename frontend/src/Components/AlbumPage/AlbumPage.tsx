@@ -3,7 +3,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
 import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
 import TopBar from "./TopBar";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, useHistory, useLocation } from "react-router-dom";
 import { AlbumT } from "../../Interfaces";
 import CreateAlbum from "./CreateAlbum";
 import PhotoPage from "../Shared/PhotoPage";
@@ -82,6 +82,18 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
     const [searchTerm, setSearchTerm] = useState("");
     const [autocompleteOptions, setAutocompleteOption] = useState<string[]>([]);
 
+    const { state } = useLocation() as { state: { clearSearchBar: Boolean } }
+    const history = useHistory()
+
+    useEffect(() => {
+        if (state.clearSearchBar) {
+            setSearchBarText("")
+            history.push({
+                state: { clearSearchBar: false }
+            });
+        }
+    }, [state.clearSearchBar])
+
     const fetchAlbums = async () => {
         setShowLoadingBar(true);
         const resp = await getAlbums(searchTerm);
@@ -114,7 +126,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         await fetchAlbums();
     };
 
-    const openAlbum = () => () => {};
+    const openAlbum = () => () => { };
 
     const heights = [searchTerm === "" || !searchTerm ? 0 : 40];
 
