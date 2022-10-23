@@ -9,7 +9,7 @@ import { useTheme } from "@material-ui/core/styles";
 import { TextField } from "@material-ui/core";
 import { AlbumT } from "../../Interfaces";
 
-export default function CreateAlbum(props: { cb: (arg0: string) => any; setOpen: (arg0: boolean) => any; open: boolean }) {
+export default function CreateFolder(props: { cb: (arg0: string) => any; setOpen: (arg0: boolean) => any; open: boolean; }) {
     const [done, setDone] = useState(false);
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -50,9 +50,9 @@ export default function CreateAlbum(props: { cb: (arg0: string) => any; setOpen:
                     }
                 }}
             >
-                <DialogTitle id="responsive-dialog-title">Create new Album</DialogTitle>
+                <DialogTitle id="responsive-dialog-title">Create new Folder</DialogTitle>
                 <DialogContent>
-                    <TextField label="Name your album" placeholder="My new album" variant="filled" value={value} onChange={handleChange} fullWidth autoFocus margin="dense" />
+                    <TextField label="Name your folder" placeholder="New album" variant="filled" value={value} onChange={handleChange} fullWidth autoFocus margin="dense" />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose(true)} color="primary">

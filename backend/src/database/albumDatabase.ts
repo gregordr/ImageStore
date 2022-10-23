@@ -41,8 +41,7 @@ CONSTRAINT album_Exists FOREIGN KEY(${album}) REFERENCES ${await albums}(OID) ON
 CONSTRAINT photo_Exists FOREIGN KEY(Photo) REFERENCES ${await media}(OID) ON DELETE CASCADE
 ) WITH OIDS`).catch((err) => { console.log(err) }))();
 
-//getContens of folder (plus path?)
-export async function getFoldersInRoot(): Promise<unknown[]> {
+export async function getFolders(): Promise<unknown[]> {
     return transaction(async (client) => {
         const result = await client.query(`
             SELECT
@@ -50,23 +49,51 @@ export async function getFoldersInRoot(): Promise<unknown[]> {
             ${folder} as name,
             picture as cover,
             color as color
-            FROM ${await folders}
-            WHERE oid not in (
-                SELECT child
-                FROM ${await folder_folder}
-            );
+            FROM ${await folders};
         `, []);
 
         return result.rows
     });
 }
 
-export async function createFolder(name:string, parentId?: string): Promise<unknown> {
+export async function getFolderFolderRelation(): Promise<unknown[]> {
+    return transaction(async (client) => {
+        const result = await client.query(`SELECT 
+        ${await folder_folder}.child as childId,
+        parent as parentId
+        FROM ${await folder_folder};`);
+        return result.rows;
+    }, true);
+}
+
+export async function getFolderAlbumRelation(): Promise<unknown[]> {
+    return transaction(async (client) => {
+        const result = await client.query(`SELECT 
+        child as childId,
+        parent as parentId
+        FROM ${await folder_album};`);
+        return result.rows;
+    }, true);
+}
+
+export async function renameFolder(oid: string, newName: string) {
+    return await transaction(async (client) => {
+        return (await client.query(`UPDATE ${await folders} SET folder=$2::text WHERE OID = $1::OID;`, [oid, newName])).rowCount.toString();
+    })
+}
+
+export async function deleteFolder(oid: string): Promise<string> {
+    return transaction(async (client) => {
+        return (await client.query(`DELETE FROM ${await folders} WHERE oid = $1::OID;`, [oid])).rowCount.toString();
+    });
+}
+
+export async function addFolder(name: string, parentId?: string): Promise<unknown> {
     return transaction(async (client) => {
         const oid = (await client.query(`INSERT INTO ${await folders}
         VALUES ($1::text);`, [name])).oid.toString();
 
-        if(parentId) {
+        if (parentId) {
             await client.query(`INSERT INTO ${await folder_folder}
             VALUES($1::oid, $2::oid);`, [parentId, oid])
         }
@@ -74,36 +101,16 @@ export async function createFolder(name:string, parentId?: string): Promise<unkn
     }, true)
 }
 
-export async function getFolderContentsFolder(id:string): Promise<unknown[]> {    
+export async function putFolderIntoFolder(oid: string, parentId?: string): Promise<unknown> {
     return transaction(async (client) => {
-        const result = await client.query(`SELECT * 
-        FROM ${await folders}
-        JOIN ${await folder_folder} ON  ${await folders}.oid = ${await folder_folder}.child
-        WHERE ${await folder_folder}.parent = ($1::OID);`, 
-        [id]);
-        return result.rows;
-    }, true);
-}
-
-export async function getFolderContentsAlbum(id:string): Promise<unknown[]> {    
-    return transaction(async (client) => {
-        const result = await client.query(`SELECT * 
-        FROM ${await albums}
-        JOIN ${await folder_album} ON  ${await folders}.oid = ${await folder_folder}.child
-        WHERE ${await folder_album}.parent = ($1::OID);`, 
-        [id]);
-        return result.rows;
-    }, true);
-}
-
-export async function putFolderIntoFolder(oid:string, parentId: string): Promise<unknown> {
-    return transaction(async (client) => {
-        return await client.query(`INSERT INTO ${await folder_folder}
-        VALUES($1::oid, $2::oid);`, [parentId, oid])
+        await client.query(`DELETE FROM ${await folder_folder} WHERE child = $1::OID;`, [oid])
+        if (parentId)
+            await client.query(`INSERT INTO ${await folder_folder}
+                VALUES($1::oid, $2::oid);`, [parentId, oid])
     }, true)
 }
 
-export async function putAlbumIntoFolder(oid:string, parentId: string): Promise<unknown> {
+export async function putAlbumIntoFolder(oid: string, parentId: string): Promise<unknown> {
     return transaction(async (client) => {
         return await client.query(`INSERT INTO ${await folder_album}
         VALUES($1::oid, $2::oid);`, [parentId, oid])
@@ -138,9 +145,16 @@ export async function getAlbums(searchTerm: string): Promise<unknown[]> {
     });
 }
 
-export async function addAlbum(name: string): Promise<string> {
+export async function addAlbum(name: string, parentId?: String): Promise<string> {
     return transaction(async (client) => {
-        return (await client.query(`INSERT INTO ${await albums} VALUES ($1::text);`, [name])).oid.toString();
+        const oid = (await client.query(`INSERT INTO ${await albums} VALUES ($1::text);`, [name])).oid.toString();
+
+        if (parentId) {
+            await client.query(`INSERT INTO ${await folder_album}
+            VALUES($1::oid, $2::oid);`, [parentId, oid])
+        }
+
+        return oid;
     });
 }
 

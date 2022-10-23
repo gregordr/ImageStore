@@ -1,13 +1,14 @@
 import React, { useCallback, useState, useRef, useEffect } from "react";
 import { createMuiTheme, createStyles, makeStyles, ThemeProvider } from "@material-ui/core/styles";
-import { AlbumT } from "../../Interfaces";
+import { AlbumT, FolderT } from "../../Interfaces";
 import { VariableSizeList as List } from "react-window";
 import { Scrollbars } from "react-custom-scrollbars";
 import { GridList, GridListTile, GridListTileBar, IconButton } from "@material-ui/core";
-import { PhotoAlbum, Info } from "@material-ui/icons";
+import { PhotoAlbum, Info, Folder as FolderIcon } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
 import AlbumInfo from "../AlbumPage/AlbumInfo";
 import { baseURL } from "../../API";
+import FolderInfo from "../AlbumPage/FolderInfo";
 
 const theme = createMuiTheme({
     palette: {
@@ -103,19 +104,86 @@ function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Pro
     );
 }
 
-const makeAlbum = (album: AlbumT, dimension: number, props: any) => <Album key={album.id} album={album} dimension={dimension} click={props.openAlbum(album)} fetchAlbums={props.fetchAlbums} />;
-//need to pass h/w too tho
+function Folder(props: { folder: FolderT; click: () => void; fetchAlbums: () => Promise<void>; dimension: number }) {
+    const classes = useStyles();
+    const history = useHistory();
+    const [openInfo, setOpenInfo] = useState(false);
+
+    const onImageClick = () => {
+        history.push(`/albums/folder/${props.folder.id}`);
+    };
+
+    return (
+        <>
+            <GridListTile
+                key={props.folder.id}
+                style={{
+                    padding: 5,
+                    paddingTop: 10,
+                    height: props.dimension,
+                    width: props.dimension,
+                    backgroundColor: "white",
+                }}
+                onClick={onImageClick}
+            >
+                {props.folder.cover === null ? (
+                    <FolderIcon style={{
+                        height: props.dimension, width: props.dimension, color: "#666666",
+                    }} />
+                ) : (
+                    <div
+                        style={{
+                            backgroundImage: `url(${baseURL + "/media/thumb_" + props.folder.cover})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            height: props.dimension,
+                            width: props.dimension,
+                        }}
+                    />
+                )}
+                <GridListTileBar
+                    title={props.folder.name}
+                    // subtitle={<span>{'props.folder.imagecount'} elements</span>}
+                    actionIcon={
+                        //To do: remove this to increase scroll speed
+                        <ThemeProvider theme={theme}>
+                            <IconButton
+                                aria-label={`info about ${props.folder.name}`}
+                                color="primary"
+                                onClick={(e) => {
+                                    setOpenInfo(true);
+                                    e.stopPropagation();
+                                }}
+                                className={classes.icon}
+                            >
+                                <Info />
+                            </IconButton>
+                        </ThemeProvider>
+                    }
+                />
+            </GridListTile>
+            <FolderInfo folder={props.folder} open={openInfo} setOpen={setOpenInfo}></FolderInfo>
+        </>
+    );
+}
+
+const makeItem = (item: AlbumT | FolderT, dimension: number, props: any) => {
+    if ('imagecount' in item)
+        return <Album key={item.id} album={item} dimension={dimension} click={props.openAlbum(item)} fetchAlbums={props.fetchAlbums} />
+    else
+        return <Folder key={item.id} folder={item} dimension={dimension} click={props.openAlbum(item)} fetchAlbums={props.fetchAlbums} />
+};
 
 const targetHeight = 200;
 
-const calculate = (photos: AlbumT[], width: number) => {
+const calculate = (photos: (AlbumT | FolderT)[], width: number) => {
     const rowH: number[] = [];
-    const rowPics: AlbumT[][] = [];
+    const rowPics: (AlbumT | FolderT)[][] = [];
 
     let ptr = 0;
     let setH = -1;
     while (ptr !== photos.length) {
-        let curPics: AlbumT[] = [];
+        let curPics: (AlbumT | FolderT)[] = [];
         let curWidth = 0;
 
         while (ptr !== photos.length && (curWidth === 0 || Math.abs(targetHeight - (targetHeight * width) / curWidth) > Math.abs(targetHeight - (targetHeight * width) / (curWidth + targetHeight)))) {
@@ -138,7 +206,7 @@ const Row = (altprops: any) =>
     altprops.data.linNum <= altprops.index ? (
         <GridList className={altprops.data.classes.root}>
             <div style={{ ...altprops.style, display: "flex", transition: "0.05s linear" }}>
-                {altprops.data.rowPics[altprops.index].map((a: AlbumT) => makeAlbum(a, altprops.data.rowH[altprops.index], altprops.data.props))}
+                {altprops.data.rowPics[altprops.index].map((a: (AlbumT | FolderT)) => makeItem(a, altprops.data.rowH[altprops.index], altprops.data.props))}
             </div>
         </GridList>
     ) : (
@@ -167,6 +235,7 @@ const CustomScrollbars = ({ onScroll, forwardedRef, style, children }: any) => {
 const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => <CustomScrollbars {...props} forwardedRef={ref} />);
 
 export default function AbstractAlbumPage(props: {
+    folders: FolderT[];
     albums: AlbumT[];
     height: number;
     width: number;
@@ -177,8 +246,8 @@ export default function AbstractAlbumPage(props: {
 }) {
     const classes = useStyles();
     const listRef = useRef<List>(null);
-    useEffect(() => listRef.current?.resetAfterIndex(0), [props.width, props.albums, props.heights]);
-    let { rowH, rowPics } = calculate(props.albums, props.width - 20);
+    useEffect(() => listRef.current?.resetAfterIndex(0), [props.width, props.albums, props.heights, props.folders]);
+    let { rowH, rowPics } = calculate([...props.folders, ...props.albums], props.width - 20);
     rowH = [...props.heights, ...rowH];
     rowPics = [...props.lines, ...rowPics];
     const getItemSize = (index: number) => rowH[index];

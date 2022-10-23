@@ -77,8 +77,8 @@ export async function clearCover(albumId: string) {
     await axios.post(`/albums/clearCover/${albumId}`);
 }
 
-export async function createAlbum(name: string) {
-    return (await axios.post("/albums/new/" + name)).data;
+export async function createAlbum(name: string, parentId?: string) {
+    return (await axios.post("/albums/new/" + name, { parentId })).data;
 }
 
 export async function deleteAlbum(albumId: string) {
@@ -368,4 +368,41 @@ export async function deleteBox(id: string, box: Box) {
         box: [box.x1, box.y1, box.x2, box.y2],
     };
     const res = await axios.post("/face/remove", requestBody);
+}
+
+export async function getFolders() {
+    return await axios.get('/albums/folders');
+}
+
+export async function getFolderFolderRelation() {
+    return await axios.get('/albums/getFolderFolderRelation');
+}
+
+
+export async function getFolderAlbumRelation() {
+    return await axios.get('/albums/getFolderAlbumRelation');
+}
+
+export async function putFolderIntoFolder(childId: string, parentId?: string) {
+    return await axios.post('/albums/putFolderIntoFolder', { childId, parentId });
+}
+
+export async function putAlbumIntoFolder(childId: string, parentId?: string) {
+    return await axios.post('/albums/putAlbumIntoFolder', { childId, parentId });
+}
+
+export async function newFolder(folderName: string, parentId?: string) {
+    return await axios.post('/albums/newFolder', { folderName, parentId });
+}
+
+export async function deleteFolder(oid: string) {
+    await axios.post(`/albums/deleteFolder/${oid}`);
+}
+
+export async function renameFolder(oid: string, newName: string) {
+    const requestBody = {
+        oid,
+        newName,
+    };
+    await axios.post("/albums/renameFolder", requestBody);
 }

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
-import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography } from "@material-ui/core";
+import { CssBaseline, AppBar, Toolbar, IconButton, createStyles, Theme, Typography, Breadcrumbs, Link } from "@material-ui/core";
 import TopBar from "./TopBar";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, useHistory, useLocation } from "react-router-dom";
 import { AlbumT } from "../../Interfaces";
 import CreateAlbum from "./CreateAlbum";
 import PhotoPage from "../Shared/PhotoPage";
@@ -12,6 +12,8 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import SearchBar from "material-ui-search-bar";
 import { createAlbum, getAlbums } from "../../API";
 import AutocompleteSearchBar from "../Shared/SearchBar";
+import { useNewFolderMutation, useFoldersQuery } from "../../Queries/AlbumQueries";
+import CreateFolder from "./CreateFolder";
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -75,12 +77,21 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
 
     const [albums, setAlbums] = useState<AlbumT[]>([]);
     const [openCreateAlbum, setOpenCreateAlbum] = useState(false);
+    const [openCreateFolder, setOpenCreateFolder] = useState(false);
     const [showLoadingBar, setShowLoadingBar] = useState(true);
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const [autocompleteOptions, setAutocompleteOption] = useState<string[]>([]);
+
+    const history = useHistory();
+
+    let folder: string | undefined;
+    const { pathname } = useLocation()
+    if (pathname.split('/folder/').length == 2) {
+        folder = pathname.split('/folder/')[1].replaceAll('/', '')
+    }
 
     const fetchAlbums = async () => {
         setShowLoadingBar(true);
@@ -93,13 +104,18 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         }
     };
 
+    const foldersQuery = useFoldersQuery(albums, folder)
+
     useEffect(() => {
         fetchAlbums();
     }, [searchTerm]);
 
     const topBarButtonFunctions = {
-        add: async () => {
+        addAlbum: async () => {
             setOpenCreateAlbum(true);
+        },
+        addFolder: async () => {
+            setOpenCreateFolder(true);
         },
         search: (s: string) => async () => {
             setSearchTerm(s);
@@ -109,20 +125,44 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         },
     };
 
+    const createFolderMutation = useNewFolderMutation()
+
     const createAlbumCallback = async (name: string) => {
-        await createAlbum(name);
-        await fetchAlbums();
+        await createAlbum(name, folder);
+        foldersQuery.refetch()
+        fetchAlbums();
     };
 
-    const openAlbum = () => () => {};
+    const openAlbum = () => () => { };
 
-    const heights = [searchTerm === "" || !searchTerm ? 0 : 40];
 
-    const lines = [
-        <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block" }}>
-            Search results for {searchTerm}:
-        </Typography>,
-    ];
+    const heights: number[] = [];
+    const lines: JSX.Element[] = [];
+
+    if (foldersQuery.data?.folderInfo?.name) {
+        heights.push(50)
+        lines.push(
+            <Breadcrumbs aria-label="breadcrumb">
+                <Link underline="hover" color="inherit" onClick={() => history.push("/albums")}>
+                    Root
+                </Link>
+                {foldersQuery.data.path.map((f) => (
+                    <Link underline="hover" color="inherit" onClick={() => history.push(`/albums/folder/${f.id}`)}>
+                        {f.name}
+                    </Link>)
+                )}
+                <Typography color="textPrimary">{foldersQuery.data.folderInfo.name}</Typography>
+            </Breadcrumbs>
+        )
+    }
+
+    if (searchTerm) {
+        heights.push(40)
+        lines.push(
+            <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block" }}>
+                Search results for {searchTerm}:
+            </Typography>,)
+    }
 
     return (
         <div>
@@ -144,7 +184,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                                     setSearchBarText={setSearchBarText}
                                     autocompleteOptions={autocompleteOptions}
                                     buttonFunctions={topBarButtonFunctions}
-                                    show={showLoadingBar}
+                                    show={showLoadingBar || foldersQuery.isFetching}
                                 />
                             </Toolbar>
                         </AppBar>
@@ -167,7 +207,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                             <div style={{ flexGrow: 1 }}>
                                 <AutoSizer>
                                     {({ height, width }) => (
-                                        <AbstractAlbumPage height={height - 1} width={width} albums={albums} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} />
+                                        <AbstractAlbumPage height={height - 1} width={width} folders={foldersQuery.data?.foldersToShow ?? []} albums={foldersQuery.data?.albumsToShow ?? []} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} />
                                     )}
                                 </AutoSizer>
                             </div>
@@ -175,7 +215,8 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                     </div>
                 </Route>
             </Switch>
-            <CreateAlbum albums={albums} open={openCreateAlbum} setOpen={setOpenCreateAlbum} cb={createAlbumCallback} />
+            <CreateAlbum open={openCreateAlbum} setOpen={setOpenCreateAlbum} cb={(albumName: string) => createAlbumCallback(albumName)} />
+            <CreateFolder open={openCreateFolder} setOpen={setOpenCreateFolder} cb={(folderName: string) => createFolderMutation.mutateAsync({ folderName, parentId: folder })} />
         </div>
     );
 }
