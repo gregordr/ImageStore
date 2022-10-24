@@ -139,7 +139,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
     const heights: number[] = [];
     const lines: JSX.Element[] = [];
 
-    if (foldersQuery.data?.folderInfo?.name) {
+    if (foldersQuery.data?.folderInfo?.name != undefined) {
         heights.push(50)
         lines.push(
             <Breadcrumbs aria-label="breadcrumb">
@@ -148,10 +148,10 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                 </Link>
                 {foldersQuery.data.path.map((f) => (
                     <Link underline="hover" color="inherit" onClick={() => history.push(`/albums/folder/${f.id}`)}>
-                        {f.name}
+                        {f.name || "No name"}
                     </Link>)
                 )}
-                <Typography color="textPrimary">{foldersQuery.data.folderInfo.name}</Typography>
+                <Typography color="textPrimary">{foldersQuery.data.folderInfo.name || "No name"}</Typography>
             </Breadcrumbs>
         )
     }
@@ -207,7 +207,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                             <div style={{ flexGrow: 1 }}>
                                 <AutoSizer>
                                     {({ height, width }) => (
-                                        <AbstractAlbumPage height={height - 1} width={width} folders={foldersQuery.data?.foldersToShow ?? []} albums={foldersQuery.data?.albumsToShow ?? []} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} />
+                                        <AbstractAlbumPage height={height - 1} width={width} folders={foldersQuery.data?.foldersToShow ?? []} albums={foldersQuery.data?.albumsToShow ?? []} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} currentFolder={foldersQuery.data?.folderInfo} />
                                     )}
                                 </AutoSizer>
                             </div>

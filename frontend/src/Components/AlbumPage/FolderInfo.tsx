@@ -16,7 +16,7 @@ import { TreeItem, TreeView } from "@material-ui/lab";
 import { ExpandMore, ChevronRight } from "@material-ui/icons";
 import ChangeLocationDialog from "./ChangeLocationDialog";
 
-export default function FolderInfo(props: { folder: FolderT; open: boolean; setOpen: (arg0: boolean) => any; }) {
+export default function FolderInfo(props: { folder: FolderT; open: boolean; setOpen: (arg0: boolean) => any; currentFolder?: FolderT }) {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const [nameField, setNameField] = useState(props.folder.name);
@@ -26,7 +26,7 @@ export default function FolderInfo(props: { folder: FolderT; open: boolean; setO
 
     const query = useFoldersQuery([], props.folder.id);
     const putFolderIntoFolderMutation = useMoveFolderMutation()
-    const currentFolderId = query.data?.path.slice(-1)[0]?.id ?? "";
+    const currentFolderId = props.currentFolder?.id ?? "";
 
     const [changeLocationDialogOpen, setChangeLocationDialogOpen] = useState(false)
     const [selectedFolderId, setSelectedFolderId] = useState(currentFolderId)

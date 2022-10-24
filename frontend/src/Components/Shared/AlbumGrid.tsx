@@ -43,7 +43,7 @@ const useStyles = makeStyles(() =>
     })
 );
 
-function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Promise<void>; dimension: number }) {
+function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Promise<void>; dimension: number; currentFolder?: FolderT }) {
     const classes = useStyles();
     const history = useHistory();
     const [openInfo, setOpenInfo] = useState(false);
@@ -99,12 +99,12 @@ function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Pro
                     }
                 />
             </GridListTile>
-            <AlbumInfo album={props.album} open={openInfo} setOpen={setOpenInfo} fetchAlbums={props.fetchAlbums}></AlbumInfo>
+            <AlbumInfo album={props.album} open={openInfo} setOpen={setOpenInfo} fetchAlbums={props.fetchAlbums} currentFolder={props.currentFolder}></AlbumInfo>
         </>
     );
 }
 
-function Folder(props: { folder: FolderT; click: () => void; fetchAlbums: () => Promise<void>; dimension: number }) {
+function Folder(props: { folder: FolderT; click: () => void; fetchAlbums: () => Promise<void>; dimension: number; currentFolder?: FolderT }) {
     const classes = useStyles();
     const history = useHistory();
     const [openInfo, setOpenInfo] = useState(false);
@@ -162,16 +162,16 @@ function Folder(props: { folder: FolderT; click: () => void; fetchAlbums: () => 
                     }
                 />
             </GridListTile>
-            <FolderInfo folder={props.folder} open={openInfo} setOpen={setOpenInfo}></FolderInfo>
+            <FolderInfo folder={props.folder} open={openInfo} setOpen={setOpenInfo} currentFolder={props.currentFolder}></FolderInfo>
         </>
     );
 }
 
-const makeItem = (item: AlbumT | FolderT, dimension: number, props: any) => {
+const makeItem = (item: AlbumT | FolderT, dimension: number, props: any, currentFolder?: FolderT) => {
     if ('imagecount' in item)
-        return <Album key={item.id} album={item} dimension={dimension} click={props.openAlbum(item)} fetchAlbums={props.fetchAlbums} />
+        return <Album key={item.id} album={item} dimension={dimension} click={props.openAlbum(item)} fetchAlbums={props.fetchAlbums} currentFolder={currentFolder} />
     else
-        return <Folder key={item.id} folder={item} dimension={dimension} click={props.openAlbum(item)} fetchAlbums={props.fetchAlbums} />
+        return <Folder key={item.id} folder={item} dimension={dimension} click={props.openAlbum(item)} fetchAlbums={props.fetchAlbums} currentFolder={currentFolder} />
 };
 
 const targetHeight = 200;
@@ -206,7 +206,7 @@ const Row = (altprops: any) =>
     altprops.data.linNum <= altprops.index ? (
         <GridList className={altprops.data.classes.root}>
             <div style={{ ...altprops.style, display: "flex", transition: "0.05s linear" }}>
-                {altprops.data.rowPics[altprops.index].map((a: (AlbumT | FolderT)) => makeItem(a, altprops.data.rowH[altprops.index], altprops.data.props))}
+                {altprops.data.rowPics[altprops.index].map((a: (AlbumT | FolderT)) => makeItem(a, altprops.data.rowH[altprops.index], altprops.data.props, altprops.data.currentFolder))}
             </div>
         </GridList>
     ) : (
@@ -243,6 +243,7 @@ export default function AbstractAlbumPage(props: {
     fetchAlbums: () => void;
     heights: number[];
     lines: any[];
+    currentFolder?: FolderT;
 }) {
     const classes = useStyles();
     const listRef = useRef<List>(null);
@@ -257,7 +258,7 @@ export default function AbstractAlbumPage(props: {
             overscanCount={2}
             height={props.height}
             ref={listRef}
-            itemData={{ rowH, rowPics, props, linNum: props.lines.length, classes }}
+            itemData={{ rowH, rowPics, props, linNum: props.lines.length, classes, currentFolder: props.currentFolder }}
             itemCount={rowH.length}
             itemSize={getItemSize}
             width={props.width - 1}
