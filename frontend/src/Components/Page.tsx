@@ -82,7 +82,10 @@ export default function ResponsiveDrawer({ window }: any) {
                     button
                     selected={location.pathname === "/"}
                     onClick={() => {
-                        history.push("/");
+                        history.push({
+                            pathname: "/",
+                            state: { clearSearchBar: true }
+                        });
                         setMobileOpen(false);
                     }}
                 >
@@ -95,7 +98,10 @@ export default function ResponsiveDrawer({ window }: any) {
                     button
                     selected={location.pathname.startsWith("/albums")}
                     onClick={() => {
-                        history.push("/albums");
+                        history.push({
+                            pathname: "/albums",
+                            state: { clearSearchBar: true }
+                        });
                         setMobileOpen(false);
                     }}
                 >
@@ -108,7 +114,10 @@ export default function ResponsiveDrawer({ window }: any) {
                     button
                     selected={location.pathname.startsWith("/map")}
                     onClick={() => {
-                        history.push("/map");
+                        history.push({
+                            pathname: "/map",
+                            state: { clearSearchBar: true }
+                        });
                         setMobileOpen(false);
                     }}
                 >

@@ -92,6 +92,17 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
     if (pathname.split('/folder/').length == 2) {
         folder = pathname.split('/folder/')[1].replaceAll('/', '')
     }
+    
+    const { state } = useLocation() as { state: { clearSearchBar: Boolean } }
+
+    useEffect(() => {
+        if (state.clearSearchBar) {
+            setSearchBarText("")
+            history.push({
+                state: { clearSearchBar: false }
+            });
+        }
+    }, [state.clearSearchBar])
 
     const fetchAlbums = async () => {
         setShowLoadingBar(true);
@@ -134,7 +145,6 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     const openAlbum = () => () => { };
-
 
     const heights: number[] = [];
     const lines: JSX.Element[] = [];

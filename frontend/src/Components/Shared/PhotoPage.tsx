@@ -115,6 +115,18 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const [autocompleteOptions, setAutocompleteOptions] = useState<OptionT[]>([]);
 
+
+    const { state } = useLocation() as { state?: { clearSearchBar: Boolean } }
+
+    useEffect(() => {
+        if (state?.clearSearchBar) {
+            setSearchBarText("")
+            history.push({
+                state: { clearSearchBar: false }
+            });
+        }
+    }, [state?.clearSearchBar])
+
     useEffect(() => {
         (async () => {
             if (photos.length === 0) setAutocompleteOptions([]);
