@@ -7,14 +7,14 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { useTheme } from "@material-ui/core/styles";
 import { TextField } from "@material-ui/core";
-import { AlbumT } from "../../Interfaces";
+import { AlbumT, FolderT } from "../../Interfaces";
 import { clearCover, deleteAlbum, renameAlbum } from "../../API";
 import ConfirmDeleteDialog from "../Shared/ConfirmDeleteDialog";
 import AutoAddDialog from "./AutoAddDialog";
 import ChangeLocationDialog from "./ChangeLocationDialog";
 import { useFoldersQuery, useMoveAlbumMutation } from "../../Queries/AlbumQueries";
 
-export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen: (arg0: boolean) => any; fetchAlbums: () => Promise<void> }) {
+export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen: (arg0: boolean) => any; fetchAlbums: () => Promise<void>; currentFolder?: FolderT }) {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
     const [nameField, setNameField] = useState(props.album.name);
@@ -26,7 +26,7 @@ export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen
 
     const query = useFoldersQuery([]);
     const putAlbumIntoFolderMutation = useMoveAlbumMutation()
-    const currentFolderId = query.data?.path.slice(-1)[0]?.id ?? "";
+    const currentFolderId = props.currentFolder?.id ?? "";
 
     const [changeLocationDialogOpen, setChangeLocationDialogOpen] = useState(false)
     const [selectedFolderId, setSelectedFolderId] = useState(currentFolderId)
@@ -35,6 +35,7 @@ export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen
         if (props.open) {
             setNameField(props.album.name);
             setHasCover(props.album.cover !== null);
+            setSelectedFolderId(currentFolderId)
         }
     }, [props.open]);
 
