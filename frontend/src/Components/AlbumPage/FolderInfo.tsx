@@ -24,7 +24,7 @@ export default function FolderInfo(props: { folder: FolderT; open: boolean; setO
 
     const [onDeleteDialogState, setOnDeleteDialogState] = useState<{ open: boolean, handleClose: (confirm: boolean) => () => void }>({ open: false, handleClose: () => () => { } });
 
-    const query = useFoldersQuery([], props.folder.id);
+    const query = useFoldersQuery(props.folder.id);
     const putFolderIntoFolderMutation = useMoveFolderMutation()
     const currentFolderId = props.currentFolder?.id ?? "";
 

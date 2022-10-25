@@ -21,7 +21,7 @@ export default function ChangeLocationDialog(props: { hideFolderId?: string, cur
 
     const renameFolderMutation = useRenameFolderMutation()
 
-    const query = useFoldersQuery([], props.currentFolderId);
+    const query = useFoldersQuery(props.currentFolderId);
 
     const renderTree = (nodeList: string[], queryData: any) => (
         nodeList.filter(fid => !props.hideFolderId || props.hideFolderId !== fid).map(id => queryData.idMap[id]).map(node =>
@@ -32,7 +32,6 @@ export default function ChangeLocationDialog(props: { hideFolderId?: string, cur
             </TreeItem >
         )
     );
-    console.log(props)
 
     return (
         <div>

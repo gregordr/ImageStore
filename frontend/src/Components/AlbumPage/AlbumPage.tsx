@@ -75,10 +75,8 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function AlbumPage(props: { handleDrawerToggle: () => void; drawerElement: any; searchByImageEnabled: boolean }) {
     const classes = useStyles();
 
-    const [albums, setAlbums] = useState<AlbumT[]>([]);
     const [openCreateAlbum, setOpenCreateAlbum] = useState(false);
     const [openCreateFolder, setOpenCreateFolder] = useState(false);
-    const [showLoadingBar, setShowLoadingBar] = useState(true);
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState("");
@@ -104,22 +102,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         }
     }, [state?.clearSearchBar])
 
-    const fetchAlbums = async () => {
-        setShowLoadingBar(true);
-        const resp = await getAlbums(searchTerm);
-        if (resp.status === 200) {
-            setAlbums(resp.data);
-            setShowLoadingBar(false);
-        } else {
-            window.alert(await resp.data);
-        }
-    };
-
-    const foldersQuery = useFoldersQuery(albums, folder)
-
-    useEffect(() => {
-        fetchAlbums();
-    }, [searchTerm]);
+    const foldersQuery = useFoldersQuery(folder, searchTerm)
 
     const topBarButtonFunctions = {
         addAlbum: async () => {
@@ -141,7 +124,6 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
     const createAlbumCallback = async (name: string) => {
         await createAlbum(name, folder);
         foldersQuery.refetch()
-        fetchAlbums();
     };
 
     const openAlbum = () => () => { };
@@ -178,7 +160,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         <div>
             <Switch>
                 <Route path="/albums/open">
-                    <PhotoPage refresh={fetchAlbums} drawerElement={props.drawerElement} handleDrawerToggle={props.handleDrawerToggle} searchByImageEnabled={props.searchByImageEnabled} root="Album" />
+                    <PhotoPage refresh={async() => {await foldersQuery.refetch()}} drawerElement={props.drawerElement} handleDrawerToggle={props.handleDrawerToggle} searchByImageEnabled={props.searchByImageEnabled} root="Album" />
                 </Route>
                 <Route path="/albums/">
                     <div className={classes.root}>
@@ -194,7 +176,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                                     setSearchBarText={setSearchBarText}
                                     autocompleteOptions={autocompleteOptions}
                                     buttonFunctions={topBarButtonFunctions}
-                                    show={showLoadingBar || foldersQuery.isFetching}
+                                    show={foldersQuery.isFetching}
                                 />
                             </Toolbar>
                         </AppBar>
@@ -217,7 +199,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                             <div style={{ flexGrow: 1 }}>
                                 <AutoSizer>
                                     {({ height, width }) => (
-                                        <AbstractAlbumPage height={height - 1} width={width} folders={foldersQuery.data?.foldersToShow ?? []} albums={foldersQuery.data?.albumsToShow ?? []} openAlbum={openAlbum} fetchAlbums={fetchAlbums} lines={lines} heights={heights} currentFolder={foldersQuery.data?.folderInfo} />
+                                        <AbstractAlbumPage height={height - 1} width={width} folders={foldersQuery.data?.foldersToShow ?? []} albums={foldersQuery.data?.albumsToShow ?? []} openAlbum={openAlbum} fetchAlbums={async() => {await foldersQuery.refetch()}} lines={lines} heights={heights} currentFolder={foldersQuery.data?.folderInfo} />
                                     )}
                                 </AutoSizer>
                             </div>

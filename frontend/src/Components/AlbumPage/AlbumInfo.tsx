@@ -24,7 +24,7 @@ export default function AlbumInfo(props: { album: AlbumT; open: boolean; setOpen
 
     const [autoAddDialogOpen, setAutoAddDialogOpen] = useState(false);
 
-    const query = useFoldersQuery([]);
+    const query = useFoldersQuery();
     const putAlbumIntoFolderMutation = useMoveAlbumMutation()
     const currentFolderId = props.currentFolder?.id ?? "";
 
