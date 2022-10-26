@@ -3,7 +3,7 @@ import { folder } from "jszip";
 import { newFolder, getFolders, getFolderFolderRelation, getFolderAlbumRelation, deleteFolder, renameFolder, putFolderIntoFolder, putAlbumIntoFolder, getAlbums } from "../API";
 import { AlbumT, FolderT } from "../Interfaces";
 
-export function useFoldersQuery(folder?: string, searchTerm?:string) {
+export function useFoldersQuery(folder?: string, searchTerm?: string, enabled = true) {
     const queryInfo = useQuery(["folders", "albums"], async () => {
         const foldersP = getFolders()
         const folderFolderArrP = getFolderFolderRelation()
@@ -33,12 +33,12 @@ export function useFoldersQuery(folder?: string, searchTerm?:string) {
             albumMap[parentid].push(childid)
             delete rootAlbumSet[childid]
         })
-        
+
         folderMap[""] = Object.keys(rootFolderSet).map((key) => key)
         albumMap[""] = Object.keys(rootAlbumSet).map((key) => Number(key) as any)
 
         return { idMap, folderMap, albumMap, parentMap, albums }
-    });
+    }, { enabled });
 
 
     let newData;
@@ -55,8 +55,8 @@ export function useFoldersQuery(folder?: string, searchTerm?:string) {
 
         newData = {
             folderInfo: folder ? queryInfo.data.idMap[folder] : undefined, // current folder
-            foldersToShow: queryInfo.data.folderMap[folder ?? ""]?.map(f => queryInfo.data.idMap[f]).filter(o => !searchTerm||o.name.includes(searchTerm)), //folders in curent folder
-            albumsToShow: (queryInfo.data.albums.filter(a => queryInfo.data.albumMap[folder ?? ""]?.includes(a.id))).filter(o => !searchTerm||o.name.includes(searchTerm)), //albums in current folder
+            foldersToShow: queryInfo.data.folderMap[folder ?? ""]?.map(f => queryInfo.data.idMap[f]).filter(o => !searchTerm || o.name.includes(searchTerm)), //folders in curent folder
+            albumsToShow: (queryInfo.data.albums.filter(a => queryInfo.data.albumMap[folder ?? ""]?.includes(a.id))).filter(o => !searchTerm || o.name.includes(searchTerm)), //albums in current folder
             path, //path to current folder
             folderMap: queryInfo.data.folderMap, // map from folderId to child folderIds
             idMap: queryInfo.data.idMap //mapping from any id to the folder

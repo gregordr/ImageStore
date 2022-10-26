@@ -24,7 +24,7 @@ export default function FolderInfo(props: { folder: FolderT; open: boolean; setO
 
     const [onDeleteDialogState, setOnDeleteDialogState] = useState<{ open: boolean, handleClose: (confirm: boolean) => () => void }>({ open: false, handleClose: () => () => { } });
 
-    const query = useFoldersQuery(props.folder.id);
+    const query = useFoldersQuery(props.folder.id, undefined, props.open);
     const putFolderIntoFolderMutation = useMoveFolderMutation()
     const currentFolderId = props.currentFolder?.id ?? "";
 
@@ -71,8 +71,6 @@ export default function FolderInfo(props: { folder: FolderT; open: boolean; setO
             <Dialog fullScreen={fullScreen} open={props.open} onClose={handleClose(false)} aria-labelledby="responsive-dialog-title">
                 <DialogTitle id="responsive-dialog-title">Settings of {props.folder.name}</DialogTitle>
                 <DialogContent>
-                    {/* <body style={{ fontSize: "30px" }}> {query.data?.idMap[selectedFolderId]?.name}</body> */}
-
                     <TextField
                         value={nameField}
                         onChange={(e) => setNameField(e.target.value)}

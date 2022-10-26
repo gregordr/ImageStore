@@ -160,7 +160,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
         <div>
             <Switch>
                 <Route path="/albums/open">
-                    <PhotoPage refresh={async() => {await foldersQuery.refetch()}} drawerElement={props.drawerElement} handleDrawerToggle={props.handleDrawerToggle} searchByImageEnabled={props.searchByImageEnabled} root="Album" />
+                    <PhotoPage refresh={async () => { await foldersQuery.refetch() }} drawerElement={props.drawerElement} handleDrawerToggle={props.handleDrawerToggle} searchByImageEnabled={props.searchByImageEnabled} root="Album" />
                 </Route>
                 <Route path="/albums/">
                     <div className={classes.root}>
@@ -199,7 +199,7 @@ export default function AlbumPage(props: { handleDrawerToggle: () => void; drawe
                             <div style={{ flexGrow: 1 }}>
                                 <AutoSizer>
                                     {({ height, width }) => (
-                                        <AbstractAlbumPage height={height - 1} width={width} folders={foldersQuery.data?.foldersToShow ?? []} albums={foldersQuery.data?.albumsToShow ?? []} openAlbum={openAlbum} fetchAlbums={async() => {await foldersQuery.refetch()}} lines={lines} heights={heights} currentFolder={foldersQuery.data?.folderInfo} />
+                                        <AbstractAlbumPage height={height - 1} width={width} folders={foldersQuery.data?.foldersToShow ?? []} albums={foldersQuery.data?.albumsToShow ?? []} openAlbum={openAlbum} fetchAlbums={async () => { await foldersQuery.refetch() }} lines={lines} heights={heights} currentFolder={foldersQuery.data?.folderInfo} />
                                     )}
                                 </AutoSizer>
                             </div>
