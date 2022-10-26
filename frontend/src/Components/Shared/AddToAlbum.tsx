@@ -83,7 +83,7 @@ export default function AddToAlbum(props: { cb: (arg0: string[]) => any; setOpen
                     </Button>
                 </DialogActions>
             </Dialog>
-            <CreateAlbum albums={albums} open={openCreateAlbum} setOpen={setOpenCreateAlbum} cb={createAlbumCallback} />
+            <CreateAlbum open={openCreateAlbum} setOpen={setOpenCreateAlbum} cb={createAlbumCallback} />
         </div>
     );
 }

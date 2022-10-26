@@ -1,14 +1,38 @@
 import axios from 'axios';
 import express from 'express';
-import { getAlbums, addAlbum, addPhotosToAlbums, removePhotosFromAlbum, deleteAlbum, getMediaInAlbum, setCover, rename, getAlbumsWithMedia } from '../database/albumDatabase';
+import { getAlbums, addAlbum, addPhotosToAlbums, removePhotosFromAlbum, deleteAlbum, getMediaInAlbum, setCover, rename, getAlbumsWithMedia, addFolder, putAlbumIntoFolder, putFolderIntoFolder, deleteFolder, getFolders, getFolderAlbumRelation, getFolderFolderRelation, renameFolder } from '../database/albumDatabase';
 import { registeredServices } from './servicesRouter';
 
 export const router = express.Router();
 
+router.post('/newFolder', async (req, res) => {
+    try {
+        res.status(200).send(await addFolder(req.body.folderName, req.body.parentId));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
 router.post('/new/:name', async (req, res) => {
     const name = req.params.name;
     try {
-        res.status(200).send(await addAlbum(name));
+        res.status(200).send(await addAlbum(name, req.body.parentId));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
+router.post('/deleteFolder/:name', async (req, res) => {
+    const name = req.params.name;
+    try {
+        res.status(200).send(await deleteFolder(name));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+router.post('/renameFolder', async (req, res) => {
+    try {
+        res.status(200).send(await renameFolder(req.body.oid, req.body.newName));
     } catch (err) {
         res.status(500).send(err.toString());
     }
@@ -20,6 +44,46 @@ router.post('/delete/:name', async (req, res) => {
         res.status(200).send(await deleteAlbum(name));
     } catch (err) {
         res.status(500).send(err.toString());
+    }
+});
+
+router.get('/folders', async (req, res) => {
+    try {
+        res.status(200).send(await getFolders());
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
+router.get('/getFolderFolderRelation', async (req, res) => {
+    try {
+        res.status(200).send(await getFolderFolderRelation())
+    } catch (err) {
+        res.status(500).send(err.toString())
+    }
+});
+
+router.get('/getFolderAlbumRelation', async (req, res) => {
+    try {
+        res.status(200).send(await getFolderAlbumRelation())
+    } catch (err) {
+        res.status(500).send(err.toString())
+    }
+});
+
+router.post('/putFolderIntoFolder', async (req, res) => {
+    try {
+        res.status(200).send(await putFolderIntoFolder(req.body.childId, req.body.parentId))
+    } catch (err) {
+        res.status(500).send(err.toString())
+    }
+});
+
+router.post('/putAlbumIntoFolder', async (req, res) => {
+    try {
+        res.status(200).send(await putAlbumIntoFolder(req.body.childId, req.body.parentId))
+    } catch (err) {
+        res.status(500).send(err.toString())
     }
 });
 

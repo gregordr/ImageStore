@@ -20,3 +20,10 @@ export interface LocPhotoT extends PhotoT {
     coordx: number;
     coordy: number;
 }
+
+export interface FolderT {
+    id: string;
+    name: string;
+    color?: string;
+    cover?: string;
+}
