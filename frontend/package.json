@@ -26,7 +26,7 @@
     "material-ui-search-bar": "^1.0.0",
     "moment": "^2.29.1",
     "notistack": "^1.0.10",
-    "qs": "^6.10.1",
+    "qs": "^6.10.3",
     "react": "^17.0.2",
     "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^17.0.2",
