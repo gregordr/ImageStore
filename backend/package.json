@@ -23,7 +23,7 @@
     "date-fns": "^2.16.1",
     "dotenv": "^8.2.0",
     "exifr": "^6.0.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "ffmpeg": "0.0.4",
     "file-type": "^16.2.0",
     "fluent-ffmpeg": "^2.1.2",
