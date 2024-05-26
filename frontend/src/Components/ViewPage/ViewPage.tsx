@@ -339,8 +339,8 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                         <TopLeftBar />
                         {props.topRightBar(id, modifiedButtonFunctions, props.searchByImageEnabled)}
                     </div>
-                </ThemeProvider>
-            </main>
+                </ThemeProvider >
+            </main >
             <Drawer
                 className={classes.drawer}
                 variant="persistent"
@@ -508,7 +508,7 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
                         </Tooltip>
                     </ListItem>
 
-                </List>
+                </List >
             </Drawer >
             <EditPropsDialog open={editPropsOpen} setOpen={setEditPropsOpen} cb={editPropsCb} photo={props.photos[index]} />
             <EditLocationDialog open={editLocationOpen} setOpen={setEditLocationOpen} cb={editLocationCb} photo={props.photos[index]} />

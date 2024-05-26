@@ -190,6 +190,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     useEffect(() => {
+        history.push(rawSearchQuery === "" ? {} : { search: qs.stringify({ search: rawSearchQuery }) })
         setPhotos([])
         fetchPhotos();
         fetchAlbums();
@@ -496,7 +497,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                         searchByTag={(tag: string) => { searchByTag(tag) }}
                         searchByFace={searchByFace}
                         searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
-                </Route>
+                </Route >
                 <Route path="/">
                     <div {...getRootProps({ className: "dropzone" })} className={classes.root}>
                         <Backdrop
@@ -572,10 +573,10 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                         </main>
                     </div>
                 </Route>
-            </Switch>
+            </Switch >
             <AddToAlbum albums={albums} open={albumDialogOpen} setOpen={setAlbumDialogOpen} cb={albumDialogCallback} />
             <AddLabels open={labelDialogOpen} setOpen={setLabelDialogOpen} cb={labelDialogCallback}></AddLabels>
             <ConfirmDeleteDialog state={onDeleteDialogState}></ConfirmDeleteDialog>
-        </div>
+        </div >
     );
 }

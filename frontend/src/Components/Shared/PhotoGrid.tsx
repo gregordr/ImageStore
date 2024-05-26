@@ -57,7 +57,6 @@ function Photo(props: any) {
                 height: props.y,
                 width: props.x - leftMargin,
                 marginLeft: leftMargin,
-                // boxShadow: props.marked ? `inset 0px 0px 0px 100px rgb(0,0,255,0.6)` : ""
             }}
             onMouseEnter={async () => {
                 setVis(0.4);
