@@ -10,16 +10,6 @@ import AlbumInfo from "../AlbumPage/AlbumInfo";
 import { baseURL } from "../../API";
 import FolderInfo from "../AlbumPage/FolderInfo";
 
-const theme = createMuiTheme({
-    palette: {
-        primary: {
-            main: "#cccccc",
-            dark: "#cccccc",
-            light: "#cccccc",
-        },
-    },
-});
-
 const useStyles = makeStyles(() =>
     createStyles({
         root: {
@@ -27,6 +17,7 @@ const useStyles = makeStyles(() =>
         },
         icon: {
             color: "rgba(255, 255, 255, 0.54)",
+            "&:hover, &.Mui-focusVisible": { backgroundColor: "rgba(255, 255, 255, 0.05)" }
         },
         photoDiv: {
             margin: 5,
@@ -82,24 +73,21 @@ function Album(props: { album: AlbumT; click: () => void; fetchAlbums: () => Pro
                     title={props.album.name}
                     subtitle={<span>{props.album.imagecount} elements</span>}
                     actionIcon={
-                        //To do: remove this to increase scroll speed
-                        <ThemeProvider theme={theme}>
-                            <IconButton
-                                aria-label={`info about ${props.album.name}`}
-                                color="primary"
-                                onClick={(e) => {
-                                    setOpenInfo(true);
-                                    e.stopPropagation();
-                                }}
-                                className={classes.icon}
-                            >
-                                <Info />
-                            </IconButton>
-                        </ThemeProvider>
+                        <IconButton
+                            aria-label={`info about ${props.album.name}`}
+                            color="primary"
+                            onClick={(e) => {
+                                setOpenInfo(true);
+                                e.stopPropagation();
+                            }}
+                            className={classes.icon}
+                        >
+                            <Info />
+                        </IconButton>
                     }
                 />
             </GridListTile>
-            <AlbumInfo album={props.album} open={openInfo} setOpen={setOpenInfo} fetchAlbums={props.fetchAlbums} currentFolder={props.currentFolder}></AlbumInfo>
+            {openInfo && <AlbumInfo album={props.album} open={openInfo} setOpen={setOpenInfo} fetchAlbums={props.fetchAlbums} currentFolder={props.currentFolder}></AlbumInfo>}
         </>
     );
 }
@@ -145,24 +133,21 @@ function Folder(props: { folder: FolderT; click: () => void; fetchAlbums: () => 
                     title={props.folder.name}
                     // subtitle={<span>{'props.folder.imagecount'} elements</span>}
                     actionIcon={
-                        //To do: remove this to increase scroll speed
-                        <ThemeProvider theme={theme}>
-                            <IconButton
-                                aria-label={`info about ${props.folder.name}`}
-                                color="primary"
-                                onClick={(e) => {
-                                    setOpenInfo(true);
-                                    e.stopPropagation();
-                                }}
-                                className={classes.icon}
-                            >
-                                <Info />
-                            </IconButton>
-                        </ThemeProvider>
+                        <IconButton
+                            aria-label={`info about ${props.folder.name}`}
+                            color="primary"
+                            onClick={(e) => {
+                                setOpenInfo(true);
+                                e.stopPropagation();
+                            }}
+                            className={classes.icon}
+                        >
+                            <Info />
+                        </IconButton>
                     }
                 />
             </GridListTile>
-            <FolderInfo folder={props.folder} open={openInfo} setOpen={setOpenInfo} currentFolder={props.currentFolder}></FolderInfo>
+            {openInfo && <FolderInfo folder={props.folder} open={openInfo} setOpen={setOpenInfo} currentFolder={props.currentFolder}></FolderInfo>}
         </>
     );
 }
