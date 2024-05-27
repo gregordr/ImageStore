@@ -1,0 +1,24 @@
+#!/sbin/openrc-run
+
+description="ImageStore Backend"
+#extra_commands="checkconfig"
+#need to implement a function to check configuration for errors
+extra_started_commands="reload"
+depend() {
+        need net
+        after postgresql nginx
+}
+
+command="/usr/bin/npm start --prefix /etc/imagestore/backend"
+command_background="yes"
+start_stop_daemon_args="--quiet"
+cfgfile=${cfgfile:-/etc/imagestore/backend/tsconfig.json}
+
+pidfile="/run/$RC_SVCNAME/npm.pid"
+retry="SIGTERM/20"
+
+reload() {
+  ebegin "Reloading $description"
+  start-stop-daemon --signal HUP --pidfile "${pidfile}"
+  eend $?
+}

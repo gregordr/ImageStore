@@ -7,6 +7,10 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core";
 import { SnackbarProvider } from "notistack";
 
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
+
 const theme = createMuiTheme({
     palette: {
         primary: {
@@ -34,7 +38,9 @@ ReactDOM.render(
                         horizontal: 'right',
                     }}
                 >
-                    <ResponsiveDrawer />
+                    <QueryClientProvider client={queryClient}>
+                        <ResponsiveDrawer />
+                    </QueryClientProvider>
                 </SnackbarProvider>
             </ThemeProvider>
         </Router>

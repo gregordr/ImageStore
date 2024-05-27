@@ -29,12 +29,15 @@ obj = {}
 
 processQueue = queue.Queue()
 
-def getPhoto(imgId, thumb = False):
+def getPhoto(imgId, thumb = False, save = True):
     response = requests.get("http://" + BACKEND + "/media/" + ("thumb_" if thumb else "") + imgId )
     image = preprocess(Image.open(BytesIO(response.content))).unsqueeze(0).to(device)
     image_features = model.encode_image(image)
     image_features = image_features / image_features.norm(dim=-1, keepdim=True)
-    torch.save(image_features, featureDirectory+ imgId)
+    image_features = image_features.detach()
+    if(save):
+        torch.save(image_features, featureDirectory+ imgId)
+    return image_features
 
 def getAllPhotos():
     os.makedirs("features/", exist_ok=True)
@@ -48,9 +51,9 @@ def getAllPhotos():
 
         try:
             if not imgId in files:
-                getPhoto(imgId, thumb = img["type"] != "photo")
-
-            obj[imgId] = torch.load(featureDirectory+ imgId)[0]
+                obj[imgId] = getPhoto(imgId, thumb = img["type"] != "photo")[0]
+            else:
+                obj[imgId] = torch.load(featureDirectory+ imgId)[0]
 
         except Exception as e:
             print(f"Loading {imgId} failed because of {e}") 
@@ -91,8 +94,8 @@ def findByText(term, candidates: List[str]):
     return [usedCandidates[x] for x in res]
 
     
-def findByImage(term, candidates: List[str]):
-    target_features = torch.squeeze(obj[term])
+def findByImage(term, candidates: List[str], imgType = None):
+    target_features = torch.squeeze(obj[term] if term in obj else getPhoto(term, thumb = imgType != "photo", save=False))
 
     usedCandidates = list()
 
@@ -133,10 +136,11 @@ def searchByText():
 def searchByImage():
     jsonData = request.get_json()
     
-    image = jsonData["image"]
+    imageId = jsonData["imageId"]
     candidates = jsonData["candidates"]
+    imgType = jsonData["type"]
 
-    return json.dumps(findByImage(image, candidates))
+    return json.dumps(findByImage(imageId, candidates, imgType))
 
 def worker():
     while True:

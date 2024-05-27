@@ -2,9 +2,11 @@ frontend/.eslintcache
 
 # macOS
 .DS_Store
+
 faceFeatures/*
 imageFeatures/*
 autoImport/node_modules/*
 import/*
 analysis/*
 media/*
+frontend/cordova/*

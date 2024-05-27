@@ -9,7 +9,7 @@ import ViewPage from "../ViewPage/ViewPage";
 import AddToAlbum from "./AddToAlbum";
 import { PhotoT, AlbumT } from "../../Interfaces";
 import AbstractPhotoPage from "./PhotoGrid";
-import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosByFaceInAlbum, getPhotosByImageInAlbum, getPhotosInAlbum, removePhotosFromAlbum, setCover, getPhotos, getPhotosByFace, getPhotosByImage } from "../../API";
+import { addLabel, addPhotos, addPhotosToAlbums, Box, deletePhotos, download, getAlbums, getPhotoLabels, getPhotosByFaceInAlbum, getPhotosByImageInAlbum, getPhotosInAlbum, removePhotosFromAlbum, setCover, getPhotos, getPhotosByFace, getPhotosByImage, getPhotosByTagInAlbum, getPhotosByTag, getAllLabels, getLabelsInAlbum } from "../../API";
 import AlbumTopRightBar from "../AlbumPage/AlbumPhotoPage/TopRightBar";
 import PhotoTopRightBar from "../PhotoPage/TopRightBar";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -17,8 +17,8 @@ import SearchBar from "material-ui-search-bar";
 import { useSnackbar } from "notistack";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { UploadErrorSnackbar } from "../Snackbars/UploadErrorSnackbar";
-import { CloudUpload, QueueSharp } from "@material-ui/icons";
-import AutocompleteSearchBar from "./SearchBar";
+import { CloudUpload, LabelOutlined, } from "@material-ui/icons";
+import AutocompleteSearchBar, { OptionT, searchTypes, splitTypeAndText } from "./SearchBar";
 import AddLabels from "./AddLabels";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 import qs from "qs";
@@ -103,24 +103,34 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     const [showLoadingBar, setShowLoadingBar] = useState(true);
     const [viewId, setViewId] = useState(stateUrl?.jumpTo ?? "");
 
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [onDeleteDialogClose, setOnDeleteDialogClose] = useState<(confirm: boolean) => () => void>(() => (confirm: boolean) => () => {
-        setDeleteDialogOpen(false);
-        alert("Error onDeleteClose not defined");
+    const [onDeleteDialogState, setOnDeleteDialogState] = useState<{ open: boolean; handleClose: (confirm: boolean) => () => void }>({
+        open: false, handleClose: () => () => { }
     });
 
     const [showSearchBar, setShowSearchBar] = useState(false);
     const [searchBarText, setSearchBarText] = useState(searchUrlParam ?? "");
-    const [searchTerm, setSearchTerm] = useState<string>(searchUrlParam ?? "");
-    //easily add tags
-    const searchType = searchTerm.startsWith("similarImage:") ? "image" : searchTerm.startsWith("similarFace:") ? "face" : "text"
+    const rawSearchQuery = searchUrlParam ?? "";
 
-    const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
+    const [searchType, searchText] = splitTypeAndText(rawSearchQuery)
+
+    const [autocompleteOptions, setAutocompleteOptions] = useState<OptionT[]>([]);
+
+
+    const { state } = useLocation() as { state?: { clearSearchBar: Boolean } }
+
+    useEffect(() => {
+        if (state?.clearSearchBar) {
+            setSearchBarText("")
+            history.push({
+                state: { clearSearchBar: false }
+            });
+        }
+    }, [state?.clearSearchBar])
 
     useEffect(() => {
         (async () => {
             if (photos.length === 0) setAutocompleteOptions([]);
-            else setAutocompleteOptions((await getPhotoLabels(photos.map((photo) => photo.id))).data);
+            else setAutocompleteOptions((await (props.root === "Photo" ? getAllLabels() : getLabelsInAlbum(id))).data.map((label: string) => ({ label, icon: <LabelOutlined />, searchText: searchTypes.tag + label, searchType: searchTypes.tag })));
         })();
     }, [photos]);
 
@@ -144,16 +154,17 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     }, [acceptedFiles, fileRejections]);
 
     const search = () => {
-
         if (props.root == "Photo") {
-            if (searchType === "text") return getPhotos(searchTerm)
-            if (searchType === "image") return getPhotosByImage(searchTerm.substr("similarImage:".length))
-            if (searchType === "face") return getPhotosByFace(searchTerm.substr("similarFace:".length))
+            if (searchType === searchTypes.text) return getPhotos(searchText)
+            if (searchType === searchTypes.tag) return getPhotosByTag(searchText)
+            if (searchType === searchTypes.image) return getPhotosByImage(searchText)
+            if (searchType === searchTypes.face) return getPhotosByFace(searchText)
             return getPhotos("")
         } else if (props.root == "Album") {
-            if (searchType === "text") return getPhotosInAlbum(id, searchTerm)
-            if (searchType === "image") return getPhotosByImageInAlbum(id, searchTerm.substr("similarImage:".length))
-            if (searchType === "face") return getPhotosByFaceInAlbum(id, searchTerm.substr("similarFace:".length))
+            if (searchType === searchTypes.text) return getPhotosInAlbum(id, searchText)
+            if (searchType === searchTypes.tag) return getPhotosByTagInAlbum(id, searchText)
+            if (searchType === searchTypes.image) return getPhotosByImageInAlbum(id, searchText)
+            if (searchType === searchTypes.face) return getPhotosByFaceInAlbum(id, searchText)
             return getPhotosInAlbum(id, "")
         } else throw new Error("Wrong root type")
     }
@@ -165,7 +176,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             setPhotos(resp.data);
             setShowLoadingBar(false);
         } else {
-            window.alert(await resp.data);
+            window.alert(resp.data);
         }
     };
 
@@ -179,11 +190,11 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     useEffect(() => {
-        history.push(searchTerm === "" ? {} : { search: qs.stringify({ search: searchTerm }) })
+        // history.push(rawSearchQuery === "" ? {} : { search: qs.stringify({ search: rawSearchQuery }) })
         setPhotos([])
         fetchPhotos();
         fetchAlbums();
-    }, [searchTerm, searchType, id]);
+    }, [rawSearchQuery, searchType, id]);
 
     const [lastSelected, setLastSelected] = useState<string | undefined>();
     const [hover, setHover] = useState<string | undefined>();
@@ -265,17 +276,19 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     );
 
     useEffect(() => {
-        document.addEventListener("keydown", (e) => {
+        const ctrlKeyDown = (e: KeyboardEvent) => {
             e.key === "Control" && setCtrl(true);
-        });
-
-        document.addEventListener("keyup", (e) => {
+        }
+        const ctrlKeyUp = (e: KeyboardEvent) => {
             e.key === "Control" && setCtrl(false);
-        });
+        }
+        document.addEventListener("keydown", ctrlKeyDown);
+
+        document.addEventListener("keyup", ctrlKeyUp);
 
         return () => {
-            document.removeEventListener("keydown", (e) => e);
-            document.removeEventListener("keyup", (e) => e);
+            document.removeEventListener("keydown", ctrlKeyDown);
+            document.removeEventListener("keyup", ctrlKeyUp);
         };
     }, []);
 
@@ -323,27 +336,40 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
         }
     }, [lastSelected, hover, ctrl, anySelected, photoSelection]);
 
+
+    const searchByText = (text: string) => {
+        setSearchBarText(text)
+        history.replace({ search: qs.stringify({ search: text }) })
+    }
+
+    const searchByTag = (tag: string) => {
+        setSearchBarText(searchTypes.tag + tag)
+        history.replace({ search: qs.stringify({ search: searchTypes.tag + tag }) })
+    }
+
     const searchByImageId = (id: string) => {
-        setSearchBarText("similarImage:" + id)
-        setSearchTerm("similarImage:" + id)
+        setSearchBarText(searchTypes.image + id)
+        history.replace({ search: qs.stringify({ search: searchTypes.image + id }) })
     }
 
     const searchByFace = (id: string, box: Box) => {
-        setSearchBarText("similarFace:" + id + "||" + box.toJSON())
-        setSearchTerm("similarFace:" + id + "||" + box.toJSON())
+        setSearchBarText(searchTypes.face + id + "||" + box.toJSON())
+        history.replace({ search: qs.stringify({ search: searchTypes.face + id + "||" + box.toJSON() }) })
     }
 
     const viewButtonFunctions = {
         delete: async (id: string) => {
-            setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
-                if (confirm) {
-                    await deletePhoto(id);
-                    await props.refresh();
-                }
+            setOnDeleteDialogState({
+                open: true,
+                handleClose: (confirm: boolean) => async () => {
+                    if (confirm) {
+                        await deletePhoto(id);
+                        await props.refresh();
+                    }
 
-                setDeleteDialogOpen(false);
+                    setOnDeleteDialogState({ open: false, handleClose: () => () => { } });
+                }
             });
-            setDeleteDialogOpen(true);
         },
         addToAlbum: (id: string) => {
             setSelected([id]);
@@ -373,21 +399,22 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const topBarButtonFunctions = {
         delete: async () => {
-            setOnDeleteDialogClose(() => (confirm: boolean) => async () => {
-                if (confirm) {
-                    topBarButtonFunctions.unselect();
-                    await deletePhotos(selected, enqueueSnackbar, closeSnackbar);
-                    setPhotos(photos.filter((p) => !selected.includes(p.id)));
+            setOnDeleteDialogState({
+                open: true, handleClose: (confirm: boolean) => async () => {
+                    if (confirm) {
+                        topBarButtonFunctions.unselect();
+                        await deletePhotos(selected, enqueueSnackbar, closeSnackbar);
+                        setPhotos(photos.filter((p) => !selected.includes(p.id)));
 
-                    if (props.root == "Photo")
-                        fetchPhotos();
-                    else
-                        await props.refresh();
+                        if (props.root == "Photo")
+                            fetchPhotos();
+                        else
+                            await props.refresh();
+                    }
+
+                    setOnDeleteDialogState({ open: false, handleClose: () => () => { } });
                 }
-
-                setDeleteDialogOpen(false);
             });
-            setDeleteDialogOpen(true);
         },
         unselect: () => {
             setSelected([]);
@@ -417,7 +444,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             );
         },
         search: (s: string) => async () => {
-            setSearchTerm(s);
+            history.push({ search: qs.stringify(s !== "" ? { search: s } : {}) })
         },
         mobileSearch: () => {
             setShowSearchBar(!showSearchBar);
@@ -450,19 +477,27 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
             <Typography variant="h4" style={{ paddingTop: 10, paddingLeft: 5 }}>
                 {(albums.find((album: AlbumT) => album.id.toString() === id) || { name: "" }).name}
             </Typography> : <></>,
-        <Typography variant="h5" style={{ display: searchTerm === "" || !searchTerm ? "none" : "block", paddingLeft: 5 }}>
-            Search results for {searchTerm}:
+        <Typography variant="h5" style={{ display: rawSearchQuery === "" || !rawSearchQuery ? "none" : "block", paddingLeft: 5 }}>
+            Search results for {rawSearchQuery}:
         </Typography>,
     ];
 
-    const heights = [12, props.root == "Album" ? 42 : 0, searchTerm === "" || !searchTerm ? 0 : 28];
+    const heights = [12, props.root == "Album" ? 42 : 0, rawSearchQuery === "" || !rawSearchQuery ? 0 : 28];
 
     return (
         <div>
             <Switch>
                 <Route path={props.root == "Photo" ? "/view" : "/albums/open/:albumID/view"}>
-                    <ViewPage setViewId={setViewId} photos={photos} topRightBar={topRightBar} buttonFunctions={viewButtonFunctions} search={(term: string) => { setSearchBarText(term); setSearchTerm(term); }} searchByFace={searchByFace} searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
-                </Route>
+                    <ViewPage
+                        setViewId={setViewId}
+                        photos={photos}
+                        topRightBar={topRightBar}
+                        buttonFunctions={viewButtonFunctions}
+                        search={(tag: string) => { searchByText(tag) }}
+                        searchByTag={(tag: string) => { searchByTag(tag) }}
+                        searchByFace={searchByFace}
+                        searchByImageEnabled={props.searchByImageEnabled} ></ViewPage>
+                </Route >
                 <Route path="/">
                     <div {...getRootProps({ className: "dropzone" })} className={classes.root}>
                         <Backdrop
@@ -538,10 +573,10 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
                         </main>
                     </div>
                 </Route>
-            </Switch>
+            </Switch >
             <AddToAlbum albums={albums} open={albumDialogOpen} setOpen={setAlbumDialogOpen} cb={albumDialogCallback} />
             <AddLabels open={labelDialogOpen} setOpen={setLabelDialogOpen} cb={labelDialogCallback}></AddLabels>
-            <ConfirmDeleteDialog open={deleteDialogOpen} handleClose={onDeleteDialogClose}></ConfirmDeleteDialog>
-        </div>
+            <ConfirmDeleteDialog state={onDeleteDialogState}></ConfirmDeleteDialog>
+        </div >
     );
 }

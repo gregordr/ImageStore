@@ -57,7 +57,6 @@ function Photo(props: any) {
                 height: props.y,
                 width: props.x - leftMargin,
                 marginLeft: leftMargin,
-                boxShadow: props.marked ? "inset 0px 0px 0px 100px rgb(0,0,255,0.6)" : ""
             }}
             onMouseEnter={async () => {
                 setVis(0.4);
@@ -91,7 +90,8 @@ function Photo(props: any) {
                             backgroundColor: "#eeeeee",
                             height: props.y - overHead,
                             width: props.x - 5 - leftMargin,
-                            alignSelf: ""
+                            alignSelf: "",
+                            boxShadow: props.marked ? `0px 0px 0px 5px rgb(100,100,253,1)` : ""
                         }}>
                         {props.type === "photo" ? (
                             <div
@@ -110,8 +110,8 @@ function Photo(props: any) {
                                     transition: "0.05s linear",
                                     transform: `scale(${padding})`,
                                     backgroundImage: url === "" ? "none" : `url(${url})`,
-                                    height: props.y - 5,
-                                    width: props.x - 5,
+                                    height: props.y - overHead,
+                                    width: props.x - 5 - leftMargin,
                                     backgroundSize: "100% 100%",
                                 }}
                                 autoPlay
@@ -140,7 +140,7 @@ function Photo(props: any) {
                         !!(props.searchByImageEnabled) && <IconButton
                             className={classes.searchButton}
                             style={{ opacity: opacity * 1.5 }}
-                            onClick={(e) => { props.searchByImageId(); e.stopPropagation() }}
+                            onClick={(e) => { props.history.push(); props.searchByImageId(); e.stopPropagation() }}
                             onMouseOver={props.hoverEventHandler} >
                             <Search style={{ fontSize: "28", color: "white" }}></Search>
                         </IconButton>

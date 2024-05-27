@@ -77,8 +77,8 @@ export async function clearCover(albumId: string) {
     await axios.post(`/albums/clearCover/${albumId}`);
 }
 
-export async function createAlbum(name: string) {
-    return (await axios.post("/albums/new/" + name)).data;
+export async function createAlbum(name: string, parentId?: string) {
+    return (await axios.post("/albums/new/" + name, { parentId })).data;
 }
 
 export async function deleteAlbum(albumId: string) {
@@ -237,6 +237,17 @@ export async function getPhotoLabels(ids: string[]) {
     return await axios.post("/labels/get/", requestBody);
 }
 
+export async function getAllLabels() {
+    return await axios.post("/labels/getAllLabels/");
+}
+
+export async function getLabelsInAlbum(id: string) {
+    const requestBody = {
+        id,
+    };
+    return await axios.post("/labels/getLabelsInAlbum/", requestBody);
+}
+
 export async function getAlbumsWithMedia(photoID: string) {
     return await axios.get("albums/getAlbumsWithMedia/" + photoID);
 }
@@ -249,6 +260,10 @@ export async function getPhotos(searchTerm: string) {
     return await axios.get(searchTerm === "" || !searchTerm ? "media/all" : "media/search/" + searchTerm);
 }
 
+export async function getPhotosByTag(tag: string) {
+    return await axios.get("media/searchByTag/" + tag);
+}
+
 export async function getPhotosByImage(imageId: string) {
     return await axios.get("media/searchByImage/" + imageId);
 }
@@ -259,6 +274,10 @@ export async function getPhotosByFace(searchTerm: string) {
 
 export async function getPhotosInAlbum(id: string, searchTerm: string) {
     return await axios.get(searchTerm === "" || !searchTerm ? `albums/${id}/all` : `albums/${id}/search/${searchTerm}`);
+}
+
+export async function getPhotosByTagInAlbum(id: string, tag: string) {
+    return await axios.get(`albums/${id}/searchByTag/${tag}`);
 }
 
 export async function getPhotosByImageInAlbum(id: string, searchTerm: string) {
@@ -349,4 +368,41 @@ export async function deleteBox(id: string, box: Box) {
         box: [box.x1, box.y1, box.x2, box.y2],
     };
     const res = await axios.post("/face/remove", requestBody);
+}
+
+export async function getFolders() {
+    return await axios.get('/albums/folders');
+}
+
+export async function getFolderFolderRelation() {
+    return await axios.get('/albums/getFolderFolderRelation');
+}
+
+
+export async function getFolderAlbumRelation() {
+    return await axios.get('/albums/getFolderAlbumRelation');
+}
+
+export async function putFolderIntoFolder(childId: string, parentId?: string) {
+    return await axios.post('/albums/putFolderIntoFolder', { childId, parentId });
+}
+
+export async function putAlbumIntoFolder(childId: string, parentId?: string) {
+    return await axios.post('/albums/putAlbumIntoFolder', { childId, parentId });
+}
+
+export async function newFolder(folderName: string, parentId?: string) {
+    return await axios.post('/albums/newFolder', { folderName, parentId });
+}
+
+export async function deleteFolder(oid: string) {
+    await axios.post(`/albums/deleteFolder/${oid}`);
+}
+
+export async function renameFolder(oid: string, newName: string) {
+    const requestBody = {
+        oid,
+        newName,
+    };
+    await axios.post("/albums/renameFolder", requestBody);
 }

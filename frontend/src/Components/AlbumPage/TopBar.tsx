@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import IconButton from "@material-ui/core/IconButton";
-import { Search, CreateNewFolder } from "@material-ui/icons";
+import { Search, CreateNewFolder, PhotoAlbum } from "@material-ui/icons";
 import SearchBar from "material-ui-search-bar";
 import TopBarStyle from "../Shared/TopBarStyle";
 import { LinearProgress, Tooltip } from "@material-ui/core";
@@ -27,9 +27,15 @@ export default function TopBar(props: any) {
                         <Search />
                     </IconButton>
 
-                    <Tooltip title="Create new album">
-                        <IconButton className="IconButton" color="primary" aria-label="add" onClick={props.buttonFunctions.add}>
+                    <Tooltip title="Create new folder">
+                        <IconButton className="IconButton" color="primary" aria-label="add" onClick={props.buttonFunctions.addFolder}>
                             <CreateNewFolder />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Create new album">
+                        <IconButton className="IconButton" color="primary" aria-label="add" onClick={props.buttonFunctions.addAlbum}>
+                            <PhotoAlbum />
                         </IconButton>
                     </Tooltip>
                 </div>

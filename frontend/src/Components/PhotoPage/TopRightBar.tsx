@@ -35,8 +35,8 @@ export default function TopRightBar(props: any) {
                         aria-label="Search for similar images"
                         onClick={(e) => {
                             e.stopPropagation();
+                            history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/"))
                             props.buttonFunctions.searchByImageId(props.id);
-                            history.push(history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length-2).join("/"))
                         }}
                     >
                         <Search />

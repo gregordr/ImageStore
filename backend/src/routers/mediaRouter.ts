@@ -55,6 +55,14 @@ router.get('/search/:term', async (req, res) => {
     }
 });
 
+router.get('/searchByTag/:term', async (req, res) => {
+    try {
+        res.status(200).send(await getMedia(``, req.params.term));
+    } catch (err) {
+        res.status(500).send(err.toString());
+    }
+});
+
 router.get("/searchByImage/:imageId", async (req, res) => {
     try {
         if (registeredServices && registeredServices["search"]) {
@@ -62,7 +70,8 @@ router.get("/searchByImage/:imageId", async (req, res) => {
 
             const data = await axios.post("http://" + registeredServices["search"].values().next().value + "/searchByImage",
                 {
-                    image: req.params.imageId,
+                    imageId: req.params.imageId,
+                    type: (searchResult.find((photo: any) => photo.id === req.params.imageId) as any).type,
                     candidates: searchResult.map((photo: any) => photo.id)
                 })
 
