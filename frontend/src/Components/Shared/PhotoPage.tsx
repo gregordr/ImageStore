@@ -190,7 +190,7 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     };
 
     useEffect(() => {
-        history.push(rawSearchQuery === "" ? {} : { search: qs.stringify({ search: rawSearchQuery }) })
+        // history.push(rawSearchQuery === "" ? {} : { search: qs.stringify({ search: rawSearchQuery }) })
         setPhotos([])
         fetchPhotos();
         fetchAlbums();
@@ -339,22 +339,22 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
 
     const searchByText = (text: string) => {
         setSearchBarText(text)
-        history.push({ search: qs.stringify({ search: text }) })
+        history.replace({ search: qs.stringify({ search: text }) })
     }
 
     const searchByTag = (tag: string) => {
         setSearchBarText(searchTypes.tag + tag)
-        history.push({ search: qs.stringify({ search: searchTypes.tag + tag }) })
+        history.replace({ search: qs.stringify({ search: searchTypes.tag + tag }) })
     }
 
     const searchByImageId = (id: string) => {
         setSearchBarText(searchTypes.image + id)
-        history.push({ search: qs.stringify({ search: searchTypes.image + id }) })
+        history.replace({ search: qs.stringify({ search: searchTypes.image + id }) })
     }
 
     const searchByFace = (id: string, box: Box) => {
         setSearchBarText(searchTypes.face + id + "||" + box.toJSON())
-        history.push({ search: qs.stringify({ search: searchTypes.face + id + "||" + box.toJSON() }) })
+        history.replace({ search: qs.stringify({ search: searchTypes.face + id + "||" + box.toJSON() }) })
     }
 
     const viewButtonFunctions = {

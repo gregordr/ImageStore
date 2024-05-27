@@ -140,7 +140,7 @@ function Photo(props: any) {
                         !!(props.searchByImageEnabled) && <IconButton
                             className={classes.searchButton}
                             style={{ opacity: opacity * 1.5 }}
-                            onClick={(e) => { props.searchByImageId(); e.stopPropagation() }}
+                            onClick={(e) => { props.history.push(); props.searchByImageId(); e.stopPropagation() }}
                             onMouseOver={props.hoverEventHandler} >
                             <Search style={{ fontSize: "28", color: "white" }}></Search>
                         </IconButton>

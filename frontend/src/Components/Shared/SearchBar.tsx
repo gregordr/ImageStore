@@ -88,7 +88,7 @@ export default function AutocompleteSearchBar(props: any) {
                                     params.inputProps.onChange({ target: { value: newValue } });
                                     setValue(newValue)
                                 }}
-                                onRequestSearch={props.onRequestSearch}
+                            // onRequestSearch={props.onRequestSearch}
                             />
                             <div ref={params.InputProps.ref}>
                                 <div {...params.inputProps} />
