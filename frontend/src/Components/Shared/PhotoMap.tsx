@@ -3,6 +3,7 @@ import { useState, useMemo } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MapContainer, TileLayer, Marker, useMapEvents, Popup } from "react-leaflet";
 import { LocPhotoT, PhotoT } from "../../Interfaces";
+import { baseURL } from "../../API";
 
 
 export default function PhotoMap(
@@ -68,7 +69,7 @@ export default function PhotoMap(
                 key={photo.id}
                 icon={
                     (() => {
-                        let ic = new Icon({ iconUrl: `http://localhost:4000/media/thumb_${photo.id}`, iconSize: [iconSize, iconSize] }) as any;
+                        let ic = new Icon({ iconUrl: `${baseURL}/media/thumb_${photo.id}`, iconSize: [iconSize, iconSize] }) as any;
                         ic._createImg = () => {
                             const output = document.createElement("div");
                             const res = <img style={{ height: "inherit", width: "inherit", borderRadius: "50%", objectFit: "cover", borderStyle: "outset" }} src={`http://localhost:4000/media/thumb_${photo.id}`} />;
