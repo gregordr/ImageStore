@@ -743,7 +743,7 @@ const Carousel = (props: any) => {
         };
     }, [swiperRef.current])
 
-    const slide = useMemo(() => makeSlides(props.photos.slice(Math.max(0, props.index - RANGE), Math.min(props.index + RANGE, props.photos.length)), swiperRef, props.goBack, props.mouseLeft, props.mouseCenter, props.mouseRight, zoomedRef), [props.photos, props.open, key]);
+    const slide = useMemo(() => makeSlides(props.photos.slice(Math.max(0, props.index - RANGE), Math.min(props.index + RANGE, props.photos.length)), swiperRef, props.goBack, props.mouseLeft, props.mouseCenter, props.mouseRight, zoomedRef), [props.photos, key]);
 
     useEffect(() => {
         setIndex(props.index);
