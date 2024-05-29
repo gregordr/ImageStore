@@ -72,7 +72,7 @@ export default function PhotoMap(
                         let ic = new Icon({ iconUrl: `${baseURL}/media/thumb_${photo.id}`, iconSize: [iconSize, iconSize] }) as any;
                         ic._createImg = () => {
                             const output = document.createElement("div");
-                            const res = <img style={{ height: "inherit", width: "inherit", borderRadius: "50%", objectFit: "cover", borderStyle: "outset" }} src={`{baseURL}/media/thumb_${photo.id}`} />;
+                            const res = <img style={{ height: "inherit", width: "inherit", borderRadius: "50%", objectFit: "cover", borderStyle: "outset" }} src={`${baseURL}/media/thumb_${photo.id}`} />;
                             output.innerHTML = `${renderToStaticMarkup(res)}`;
                             return output;
                         };
