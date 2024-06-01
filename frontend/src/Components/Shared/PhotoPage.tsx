@@ -358,11 +358,12 @@ export default function PhotoPage(props: { handleDrawerToggle: () => void; drawe
     }
 
     const viewButtonFunctions = {
-        delete: async (id: string) => {
+        delete: async (id: string, onDeletedCB: any) => {
             setOnDeleteDialogState({
                 open: true,
                 handleClose: (confirm: boolean) => async () => {
                     if (confirm) {
+                        onDeletedCB();
                         await deletePhoto(id);
                         await props.refresh();
                     }

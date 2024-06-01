@@ -203,13 +203,14 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
     const modifiedButtonFunctions = {
         ...props.buttonFunctions,
         delete: async (id: string) => {
-            if (props.photos.length === 1) history.replace((history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/") || "/") + queryUrl);
-            else if (index === 0) {
-                slideChange(1);
-            } else {
-                slideChange(index - 1);
-            }
-            await props.buttonFunctions.delete(id);
+            await props.buttonFunctions.delete(id, () => {
+                if (props.photos.length === 1) history.replace((history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/") || "/") + queryUrl);
+                else if (index === 0) {
+                    slideChange(1);
+                } else {
+                    slideChange(index - 1);
+                }
+            });
         },
         remove: async (id: string) => {
             if (props.photos.length === 1) history.replace((history.location.pathname.split("/").splice(0, history.location.pathname.split("/").length - 2).join("/") || "/") + queryUrl);
@@ -220,6 +221,28 @@ export default function ViewPage(props: { photos: PhotoT[]; setViewId: (arg0: st
             localStorage.setItem("drawerOpen", drawerOpen ? "false" : "true");
             setDrawerOpen(!drawerOpen);
         },
+        copy: async (id: string) => {
+            const imageUrl = baseURL + "/media/" + id
+
+            try {
+                const img = await fetch(imageUrl);
+                const imgBlob = await img.blob();
+
+                const mimeType = 'image/png'
+                const imageBlob = new Blob([imgBlob], { type: mimeType });
+
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        [mimeType]: Promise.resolve(imageBlob)
+                    })
+                ]);
+
+            } catch (err) {
+                console.error("Failed to copy image: ", err);
+            }
+
+
+        }
     };
 
     const prevRef = useRef<HTMLDivElement>(null);

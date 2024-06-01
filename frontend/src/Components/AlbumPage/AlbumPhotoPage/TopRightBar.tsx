@@ -1,5 +1,5 @@
 import { IconButton, Tooltip } from "@material-ui/core";
-import { CloudDownload, Delete, Info, LibraryAdd, Pages, RemoveCircleOutline, Search } from "@material-ui/icons";
+import { CloudDownload, Delete, FileCopy, Info, LibraryAdd, Pages, RemoveCircleOutline, Search } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
 
 
@@ -28,7 +28,19 @@ export default function TopRightBar(props: any) {
                     <Info />
                 </IconButton>
             </Tooltip>
-
+            <Tooltip title="Copy">
+                <IconButton
+                    className="IconButton"
+                    color="primary"
+                    aria-label="copy"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        props.buttonFunctions.copy(props.id);
+                    }}
+                >
+                    <FileCopy />
+                </IconButton>
+            </Tooltip>
             <Tooltip title="Set as album cover">
                 <IconButton
                     className="IconButton"
